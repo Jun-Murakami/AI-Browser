@@ -109,7 +109,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     });
     window.electron.recieveBrowserWidthFromMain((browserWidth) => {
       setPreferredSize(browserWidth);
-      console.log('browserWidth', browserWidth);
       setTimeout(() => {
         editorSplitRef.current.reset();
       }, 100);
