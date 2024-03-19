@@ -1,0 +1,47 @@
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --focus-border: #6c53f7;
+  --separator-border: rgba(128, 128, 128, 0.2);
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+::selection {
+  color: #ffffff; /* 選択されたテキストの文字色 */
+  background: #694dff; /* 選択されたテキストの背景色 */
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'Migu 1M';
+  src:
+    local('Migu 1M'),
+    url('../assets/migu-1m-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

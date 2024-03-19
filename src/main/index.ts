@@ -1,0 +1,313 @@
+import { app, shell, BrowserWindow, ipcMain, BrowserView, nativeTheme } from 'electron';
+import fs from 'fs';
+import path, { join } from 'path';
+import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import contextMenu from 'electron-context-menu';
+import icon from '../../resources/icon.png?asset';
+
+interface AppState {
+  bounds?: {
+    width?: number;
+    height?: number;
+    x?: number;
+    y?: number;
+  };
+  isMaximized?: boolean;
+  isDarkMode?: boolean;
+  editorMode?: number;
+  browserWidth?: number;
+  browserTabIndex?: number;
+  language?: string;
+}
+
+let appState: AppState = {
+  bounds: {},
+  isMaximized: false,
+  isDarkMode: false,
+  editorMode: 0,
+  browserWidth: 500,
+  browserTabIndex: 0,
+  language: 'text',
+};
+
+interface Log {
+  id: number;
+  text: string;
+}
+
+let logs: Log[] = [];
+
+contextMenu({
+  showInspectElement: is.dev,
+});
+
+function createWindow(): void {
+  // 保存されたウィンドウの状態を読み込む
+  const userDataPath = app.getPath('userData');
+  const appStatePath = path.join(userDataPath, 'appState.json');
+  if (fs.existsSync(appStatePath)) {
+    try {
+      appState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
+    } catch (error) {
+      console.error('ウィンドウの状態の読み込みに失敗しました:', error);
+    }
+  }
+
+  const logsPath = path.join(userDataPath, 'logs.json');
+  if (fs.existsSync(logsPath)) {
+    try {
+      logs = JSON.parse(fs.readFileSync(logsPath, 'utf8'));
+    } catch (error) {
+      console.error('ログの読み込みに失敗しました:', error);
+    }
+  }
+
+  // Create the browser window.
+  const mainWindow = new BrowserWindow({
+    width: 1000,
+    minWidth: 1000,
+    height: 700,
+    minHeight: 700,
+    show: false,
+    autoHideMenuBar: true,
+    ...appState.bounds,
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+    },
+  });
+
+  // 保存された状態が最大化なら最大化する
+  if (appState.isMaximized) {
+    mainWindow.maximize();
+  }
+
+  function setupView(url) {
+    const view = new BrowserView();
+    mainWindow.addBrowserView(view);
+    view.webContents.loadURL(url);
+
+    contextMenu({
+      window: view.webContents,
+      showInspectElement: is.dev,
+    });
+  }
+
+  setupView('https://claude.ai/');
+  setupView('https://gemini.google.com/');
+  setupView('https://chat.openai.com/');
+
+  if (appState.isDarkMode) {
+    nativeTheme.themeSource = 'dark';
+  }
+
+  ipcMain.on('browser-size', (_, arg) => {
+    const { width, height } = arg;
+    if (!width || !height || mainWindow.getBrowserViews().length === 0) {
+      return;
+    }
+    mainWindow.getBrowserViews().forEach((view) => {
+      view.setBounds({ x: 0, y: 50, width: width - 2, height });
+    });
+    appState.browserWidth = width;
+  });
+
+  ipcMain.on('browser-tab-index', (_, index) => {
+    if (mainWindow.getBrowserViews().length === 0) {
+      return;
+    }
+    appState.browserTabIndex = index;
+    mainWindow.getBrowserViews().forEach((view) => {
+      if (index === 0 && view.webContents.getURL().includes('openai.com')) {
+        mainWindow.setTopBrowserView(view);
+      } else if (index === 1 && view.webContents.getURL().includes('google.com')) {
+        mainWindow.setTopBrowserView(view);
+      } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
+        mainWindow.setTopBrowserView(view);
+      }
+    });
+  });
+
+  ipcMain.on('is-dark-mode', (_, isDarkMode) => {
+    appState.isDarkMode = isDarkMode;
+    nativeTheme.themeSource = isDarkMode ? 'dark' : 'light';
+  });
+
+  ipcMain.on('request-dark-mode', () => {
+    mainWindow.webContents.send('is-dark-mode', appState.isDarkMode);
+  });
+
+  ipcMain.on('editor-mode', (_, editorMode) => {
+    appState.editorMode = editorMode;
+  });
+
+  ipcMain.on('request-editor-mode', () => {
+    mainWindow.webContents.send('editor-mode', appState.editorMode);
+  });
+
+  ipcMain.on('language', (_, language) => {
+    appState.language = language;
+  });
+
+  ipcMain.on('request-language', () => {
+    mainWindow.webContents.send('language', appState.language);
+  });
+
+  ipcMain.on('request-browser-width', () => {
+    mainWindow.webContents.send('browser-width', appState.browserWidth);
+  });
+
+  ipcMain.on('text', (_, text) => {
+    if (mainWindow.getBrowserViews().length === 0) {
+      return;
+    }
+    mainWindow.getBrowserViews().forEach((view) => {
+      if (view.webContents.getURL().includes('openai.com') && appState.browserTabIndex === 0) {
+        const script = `var textareaTag = document.querySelector('main form textarea');
+                        textareaTag.value= ${JSON.stringify(text)};
+                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+                        setTimeout(() => {
+                          var sendButton = document.querySelector('main form button[data-testid="send-button"]');
+                          if (sendButton) {
+                            sendButton.click();
+                          }
+                        }, 700);
+                        `;
+        view.webContents.executeJavaScript(script);
+      } else if (view.webContents.getURL().includes('google.com') && appState.browserTabIndex === 1) {
+        const script = `var textareaTag = document.querySelector('main rich-textarea div[role="textbox"] p');
+                        textareaTag.textContent = ${JSON.stringify(text)};
+                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+                        setTimeout(() => {
+                          var sendButton = document.querySelector('main div.send-button-container button.send-button');
+                          if (sendButton) {
+                            sendButton.click();
+                          }
+                        }, 700);
+                        `;
+        view.webContents.executeJavaScript(script);
+      } else if (view.webContents.getURL().includes('claude.ai') && appState.browserTabIndex === 2) {
+        const script = `
+                        var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
+                        var textareaTag = textareaTags[textareaTags.length - 1];
+                        if (textareaTag) {
+                          textareaTag.textContent = ${JSON.stringify(text)};
+                          textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        setTimeout(() => {
+                          var sendButton = document.querySelector('div[data-value="new chat"] button');
+                          if (!sendButton) {
+                            sendButton = document.querySelector('button[aria-label="Send Message"]');
+                          }
+                          if (sendButton) {
+                            sendButton.click();
+                          }
+                        }, 700);
+                        `;
+        view.webContents.executeJavaScript(script);
+      }
+    });
+  });
+
+  ipcMain.on('logs', (_, newLogs: Log[]) => {
+    logs = newLogs;
+  });
+
+  ipcMain.on('request-logs', () => {
+    mainWindow.webContents.send('logs', logs);
+  });
+
+  ipcMain.on('request-os-info', () => {
+    mainWindow.webContents.send('os-info', process.platform);
+  });
+
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show();
+  });
+
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
+  } else {
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+  }
+
+  mainWindow.on('close', (e) => {
+    // Mac以外でデフォルトの閉じる動作をキャンセル
+    e.preventDefault();
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      // ウィンドウの状態を取得
+      const isMaximized = mainWindow.isMaximized();
+      mainWindow.unmaximize(); // 最大化状態を解除
+      const bounds = mainWindow.getBounds();
+
+      // widthとウィンドウ幅の残りの幅の合計が100になるように比率を計算（小数点以下は丸める）
+      if (!appState.browserWidth) {
+        appState.browserWidth = 400;
+      }
+
+      // JSON形式で保存するデータ
+      appState = {
+        ...appState,
+        bounds: bounds,
+        isMaximized: isMaximized,
+      };
+
+      // ファイルに保存（fsモジュールを使用）
+      const userDataPath = app.getPath('userData');
+      if (!fs.existsSync(userDataPath)) {
+        fs.mkdirSync(userDataPath, { recursive: true });
+      }
+      fs.writeFileSync(path.join(userDataPath, 'appState.json'), JSON.stringify(appState));
+      //人間に読みやすいようにログを整形して保存
+      fs.writeFileSync(path.join(userDataPath, 'logs.json'), JSON.stringify(logs, null, 2));
+    }
+    mainWindow.destroy();
+  });
+}
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.whenReady().then(() => {
+  // Set app user model id for windows
+  electronApp.setAppUserModelId('com.electron.AiBrowser');
+
+  // Default open or close DevTools by F12 in development
+  // and ignore CommandOrControl + R in production.
+  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+  app.on('browser-window-created', (_, window) => {
+    optimizer.watchWindowShortcuts(window);
+  });
+
+  // IPC ----------------------------------------------
+  // レンダラープロセスからのメッセージを受信する
+
+  createWindow();
+
+  app.on('activate', function () {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+// In this file you can include the rest of your app"s specific main process
+// code. You can also put them in separate files and require them here.
