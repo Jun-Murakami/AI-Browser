@@ -94,53 +94,22 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   }, [browserIndexTimestamp]);
 
   useEffect(() => {
-    window.electron.sendRequestDarkModeToMain();
-    window.electron.sendRequestEditorModeToMain();
-    window.electron.sendRequestBrowserWidthToMain();
-    window.electron.sendRequestLogsToMain();
-    window.electron.sendRequestLanguageToMain();
-    window.electron.sendReuestOSInfoToMain();
-
-    window.electron.recieveDarkModeFromMain((isDarkMode) => {
-      setDarkMode(isDarkMode);
-    });
-    window.electron.recieveEditorModeFromMain((editorMode) => {
-      setEditorIndex(editorMode);
-    });
-    window.electron.recieveBrowserWidthFromMain((browserWidth) => {
-      setPreferredSize(browserWidth);
+    window.electron.getInitialSettings().then((settings) => {
+      setDarkMode(settings.isDarkMode);
+      setEditorIndex(settings.editorMode);
+      setPreferredSize(settings.browserWidth);
       setTimeout(() => {
         editorSplitRef.current.reset();
+        setLogs(settings.logs);
+        if (settings.logs.length === 0) {
+          setEditor1Value('Type your message here.');
+        }
+        setLanguage(settings.language);
+        // OS情報に基づいてコマンドキーを設定
+        const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
+        setCommandKey(commandKey);
       }, 100);
     });
-    window.electron.recieveLogsFromMain((logs) => {
-      setLogs(logs);
-      if (logs.length === 0) {
-        setEditor1Value('Type your message here.');
-      }
-    });
-    window.electron.recieveLanguageFromMain((language) => {
-      setLanguage(language);
-    });
-    window.electron.recieveOSInfoFromMain((osInfo) => {
-      if (osInfo) {
-        if (osInfo === 'win32') {
-          setCommandKey('Ctrl');
-        } else if (osInfo === 'darwin') {
-          setCommandKey('Cmd');
-        } else if (osInfo === 'linux') {
-          setCommandKey('Ctrl');
-        }
-      }
-    });
-    return () => {
-      window.electron.removeDarkModeListener();
-      window.electron.removeEditorModeListener();
-      window.electron.removeBrowserWidthListener();
-      window.electron.removeLanguageListener();
-      window.electron.removeLogsListener();
-      window.electron.removeOSInfoListener();
-    };
   }, []);
 
   const getCombinedEditorValue = () => {
@@ -179,6 +148,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     if (logs.length > 0 && logs[0].text === text) {
       return;
     }
+
     // ログが500件を超えたら古いログを削除
     if (logs.length >= 50) {
       const newLogs = logs.slice(0, 49);
@@ -292,7 +262,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
-            <Tooltip title={`(${commandKey} + Tab) to switch AI`} placement='right' arrow>
+            <Tooltip title={`(Ctrl + Tab) to switch AI`} placement='right' arrow>
               <Tabs
                 value={browserIndex}
                 onChange={handleBrowserTabChange}

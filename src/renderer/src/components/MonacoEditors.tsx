@@ -90,7 +90,7 @@ export const MonacoEditors = ({
         clearButtonRef.current?.blur();
       }, 500);
     });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab, () => {
+    editor.addCommand(monaco.KeyMod.Ctrl | monaco.KeyCode.Tab, () => {
       setBrowserIndexTimestamp(new Date().getTime());
     });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {

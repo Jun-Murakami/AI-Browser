@@ -37,71 +37,7 @@ interface Log {
 
 let logs: Log[] = [];
 
-contextMenu({
-  showInspectElement: is.dev,
-});
-
-function createWindow(): void {
-  // 保存されたウィンドウの状態を読み込む
-  const userDataPath = app.getPath('userData');
-  const appStatePath = path.join(userDataPath, 'appState.json');
-  if (fs.existsSync(appStatePath)) {
-    try {
-      appState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
-    } catch (error) {
-      console.error('ウィンドウの状態の読み込みに失敗しました:', error);
-    }
-  }
-
-  const logsPath = path.join(userDataPath, 'logs.json');
-  if (fs.existsSync(logsPath)) {
-    try {
-      logs = JSON.parse(fs.readFileSync(logsPath, 'utf8'));
-    } catch (error) {
-      console.error('ログの読み込みに失敗しました:', error);
-    }
-  }
-
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 1000,
-    minWidth: 1000,
-    height: 700,
-    minHeight: 700,
-    show: false,
-    autoHideMenuBar: true,
-    ...appState.bounds,
-    ...(process.platform === 'linux' ? { icon } : {}),
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-    },
-  });
-
-  // 保存された状態が最大化なら最大化する
-  if (appState.isMaximized) {
-    mainWindow.maximize();
-  }
-
-  function setupView(url) {
-    const view = new BrowserView();
-    mainWindow.addBrowserView(view);
-    view.webContents.loadURL(url);
-
-    contextMenu({
-      window: view.webContents,
-      showInspectElement: is.dev,
-    });
-  }
-
-  setupView('https://claude.ai/');
-  setupView('https://gemini.google.com/');
-  setupView('https://chat.openai.com/');
-
-  if (appState.isDarkMode) {
-    nativeTheme.themeSource = 'dark';
-  }
-
+function registerIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.on('browser-size', (_, arg) => {
     const { width, height } = arg;
     if (!width || !height || mainWindow.getBrowserViews().length === 0) {
@@ -134,28 +70,27 @@ function createWindow(): void {
     nativeTheme.themeSource = isDarkMode ? 'dark' : 'light';
   });
 
-  ipcMain.on('request-dark-mode', () => {
-    mainWindow.webContents.send('is-dark-mode', appState.isDarkMode);
-  });
-
   ipcMain.on('editor-mode', (_, editorMode) => {
     appState.editorMode = editorMode;
-  });
-
-  ipcMain.on('request-editor-mode', () => {
-    mainWindow.webContents.send('editor-mode', appState.editorMode);
   });
 
   ipcMain.on('language', (_, language) => {
     appState.language = language;
   });
 
-  ipcMain.on('request-language', () => {
-    mainWindow.webContents.send('language', appState.language);
+  ipcMain.on('logs', (_, newLogs: Log[]) => {
+    logs = newLogs;
   });
 
-  ipcMain.on('request-browser-width', () => {
-    mainWindow.webContents.send('browser-width', appState.browserWidth);
+  ipcMain.handle('get-initial-settings', async () => {
+    return {
+      isDarkMode: appState.isDarkMode,
+      editorMode: appState.editorMode,
+      browserWidth: appState.browserWidth,
+      logs: logs,
+      language: appState.language,
+      osInfo: process.platform,
+    };
   });
 
   ipcMain.on('text', (_, text) => {
@@ -209,18 +144,89 @@ function createWindow(): void {
       }
     });
   });
+}
 
-  ipcMain.on('logs', (_, newLogs: Log[]) => {
-    logs = newLogs;
+function removeIpcHandlers() {
+  ipcMain.removeAllListeners('browser-size');
+  ipcMain.removeAllListeners('browser-tab-index');
+  ipcMain.removeAllListeners('is-dark-mode');
+  ipcMain.removeAllListeners('editor-mode');
+  ipcMain.removeAllListeners('language');
+  ipcMain.removeAllListeners('logs');
+  ipcMain.removeAllListeners('get-initial-settings');
+  ipcMain.removeAllListeners('text');
+}
+
+contextMenu({
+  showInspectElement: is.dev,
+});
+
+function createWindow(): void {
+  // 保存されたウィンドウの状態を読み込む
+  const userDataPath = app.getPath('userData');
+  const appStatePath = path.join(userDataPath, 'appState.json');
+  if (fs.existsSync(appStatePath)) {
+    try {
+      appState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
+    } catch (error) {
+      console.error('ウィンドウの状態の読み込みに失敗しました:', error);
+    }
+  }
+
+  const logsPath = path.join(userDataPath, 'logs.json');
+  if (fs.existsSync(logsPath)) {
+    try {
+      logs = JSON.parse(fs.readFileSync(logsPath, 'utf8'));
+    } catch (error) {
+      console.error('ログの読み込みに失敗しました:', error);
+    }
+  }
+
+  // Create the browser window.
+  const mainWindow = new BrowserWindow({
+    width: 1000,
+    minWidth: 1000,
+    height: 700,
+    minHeight: 700,
+    show: false,
+    autoHideMenuBar: true,
+    ...appState.bounds,
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+    },
   });
 
-  ipcMain.on('request-logs', () => {
-    mainWindow.webContents.send('logs', logs);
-  });
+  // 保存された状態が最大化なら最大化する
+  if (appState.isMaximized) {
+    mainWindow.maximize();
+  }
 
-  ipcMain.on('request-os-info', () => {
-    mainWindow.webContents.send('os-info', process.platform);
-  });
+  function setupView(url) {
+    const view = new BrowserView({
+      webPreferences: {
+        spellcheck: false,
+      },
+    });
+    mainWindow.addBrowserView(view);
+    view.webContents.loadURL(url);
+
+    contextMenu({
+      window: view.webContents,
+      showInspectElement: is.dev,
+    });
+  }
+
+  setupView('https://claude.ai/');
+  setupView('https://gemini.google.com/');
+  setupView('https://chat.openai.com/');
+
+  if (appState.isDarkMode) {
+    nativeTheme.themeSource = 'dark';
+  }
+
+  registerIpcHandlers(mainWindow);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -270,6 +276,7 @@ function createWindow(): void {
       //人間に読みやすいようにログを整形して保存
       fs.writeFileSync(path.join(userDataPath, 'logs.json'), JSON.stringify(logs, null, 2));
     }
+    removeIpcHandlers();
     mainWindow.destroy();
   });
 }
@@ -288,9 +295,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  // IPC ----------------------------------------------
-  // レンダラープロセスからのメッセージを受信する
-
   createWindow();
 
   app.on('activate', function () {
@@ -307,6 +311,11 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('will-quit', () => {
+  // アプリケーション終了直前にレンダラープロセスのリスナーを削除
+  removeIpcHandlers();
 });
 
 // In this file you can include the rest of your app"s specific main process

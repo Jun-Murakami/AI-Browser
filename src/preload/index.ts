@@ -19,29 +19,7 @@ if (process.contextIsolated) {
       sendLanguageToMain: (language: string) => ipcRenderer.send('language', language),
       sendTextToMain: (text: string) => ipcRenderer.send('text', text),
       sendLogsToMain: (logs: { id: number; text: string }[]) => ipcRenderer.send('logs', logs),
-      recieveDarkModeFromMain: (callback: (isDarkMode: boolean) => void) =>
-        ipcRenderer.on('is-dark-mode', (_, isDarkMode) => callback(isDarkMode)),
-      removeDarkModeListener: () => ipcRenderer.removeAllListeners('is-dark-mode'),
-      recieveEditorModeFromMain: (callback: (editorMode: number) => void) =>
-        ipcRenderer.on('editor-mode', (_, editorMode) => callback(editorMode)),
-      removeEditorModeListener: () => ipcRenderer.removeAllListeners('editor-mode'),
-      recieveBrowserWidthFromMain: (callback: (browserWidth: number) => void) =>
-        ipcRenderer.on('browser-width', (_, browserWidth) => callback(browserWidth)),
-      removeBrowserWidthListener: () => ipcRenderer.removeAllListeners('browser-width'),
-      recieveLanguageFromMain: (callback: (language: string) => void) =>
-        ipcRenderer.on('language', (_, language) => callback(language)),
-      removeLanguageListener: () => ipcRenderer.removeAllListeners('language'),
-      recieveLogsFromMain: (callback: (logs: { id: number; text: string }[]) => void) =>
-        ipcRenderer.on('logs', (_, logs) => callback(logs)),
-      removeLogsListener: () => ipcRenderer.removeAllListeners('logs'),
-      recieveOSInfoFromMain: (callback: (osInfo: string) => void) => ipcRenderer.on('os-info', (_, osInfo) => callback(osInfo)),
-      removeOSInfoListener: () => ipcRenderer.removeAllListeners('os-info'),
-      sendRequestDarkModeToMain: () => ipcRenderer.send('request-dark-mode'),
-      sendRequestEditorModeToMain: () => ipcRenderer.send('request-editor-mode'),
-      sendRequestBrowserWidthToMain: () => ipcRenderer.send('request-browser-width'),
-      sendRequestLanguageToMain: () => ipcRenderer.send('request-language'),
-      sendRequestLogsToMain: () => ipcRenderer.send('request-logs'),
-      sendReuestOSInfoToMain: () => ipcRenderer.send('request-os-info'),
+      getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),
     });
     contextBridge.exposeInMainWorld('api', api);
   } catch (error) {
