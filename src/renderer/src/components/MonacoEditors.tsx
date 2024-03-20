@@ -3,7 +3,6 @@ import 'allotment/dist/style.css';
 import { MonacoEditor, MonacoEditorProps } from './MonacoEditor';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
-
 interface MonacoEditorsProps {
   darkMode: boolean;
   language: string;
@@ -47,44 +46,6 @@ export const MonacoEditors = ({
   setEditor5Value,
   setBrowserIndexTimestamp,
 }: MonacoEditorsProps) => {
-  function handleEditorMount(editor, monaco) {
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      sendButtonRef.current?.focus();
-      setTimeout(() => {
-        sendButtonRef.current?.click();
-      }, 100);
-      setTimeout(() => {
-        sendButtonRef.current?.blur();
-      }, 500);
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC, () => {
-      copyButtonRef.current?.focus();
-      copyButtonRef.current?.click();
-      setTimeout(() => {
-        copyButtonRef.current?.blur();
-      }, 500);
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
-      clearButtonRef.current?.focus();
-      clearButtonRef.current?.click();
-      setTimeout(() => {
-        clearButtonRef.current?.blur();
-      }, 500);
-    });
-    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Tab, () => {
-      setBrowserIndexTimestamp(new Date().getTime());
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
-      newerLogButtonRef.current?.click();
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
-      olderLogButtonRef.current?.click();
-    });
-    setTimeout(() => {
-      monaco?.editor.remeasureFonts();
-    }, 100);
-  }
-
   const handleEditor1Change = (value: string | undefined) => {
     setEditor1Value(value ?? '');
   };
