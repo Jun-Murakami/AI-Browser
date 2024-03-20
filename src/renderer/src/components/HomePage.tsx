@@ -94,22 +94,27 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   }, [browserIndexTimestamp]);
 
   useEffect(() => {
-    window.electron.getInitialSettings().then((settings) => {
-      setDarkMode(settings.isDarkMode);
-      setEditorIndex(settings.editorMode);
-      setPreferredSize(settings.browserWidth);
-      setTimeout(() => {
-        editorSplitRef.current.reset();
-        setLogs(settings.logs);
-        if (settings.logs.length === 0) {
-          setEditor1Value('Type your message here.');
-        }
-        setLanguage(settings.language);
-        // OS情報に基づいてコマンドキーを設定
-        const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
-        setCommandKey(commandKey);
-      }, 100);
-    });
+    window.electron
+      .getInitialSettings()
+      .then((settings) => {
+        setDarkMode(settings.isDarkMode);
+        setEditorIndex(settings.editorMode);
+        setPreferredSize(settings.browserWidth);
+        setTimeout(() => {
+          editorSplitRef.current.reset();
+          setLogs(settings.logs);
+          if (settings.logs.length === 0) {
+            setEditor1Value('Type your message here.');
+          }
+          setLanguage(settings.language);
+          // OS情報に基づいてコマンドキーを設定
+          const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
+          setCommandKey(commandKey);
+        }, 100);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }, []);
 
   const getCombinedEditorValue = () => {
@@ -262,7 +267,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
-            <Tooltip title={`(Ctrl + Tab) to switch AI`} placement='right' arrow>
+            <Tooltip title={`(Shift + Tab) to switch AI`} placement='right' arrow>
               <Tabs
                 value={browserIndex}
                 onChange={handleBrowserTabChange}
