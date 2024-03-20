@@ -157,35 +157,6 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                         }, 700);
                         `;
         view.webContents.executeJavaScript(script);
-      } else if (view.webContents.getURL().includes('perplexity.ai') && appState.browserTabIndex === 4) {
-        const script = `var textareaTag = document.querySelector('main textarea');
-                        if (textareaTag) {
-                          setTimeout(() => {
-                            textareaTag.textContent = ${JSON.stringify(text)};
-                          }, 300);
-                          setTimeout(() => {
-                            textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                          }, 600);
-                          setTimeout(() => {
-                            var buttonWithSvg = document.querySelector('button svg[data-icon="arrow-right"]');
-                            if (buttonWithSvg) {
-                              var sendButton = buttonWithSvg.parentNode.parentNode;
-                              if (sendButton) {
-                                sendButton.click();
-                              }
-                            } else {
-                              var buttonWithSvg = document.querySelector('button svg[data-icon="arrow-up"]');
-                              if (buttonWithSvg) {
-                                var sendButton = buttonWithSvg.parentNode.parentNode;
-                                if (sendButton) {
-                                sendButton.click();
-                                }
-                              }
-                            }
-                          }, 700);
-                        } 
-                        `;
-        view.webContents.executeJavaScript(script);
       }
     });
   });
@@ -263,7 +234,6 @@ function createWindow(): void {
     });
   }
 
-  setupView('https://www.perplexity.ai/');
   setupView('https://www.phind.com/');
   setupView('https://claude.ai/');
   setupView('https://gemini.google.com/');

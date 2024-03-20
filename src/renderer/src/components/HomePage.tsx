@@ -83,7 +83,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   };
 
   useEffect(() => {
-    if (browserIndex < 4) {
+    if (browserIndex < 3) {
       const newBrowserIndex = browserIndex + 1;
       setBrowserIndex(newBrowserIndex);
       window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
@@ -281,7 +281,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <Tab label='Gemini' value={1} />
                 <Tab label='Claude' value={2} />
                 <Tab label='Phind' value={3} />
-                <Tab label='Perplexity' value={4} />
               </Tabs>
             </Tooltip>
             <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>
@@ -491,7 +490,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     startIcon={<SendIcon />}
                     onClick={handleSendButtonClick}
                   >
-                    Send to {browserIndex === 0 ? 'ChatGPT' : browserIndex === 1 ? 'Gemini' : 'Claude'}
+                    Send to{' '}
+                    {browserIndex === 0 ? 'ChatGPT' : browserIndex === 1 ? 'Gemini' : browserIndex === 2 ? 'Claude' : 'Phind'}
                   </Button>
                 </Tooltip>
               </Box>
