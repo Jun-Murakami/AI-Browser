@@ -4,7 +4,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --focus-border: #6c53f7;
-  --separator-border: rgba(128, 128, 128, 0.2);
+  --separator-border: rgba(128, 128, 128, 0.3);
 }
 
 #root {

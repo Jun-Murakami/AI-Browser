@@ -263,7 +263,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   };
 
   return (
-    <Box sx={{ height: '100vh', borderTop: 1, borderColor: 'divider' }}>
+    <Box sx={{ height: '100vh', borderTop: 1, borderColor: theme.palette.divider }}>
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
@@ -271,7 +271,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               <Tabs
                 value={browserIndex}
                 onChange={handleBrowserTabChange}
-                sx={{ borderBottom: 1, borderColor: 'divider' }}
+                sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
                 key='browser-tabs'
               >
                 <Tab label='ChatGPT' value={0} />
@@ -294,7 +294,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         </Allotment.Pane>
         <Allotment.Pane minSize={500}>
           <Box sx={{ height: '100%' }}>
-            <Tabs value={editorIndex} onChange={handleEditorTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={editorIndex}
+              onChange={handleEditorTabChange}
+              sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
+            >
               <Tab
                 value={0}
                 icon={<Split1Icon sx={{ fontSize: 22, color: editorIndex !== 0 ? theme.palette.action.disabled : undefined }} />}
@@ -434,7 +438,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               sx={{
                 height: '50px',
                 borderTop: 1,
-                borderColor: 'divider',
+                borderColor: theme.palette.divider,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',

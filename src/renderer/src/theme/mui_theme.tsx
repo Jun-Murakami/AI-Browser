@@ -65,6 +65,7 @@ export const theme = createTheme({
     secondary: {
       main: '#ef0a0a',
     },
+    divider: 'rgba(128, 128, 128, 0.3)',
   },
   typography: {
     fontFamily: fontFamilySet,
@@ -98,6 +99,7 @@ export const darkTheme = createTheme({
     secondary: {
       main: '#ef0a0a',
     },
+    divider: 'rgba(128, 128, 128, 0.3)',
     background: {
       default: '#212121',
       paper: '#212121',

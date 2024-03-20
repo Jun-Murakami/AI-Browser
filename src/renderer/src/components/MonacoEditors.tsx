@@ -1,7 +1,8 @@
 import { Allotment } from 'allotment';
 import 'allotment/dist/style.css';
-import Editor, { useMonaco, EditorProps } from '@monaco-editor/react';
-import { Box } from '@mui/system';
+import Editor, { EditorProps } from '@monaco-editor/react';
+import { useTheme } from '@mui/material/styles';
+import { Box } from '@mui/material';
 
 interface MonacoEditorsProps {
   darkMode: boolean;
@@ -48,6 +49,7 @@ export const MonacoEditors = ({
 }: MonacoEditorsProps) => {
   const editorProps: EditorProps = {
     height: '100%',
+    loading: '',
     theme: darkMode ? 'vs-dark' : 'light',
     language,
     options: {
@@ -62,9 +64,6 @@ export const MonacoEditors = ({
       wordWrap: 'on',
     },
   };
-
-  const monaco = useMonaco();
-  monaco?.editor.remeasureFonts();
 
   function handleEditorMount(editor, monaco) {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
@@ -99,6 +98,9 @@ export const MonacoEditors = ({
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
       olderLogButtonRef.current?.click();
     });
+    setTimeout(() => {
+      monaco?.editor.remeasureFonts();
+    }, 100);
   }
 
   const handleEditor1Change = (value: string | undefined) => {
@@ -121,89 +123,111 @@ export const MonacoEditors = ({
     setEditor5Value(value ?? '');
   };
 
+  const theme = useTheme();
+
   return (
-    <>
-      <Box sx={{ height: 'calc(100% - 156px)' }} hidden={editorIndex !== 0}>
-        <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
-      </Box>
-      <Box sx={{ height: 'calc(100% - 156px)' }} hidden={editorIndex !== 1}>
-        <Allotment vertical={true}>
-          <Allotment.Pane minSize={200}>
+    <Box sx={{ height: 'calc(100% - 156px)', p: 1, pt: 0 }}>
+      <Box
+        sx={{
+          borderWidth: 1,
+          borderColor: theme.palette.divider,
+          borderStyle: 'solid',
+          height: '100%',
+          backgroundColor: darkMode ? '#1e1e1e' : undefined,
+        }}
+      >
+        {editorIndex === 0 && (
+          <Box sx={{ pt: 1, height: '100%' }}>
             <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
-          </Allotment.Pane>
-          <Allotment.Pane minSize={200}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-        </Allotment>
+          </Box>
+        )}
+        {editorIndex === 1 && (
+          <Allotment vertical={true}>
+            <Allotment.Pane minSize={200}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={200}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+          </Allotment>
+        )}
+        {editorIndex === 2 && (
+          <Allotment vertical={true}>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+          </Allotment>
+        )}
+        {editorIndex === 3 && (
+          <Allotment vertical={true}>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor4Value} onChange={handleEditor4Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+          </Allotment>
+        )}
+        {editorIndex === 4 && (
+          <Allotment vertical={true}>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor4Value} onChange={handleEditor4Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+            <Allotment.Pane minSize={20}>
+              <Box sx={{ pt: 1, height: '100%' }}>
+                <Editor {...editorProps} value={editor5Value} onChange={handleEditor5Change} onMount={handleEditorMount} />
+              </Box>
+            </Allotment.Pane>
+          </Allotment>
+        )}
       </Box>
-      <Box sx={{ height: 'calc(100% - 156px)' }} hidden={editorIndex !== 2}>
-        <Allotment vertical={true}>
-          <Allotment.Pane minSize={20}>
-            <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-        </Allotment>
-      </Box>
-      <Box sx={{ height: 'calc(100% - 156px)' }} hidden={editorIndex !== 3}>
-        <Allotment vertical={true}>
-          <Allotment.Pane minSize={20}>
-            <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor4Value} onChange={handleEditor4Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-        </Allotment>
-      </Box>
-      <Box sx={{ height: 'calc(100% - 156px)' }} hidden={editorIndex !== 4}>
-        <Allotment vertical={true}>
-          <Allotment.Pane minSize={20}>
-            <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor4Value} onChange={handleEditor4Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-          <Allotment.Pane minSize={20}>
-            <Box sx={{ pt: 1, height: '100%' }}>
-              <Editor {...editorProps} value={editor5Value} onChange={handleEditor5Change} onMount={handleEditorMount} />
-            </Box>
-          </Allotment.Pane>
-        </Allotment>
-      </Box>
-    </>
+    </Box>
   );
 };
