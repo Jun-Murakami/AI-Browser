@@ -37,7 +37,7 @@ interface Log {
 }
 
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
-  const [browserIndex, setBrowserIndex] = useState(2);
+  const [browserIndex, setBrowserIndex] = useState(4);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
   const [logs, setLogs] = useState<Log[]>([]);
@@ -83,7 +83,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   };
 
   useEffect(() => {
-    if (browserIndex < 2) {
+    if (browserIndex < 4) {
       const newBrowserIndex = browserIndex + 1;
       setBrowserIndex(newBrowserIndex);
       window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
@@ -169,6 +169,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   const handleSendButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
+    if (combinedEditorValue.trim() === '') {
+      return;
+    }
     window.electron.sendTextToMain(combinedEditorValue);
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
@@ -277,6 +280,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <Tab label='ChatGPT' value={0} />
                 <Tab label='Gemini' value={1} />
                 <Tab label='Claude' value={2} />
+                <Tab label='Phind' value={3} />
+                <Tab label='Perplexity' value={4} />
               </Tabs>
             </Tooltip>
             <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>
