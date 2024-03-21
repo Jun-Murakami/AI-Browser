@@ -72,6 +72,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const { width: browserWidth, height: browserHeight } = useResizeObserver<HTMLDivElement>({ ref: browserRef });
   const { width: promptHistoryWidth } = useResizeObserver<HTMLSelectElement>({ ref: promptHistoryRef });
 
+  // ブラウザのサイズが変更されたらメインプロセスに通知
   useEffect(() => {
     if (!browserWidth || !browserHeight) {
       return;
@@ -79,16 +80,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     window.electron.sendBrowserSizeToMain({ width: browserWidth, height: browserHeight });
   }, [browserWidth, browserHeight]);
 
+  // ブラウザタブが切り替わったらメインプロセスに通知
   const handleBrowserTabChange = (_: React.SyntheticEvent, index: number) => {
     setBrowserIndex(index);
     window.electron.sendBrowserTabIndexToMain(index);
   };
 
+  // エディタのタブが切り替わったらメインプロセスに通知
   const handleEditorTabChange = (_: React.SyntheticEvent, index: number) => {
     setEditorIndex(index);
     window.electron.sendEditorModeToMain(index);
   };
 
+  // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
     if (browserIndex < 3) {
       const newBrowserIndex = browserIndex + 1;
@@ -100,6 +104,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   }, [browserIndexTimestamp]);
 
+  // 初期設定を取得
   useEffect(() => {
     window.electron
       .getInitialSettings()
@@ -130,6 +135,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       });
   }, []);
 
+  // エディターテキストを結合して取得
   const getCombinedEditorValue = () => {
     const divider = '\n----\n';
     let combinedValue = '';
@@ -155,6 +161,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     return combinedValue;
   };
 
+  // ログを追加
   const addLog = (text: string) => {
     // 現在の最新のログID＋１を新しいログのIDとしたログを作成
     const newLog: Log = {
@@ -180,6 +187,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // テキストを送信
   const handleSendButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
     if (combinedEditorValue.trim() === '') {
@@ -193,6 +201,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     handleClearButtonClick();
   };
 
+  // 選択されたログが変更されたらエディターに反映
   const handleSelectedLogChange = (selectedText: string) => {
     const selected = logs.find((log) => log.text === selectedText);
 
@@ -242,6 +251,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // 前のログを選択
   const handlePrevLogButtonClick = () => {
     if (selectedLog) {
       const index = logs.indexOf(selectedLog);
@@ -253,6 +263,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // 次のログを選択
   const handleNextLogButtonClick = () => {
     if (selectedLog) {
       const index = logs.indexOf(selectedLog);
@@ -264,6 +275,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // クリアボタンがクリックされたらエディターをクリア
   const handleClearButtonClick = () => {
     setEditor1Value('');
     setEditor2Value('');
@@ -273,6 +285,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     setSelectedLog(null);
   };
 
+  // コピーボタンがクリックされたらエディターの内容をクリップボードにコピー
   const handleCopyButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
     navigator.clipboard.writeText(combinedEditorValue);
