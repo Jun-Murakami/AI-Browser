@@ -155,8 +155,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
 
     // ログが500件を超えたら古いログを削除
-    if (logs.length >= 50) {
-      const newLogs = logs.slice(0, 49);
+    if (logs.length >= 500) {
+      const newLogs = logs.slice(0, 499);
       setLogs([newLog, ...newLogs]);
       setSelectedLog(null);
       return [newLog, ...newLogs];
@@ -284,13 +284,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               </Tabs>
             </Tooltip>
             <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 0}>
-                <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
-              </Box>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 1}>
-                <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
-              </Box>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 2}>
+              <Box sx={{ height: '100%' }}>
                 <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
               </Box>
             </Box>
