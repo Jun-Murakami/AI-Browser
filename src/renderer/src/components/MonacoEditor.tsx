@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
-import { Box } from '@mui/material';
 import * as monaco from 'monaco-editor';
 import { useWatchBoxHeight } from '../utils/useWatchBoxHeight';
 
@@ -7,6 +6,8 @@ export interface MonacoEditorProps {
   darkMode: boolean;
   language: string;
   editorIndex: number;
+  browserWidth?: number;
+  browserHeight?: number;
   sendButtonRef: React.RefObject<HTMLButtonElement>;
   copyButtonRef: React.RefObject<HTMLButtonElement>;
   clearButtonRef: React.RefObject<HTMLButtonElement>;
@@ -21,6 +22,8 @@ export const MonacoEditor = ({
   darkMode,
   language,
   editorIndex,
+  browserWidth,
+  browserHeight,
   sendButtonRef,
   copyButtonRef,
   clearButtonRef,
@@ -121,20 +124,10 @@ export const MonacoEditor = ({
 
   // ウィンドウのリサイズ時にエディターのレイアウトを更新
   useEffect(() => {
-    if (editorRef.current && isBoxReady && editorInstance) {
-      const handleResize = () => {
-        editorInstance.layout();
-      };
-
-      window.addEventListener('resize', handleResize);
-
-      // クリーンアップ関数でイベントリスナーを削除
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
+    if (editorRef.current && isBoxReady && editorInstance && browserWidth && browserHeight) {
+      editorInstance.layout();
     }
-    return () => {};
-  }, [editorRef, isBoxReady, editorInstance]);
+  }, [editorRef, isBoxReady, editorInstance, browserWidth, browserHeight]);
 
-  return <Box ref={editorRef} sx={{ width: '100%', height: '100%' }} />;
+  return <div ref={editorRef} style={{ width: '100%', height: '100%' }} />;
 };

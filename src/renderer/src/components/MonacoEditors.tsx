@@ -7,6 +7,8 @@ interface MonacoEditorsProps {
   darkMode: boolean;
   language: string;
   editorIndex: number;
+  browserWidth?: number;
+  browserHeight?: number;
   sendButtonRef: React.RefObject<HTMLButtonElement>;
   copyButtonRef: React.RefObject<HTMLButtonElement>;
   clearButtonRef: React.RefObject<HTMLButtonElement>;
@@ -29,6 +31,8 @@ export const MonacoEditors = ({
   darkMode,
   language,
   editorIndex,
+  browserWidth,
+  browserHeight,
   sendButtonRef,
   copyButtonRef,
   clearButtonRef,
@@ -72,6 +76,8 @@ export const MonacoEditors = ({
     darkMode,
     language,
     editorIndex,
+    browserWidth,
+    browserHeight,
     sendButtonRef,
     copyButtonRef,
     clearButtonRef,

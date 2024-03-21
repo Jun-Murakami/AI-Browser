@@ -432,6 +432,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               newerLogButtonRef={newerLogButtonRef}
               olderLogButtonRef={olderLogButtonRef}
               setBrowserIndexTimestamp={setBrowserIndexTimestamp}
+              browserWidth={browserWidth}
+              browserHeight={browserHeight}
             />
 
             <Box
