@@ -61,6 +61,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         mainWindow.setTopBrowserView(view);
       } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
         mainWindow.setTopBrowserView(view);
+      } else if (index === 3 && view.webContents.getURL().includes('phind.com')) {
+        mainWindow.setTopBrowserView(view);
+      } else if (index === 4 && view.webContents.getURL().includes('perplexity.ai')) {
+        mainWindow.setTopBrowserView(view);
       }
     });
   });
@@ -84,12 +88,13 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
   ipcMain.handle('get-initial-settings', async () => {
     return {
+      currentVersion: await app.getVersion(),
       isDarkMode: appState.isDarkMode,
       editorMode: appState.editorMode,
       browserWidth: appState.browserWidth,
       logs: logs,
       language: appState.language,
-      osInfo: process.platform,
+      osInfo: await process.platform,
     };
   });
 
@@ -100,7 +105,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     mainWindow.getBrowserViews().forEach((view) => {
       if (view.webContents.getURL().includes('openai.com') && appState.browserTabIndex === 0) {
         const script = `var textareaTag = document.querySelector('main form textarea');
-                        textareaTag.value= ${JSON.stringify(text)};
+                        textareaTag.value = ${JSON.stringify(text)};
                         textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
                         setTimeout(() => {
                           var sendButton = document.querySelector('main form button[data-testid="send-button"]');
@@ -141,8 +146,24 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                         }, 700);
                         `;
         view.webContents.executeJavaScript(script);
+      } else if (view.webContents.getURL().includes('phind.com') && appState.browserTabIndex === 3) {
+        const script = `var textareaTag = document.querySelector('main form textarea');
+                        textareaTag.textContent = ${JSON.stringify(text)};
+                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+                        setTimeout(() => {
+                          var sendButton = document.querySelector('main form button[type="submit"]');
+                          if (sendButton) {
+                            sendButton.click();
+                          }
+                        }, 700);
+                        `;
+        view.webContents.executeJavaScript(script);
       }
     });
+  });
+
+  ipcMain.on('open-external-link', (_, url) => {
+    shell.openExternal(url);
   });
 }
 
@@ -218,6 +239,7 @@ function createWindow(): void {
     });
   }
 
+  setupView('https://www.phind.com/');
   setupView('https://claude.ai/');
   setupView('https://gemini.google.com/');
   setupView('https://chat.openai.com/');

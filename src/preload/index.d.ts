@@ -9,9 +9,11 @@ interface ExtendedElectronAPI extends ElectronAPI {
   sendTextToMain: (text: string) => void;
   sendLogsToMain: (logs: { id: number; text: string }[]) => void;
   getInitialSettings: () => Promise<InitialSettings>;
+  openExternalLink: (url: string) => void;
 }
 
 interface InitialSettings {
+  currentVersion: string;
   isDarkMode: boolean;
   editorMode: number;
   browserWidth: number;

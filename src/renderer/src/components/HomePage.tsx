@@ -16,6 +16,7 @@ import {
   Button,
   Tooltip,
   Typography,
+  Chip,
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -25,6 +26,7 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { supportedLanguages } from '../utils/supportedLanguages';
 import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
+import { useCheckForUpdates } from '../utils/useCheckForUpdates';
 
 interface HomePageProps {
   darkMode: boolean;
@@ -37,7 +39,9 @@ interface Log {
 }
 
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
-  const [browserIndex, setBrowserIndex] = useState(2);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
+  const [browserIndex, setBrowserIndex] = useState(3);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
   const [logs, setLogs] = useState<Log[]>([]);
@@ -50,6 +54,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [browserIndexTimestamp, setBrowserIndexTimestamp] = useState(new Date().getTime());
   const [preferredSize, setPreferredSize] = useState(500);
   const [commandKey, setCommandKey] = useState('Ctrl');
+  const [isChipVisible, setIsChipVisible] = useState(false);
+
+  const checkForUpdates = useCheckForUpdates();
 
   const theme = useTheme();
 
@@ -65,6 +72,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const { width: browserWidth, height: browserHeight } = useResizeObserver<HTMLDivElement>({ ref: browserRef });
   const { width: promptHistoryWidth } = useResizeObserver<HTMLSelectElement>({ ref: promptHistoryRef });
 
+  // ブラウザのサイズが変更されたらメインプロセスに通知
   useEffect(() => {
     if (!browserWidth || !browserHeight) {
       return;
@@ -72,18 +80,21 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     window.electron.sendBrowserSizeToMain({ width: browserWidth, height: browserHeight });
   }, [browserWidth, browserHeight]);
 
+  // ブラウザタブが切り替わったらメインプロセスに通知
   const handleBrowserTabChange = (_: React.SyntheticEvent, index: number) => {
     setBrowserIndex(index);
     window.electron.sendBrowserTabIndexToMain(index);
   };
 
+  // エディタのタブが切り替わったらメインプロセスに通知
   const handleEditorTabChange = (_: React.SyntheticEvent, index: number) => {
     setEditorIndex(index);
     window.electron.sendEditorModeToMain(index);
   };
 
+  // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
-    if (browserIndex < 2) {
+    if (browserIndex < 3) {
       const newBrowserIndex = browserIndex + 1;
       setBrowserIndex(newBrowserIndex);
       window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
@@ -93,30 +104,38 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   }, [browserIndexTimestamp]);
 
+  // 初期設定を取得
   useEffect(() => {
     window.electron
       .getInitialSettings()
-      .then((settings) => {
+      .then(async (settings) => {
         setDarkMode(settings.isDarkMode);
         setEditorIndex(settings.editorMode);
         setPreferredSize(settings.browserWidth);
         setTimeout(() => {
           editorSplitRef.current.reset();
-          setLogs(settings.logs);
-          if (settings.logs.length === 0) {
-            setEditor1Value('Type your message here.');
-          }
-          setLanguage(settings.language);
-          // OS情報に基づいてコマンドキーを設定
-          const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
-          setCommandKey(commandKey);
         }, 100);
+        setLogs(settings.logs);
+        if (settings.logs.length === 0) {
+          setEditor1Value('Type your message here.');
+        }
+        setLanguage(settings.language);
+        // OS情報に基づいてコマンドキーを設定
+        const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
+        setCommandKey(commandKey);
+        const result = await checkForUpdates(settings.currentVersion);
+        if (result) {
+          setLatestVersion(result.latestVersion);
+          setReleasePageUrl(result.releasePageUrl);
+          setIsChipVisible(true);
+        }
       })
       .catch((error) => {
         console.error(error);
       });
   }, []);
 
+  // エディターテキストを結合して取得
   const getCombinedEditorValue = () => {
     const divider = '\n----\n';
     let combinedValue = '';
@@ -142,6 +161,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     return combinedValue;
   };
 
+  // ログを追加
   const addLog = (text: string) => {
     // 現在の最新のログID＋１を新しいログのIDとしたログを作成
     const newLog: Log = {
@@ -155,8 +175,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
 
     // ログが500件を超えたら古いログを削除
-    if (logs.length >= 50) {
-      const newLogs = logs.slice(0, 49);
+    if (logs.length >= 500) {
+      const newLogs = logs.slice(0, 499);
       setLogs([newLog, ...newLogs]);
       setSelectedLog(null);
       return [newLog, ...newLogs];
@@ -167,8 +187,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // テキストを送信
   const handleSendButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
+    if (combinedEditorValue.trim() === '') {
+      return;
+    }
     window.electron.sendTextToMain(combinedEditorValue);
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
@@ -177,6 +201,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     handleClearButtonClick();
   };
 
+  // 選択されたログが変更されたらエディターに反映
   const handleSelectedLogChange = (selectedText: string) => {
     const selected = logs.find((log) => log.text === selectedText);
 
@@ -226,6 +251,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // 前のログを選択
   const handlePrevLogButtonClick = () => {
     if (selectedLog) {
       const index = logs.indexOf(selectedLog);
@@ -237,6 +263,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // 次のログを選択
   const handleNextLogButtonClick = () => {
     if (selectedLog) {
       const index = logs.indexOf(selectedLog);
@@ -248,6 +275,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // クリアボタンがクリックされたらエディターをクリア
   const handleClearButtonClick = () => {
     setEditor1Value('');
     setEditor2Value('');
@@ -257,6 +285,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     setSelectedLog(null);
   };
 
+  // コピーボタンがクリックされたらエディターの内容をクリップボードにコピー
   const handleCopyButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
     navigator.clipboard.writeText(combinedEditorValue);
@@ -277,16 +306,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <Tab label='ChatGPT' value={0} />
                 <Tab label='Gemini' value={1} />
                 <Tab label='Claude' value={2} />
+                <Tab label='Phind' value={3} />
               </Tabs>
             </Tooltip>
             <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 0}>
-                <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
-              </Box>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 1}>
-                <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
-              </Box>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 2}>
+              <Box sx={{ height: '100%' }}>
                 <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
               </Box>
             </Box>
@@ -294,6 +318,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         </Allotment.Pane>
         <Allotment.Pane minSize={500}>
           <Box sx={{ height: '100%' }}>
+            {isChipVisible && (
+              <Chip
+                label={`Update? v${latestVersion}`}
+                color='primary'
+                onClick={() => {
+                  if (releasePageUrl) {
+                    window.electron.openExternalLink(releasePageUrl);
+                  }
+                }}
+                onDelete={() => setIsChipVisible(false)}
+                sx={{ position: 'absolute', top: 0, right: 0, m: 1, zIndex: 1000 }}
+              />
+            )}
             <Tabs
               value={editorIndex}
               onChange={handleEditorTabChange}
@@ -488,7 +525,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     startIcon={<SendIcon />}
                     onClick={handleSendButtonClick}
                   >
-                    Send to {browserIndex === 0 ? 'ChatGPT' : browserIndex === 1 ? 'Gemini' : 'Claude'}
+                    Send to{' '}
+                    {browserIndex === 0 ? 'ChatGPT' : browserIndex === 1 ? 'Gemini' : browserIndex === 2 ? 'Claude' : 'Phind'}
                   </Button>
                 </Tooltip>
               </Box>
