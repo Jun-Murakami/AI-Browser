@@ -239,6 +239,7 @@ function createWindow(): void {
     });
   }
 
+  setupView('https://www.perplexity.ai/');
   setupView('https://www.phind.com/');
   setupView('https://claude.ai/');
   setupView('https://gemini.google.com/');

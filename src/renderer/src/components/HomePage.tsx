@@ -41,7 +41,7 @@ interface Log {
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
-  const [browserIndex, setBrowserIndex] = useState(3);
+  const [browserIndex, setBrowserIndex] = useState(4);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
   const [logs, setLogs] = useState<Log[]>([]);
@@ -94,7 +94,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
-    if (browserIndex < 3) {
+    if (browserIndex < 4) {
       const newBrowserIndex = browserIndex + 1;
       setBrowserIndex(newBrowserIndex);
       window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
@@ -307,6 +307,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <Tab label='Gemini' value={1} />
                 <Tab label='Claude' value={2} />
                 <Tab label='Phind' value={3} />
+                <Tab label='Perplexity' value={4} />
               </Tabs>
             </Tooltip>
             <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>
@@ -526,7 +527,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     onClick={handleSendButtonClick}
                   >
                     Send to{' '}
-                    {browserIndex === 0 ? 'ChatGPT' : browserIndex === 1 ? 'Gemini' : browserIndex === 2 ? 'Claude' : 'Phind'}
+                    {browserIndex === 0
+                      ? 'ChatGPT'
+                      : browserIndex === 1
+                        ? 'Gemini'
+                        : browserIndex === 2
+                          ? 'Claude'
+                          : browserIndex === 3
+                            ? 'Phind'
+                            : 'Perplexity'}
                   </Button>
                 </Tooltip>
               </Box>
