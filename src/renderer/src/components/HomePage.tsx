@@ -284,13 +284,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               </Tabs>
             </Tooltip>
             <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 0}>
-                <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
-              </Box>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 1}>
-                <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
-              </Box>
-              <Box sx={{ height: '100%' }} hidden={browserIndex !== 2}>
+              <Box sx={{ height: '100%' }}>
                 <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
               </Box>
             </Box>

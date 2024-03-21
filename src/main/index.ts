@@ -16,6 +16,7 @@ interface AppState {
   isDarkMode?: boolean;
   editorMode?: number;
   browserWidth?: number;
+  browserHeight?: number;
   browserTabIndex?: number;
   language?: string;
 }
@@ -26,6 +27,7 @@ let appState: AppState = {
   isDarkMode: false,
   editorMode: 0,
   browserWidth: 500,
+  browserHeight: 0,
   browserTabIndex: 0,
   language: 'text',
 };
@@ -37,6 +39,11 @@ interface Log {
 
 let logs: Log[] = [];
 
+let browser1IsLoaded = false;
+let browser2IsLoaded = false;
+let browser3IsLoaded = false;
+let browser4IsLoaded = false;
+
 function registerIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.on('browser-size', (_, arg) => {
     const { width, height } = arg;
@@ -44,9 +51,12 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       return;
     }
     mainWindow.getBrowserViews().forEach((view) => {
-      view.setBounds({ x: 0, y: 50, width: width - 2, height });
+      if (browser1IsLoaded && browser2IsLoaded && browser3IsLoaded && browser4IsLoaded) {
+        view.setBounds({ x: 0, y: 50, width: width - 2, height });
+      }
     });
-    appState.browserWidth = width;
+    appState.browserWidth = width - 2;
+    appState.browserHeight = height;
   });
 
   ipcMain.on('browser-tab-index', (_, index) => {
@@ -62,8 +72,6 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
         mainWindow.setTopBrowserView(view);
       } else if (index === 3 && view.webContents.getURL().includes('phind.com')) {
-        mainWindow.setTopBrowserView(view);
-      } else if (index === 4 && view.webContents.getURL().includes('perplexity.ai')) {
         mainWindow.setTopBrowserView(view);
       }
     });
@@ -226,7 +234,25 @@ function createWindow(): void {
       },
     });
     mainWindow.addBrowserView(view);
+    view.setBounds({ x: 0, y: 50, width: 0, height: 0 });
     view.webContents.loadURL(url);
+
+    view.webContents.on('did-finish-load', () => {
+      if (url === 'https://chat.openai.com/') {
+        browser1IsLoaded = true;
+      } else if (url === 'https://gemini.google.com/') {
+        browser2IsLoaded = true;
+      } else if (url === 'https://claude.ai/') {
+        browser3IsLoaded = true;
+      } else if (url === 'https://www.phind.com/') {
+        browser4IsLoaded = true;
+      }
+      if (browser1IsLoaded && browser2IsLoaded && browser3IsLoaded && browser4IsLoaded) {
+        mainWindow.getBrowserViews().forEach((view) => {
+          view.setBounds({ x: 0, y: 50, width: appState.browserWidth!, height: appState.browserHeight! });
+        });
+      }
+    });
 
     contextMenu({
       window: view.webContents,
