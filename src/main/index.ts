@@ -88,12 +88,13 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
   ipcMain.handle('get-initial-settings', async () => {
     return {
+      currentVersion: await app.getVersion(),
       isDarkMode: appState.isDarkMode,
       editorMode: appState.editorMode,
       browserWidth: appState.browserWidth,
       logs: logs,
       language: appState.language,
-      osInfo: process.platform,
+      osInfo: await process.platform,
     };
   });
 
@@ -159,6 +160,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.executeJavaScript(script);
       }
     });
+  });
+
+  ipcMain.on('open-external-link', (_, url) => {
+    shell.openExternal(url);
   });
 }
 

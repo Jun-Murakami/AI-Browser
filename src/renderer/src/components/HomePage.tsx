@@ -16,6 +16,7 @@ import {
   Button,
   Tooltip,
   Typography,
+  Chip,
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -25,6 +26,7 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { supportedLanguages } from '../utils/supportedLanguages';
 import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
+import { useCheckForUpdates } from '../utils/useCheckForUpdates';
 
 interface HomePageProps {
   darkMode: boolean;
@@ -37,7 +39,9 @@ interface Log {
 }
 
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
-  const [browserIndex, setBrowserIndex] = useState(4);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
+  const [browserIndex, setBrowserIndex] = useState(3);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
   const [logs, setLogs] = useState<Log[]>([]);
@@ -50,6 +54,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [browserIndexTimestamp, setBrowserIndexTimestamp] = useState(new Date().getTime());
   const [preferredSize, setPreferredSize] = useState(500);
   const [commandKey, setCommandKey] = useState('Ctrl');
+  const [isChipVisible, setIsChipVisible] = useState(false);
+
+  const checkForUpdates = useCheckForUpdates();
 
   const theme = useTheme();
 
@@ -96,21 +103,27 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   useEffect(() => {
     window.electron
       .getInitialSettings()
-      .then((settings) => {
+      .then(async (settings) => {
         setDarkMode(settings.isDarkMode);
         setEditorIndex(settings.editorMode);
         setPreferredSize(settings.browserWidth);
         setTimeout(() => {
           editorSplitRef.current.reset();
-          setLogs(settings.logs);
-          if (settings.logs.length === 0) {
-            setEditor1Value('Type your message here.');
-          }
-          setLanguage(settings.language);
-          // OS情報に基づいてコマンドキーを設定
-          const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
-          setCommandKey(commandKey);
         }, 100);
+        setLogs(settings.logs);
+        if (settings.logs.length === 0) {
+          setEditor1Value('Type your message here.');
+        }
+        setLanguage(settings.language);
+        // OS情報に基づいてコマンドキーを設定
+        const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
+        setCommandKey(commandKey);
+        const result = await checkForUpdates(settings.currentVersion);
+        if (result) {
+          setLatestVersion(result.latestVersion);
+          setReleasePageUrl(result.releasePageUrl);
+          setIsChipVisible(true);
+        }
       })
       .catch((error) => {
         console.error(error);
@@ -292,6 +305,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         </Allotment.Pane>
         <Allotment.Pane minSize={500}>
           <Box sx={{ height: '100%' }}>
+            {isChipVisible && (
+              <Chip
+                label={`Update? v${latestVersion}`}
+                color='primary'
+                onClick={() => {
+                  if (releasePageUrl) {
+                    window.electron.openExternalLink(releasePageUrl);
+                  }
+                }}
+                onDelete={() => setIsChipVisible(false)}
+                sx={{ position: 'absolute', top: 0, right: 0, m: 1, zIndex: 1000 }}
+              />
+            )}
             <Tabs
               value={editorIndex}
               onChange={handleEditorTabChange}

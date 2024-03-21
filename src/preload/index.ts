@@ -20,7 +20,9 @@ if (process.contextIsolated) {
       sendTextToMain: (text: string) => ipcRenderer.send('text', text),
       sendLogsToMain: (logs: { id: number; text: string }[]) => ipcRenderer.send('logs', logs),
       getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),
+      openExternalLink: (url: string) => ipcRenderer.send('open-external-link', url),
     });
+
     contextBridge.exposeInMainWorld('api', api);
   } catch (error) {
     console.error(error);
