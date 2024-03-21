@@ -1,13 +1,14 @@
 import { Allotment } from 'allotment';
 import 'allotment/dist/style.css';
-import Editor, { EditorProps } from '@monaco-editor/react';
+import { MonacoEditor, MonacoEditorProps } from './MonacoEditor';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
-
 interface MonacoEditorsProps {
   darkMode: boolean;
   language: string;
   editorIndex: number;
+  browserWidth?: number;
+  browserHeight?: number;
   sendButtonRef: React.RefObject<HTMLButtonElement>;
   copyButtonRef: React.RefObject<HTMLButtonElement>;
   clearButtonRef: React.RefObject<HTMLButtonElement>;
@@ -30,6 +31,8 @@ export const MonacoEditors = ({
   darkMode,
   language,
   editorIndex,
+  browserWidth,
+  browserHeight,
   sendButtonRef,
   copyButtonRef,
   clearButtonRef,
@@ -47,62 +50,6 @@ export const MonacoEditors = ({
   setEditor5Value,
   setBrowserIndexTimestamp,
 }: MonacoEditorsProps) => {
-  const editorProps: EditorProps = {
-    height: '100%',
-    loading: '',
-    theme: darkMode ? 'vs-dark' : 'light',
-    language,
-    options: {
-      minimap: { enabled: false },
-      renderWhitespace: 'all',
-      fontFamily: '"Migu 1M", Consolas, "Courier New", monospace',
-      renderValidationDecorations: 'off',
-      showUnused: false,
-      scrollBeyondLastLine: false,
-      renderLineHighlightOnlyWhenFocus: true,
-      unicodeHighlight: { allowedLocales: { _os: true, _vscode: true } },
-      wordWrap: 'on',
-    },
-  };
-
-  function handleEditorMount(editor, monaco) {
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      sendButtonRef.current?.focus();
-      setTimeout(() => {
-        sendButtonRef.current?.click();
-      }, 100);
-      setTimeout(() => {
-        sendButtonRef.current?.blur();
-      }, 500);
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC, () => {
-      copyButtonRef.current?.focus();
-      copyButtonRef.current?.click();
-      setTimeout(() => {
-        copyButtonRef.current?.blur();
-      }, 500);
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
-      clearButtonRef.current?.focus();
-      clearButtonRef.current?.click();
-      setTimeout(() => {
-        clearButtonRef.current?.blur();
-      }, 500);
-    });
-    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Tab, () => {
-      setBrowserIndexTimestamp(new Date().getTime());
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
-      newerLogButtonRef.current?.click();
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
-      olderLogButtonRef.current?.click();
-    });
-    setTimeout(() => {
-      monaco?.editor.remeasureFonts();
-    }, 100);
-  }
-
   const handleEditor1Change = (value: string | undefined) => {
     setEditor1Value(value ?? '');
   };
@@ -125,6 +72,20 @@ export const MonacoEditors = ({
 
   const theme = useTheme();
 
+  const editorProps: MonacoEditorProps = {
+    darkMode,
+    language,
+    editorIndex,
+    browserWidth,
+    browserHeight,
+    sendButtonRef,
+    copyButtonRef,
+    clearButtonRef,
+    newerLogButtonRef,
+    olderLogButtonRef,
+    setBrowserIndexTimestamp,
+  };
+
   return (
     <Box sx={{ height: 'calc(100% - 156px)', p: 1, pt: 0 }}>
       <Box
@@ -138,19 +99,19 @@ export const MonacoEditors = ({
       >
         {editorIndex === 0 && (
           <Box sx={{ pt: 1, height: '100%' }}>
-            <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+            <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} />
           </Box>
         )}
         {editorIndex === 1 && (
           <Allotment vertical={true}>
             <Allotment.Pane minSize={200}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor2Value} onChange={handleEditor2Change} />
               </Box>
             </Allotment.Pane>
           </Allotment>
@@ -159,17 +120,17 @@ export const MonacoEditors = ({
           <Allotment vertical={true}>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor2Value} onChange={handleEditor2Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor3Value} onChange={handleEditor3Change} />
               </Box>
             </Allotment.Pane>
           </Allotment>
@@ -178,22 +139,22 @@ export const MonacoEditors = ({
           <Allotment vertical={true}>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor2Value} onChange={handleEditor2Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor3Value} onChange={handleEditor3Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor4Value} onChange={handleEditor4Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor4Value} onChange={handleEditor4Change} />
               </Box>
             </Allotment.Pane>
           </Allotment>
@@ -202,27 +163,27 @@ export const MonacoEditors = ({
           <Allotment vertical={true}>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor1Value} onChange={handleEditor1Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor2Value} onChange={handleEditor2Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor2Value} onChange={handleEditor2Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor3Value} onChange={handleEditor3Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor3Value} onChange={handleEditor3Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor4Value} onChange={handleEditor4Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor4Value} onChange={handleEditor4Change} />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <Editor {...editorProps} value={editor5Value} onChange={handleEditor5Change} onMount={handleEditorMount} />
+                <MonacoEditor {...editorProps} value={editor5Value} onChange={handleEditor5Change} />
               </Box>
             </Allotment.Pane>
           </Allotment>
