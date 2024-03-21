@@ -158,6 +158,35 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                         }, 700);
                         `;
         view.webContents.executeJavaScript(script);
+      } else if (view.webContents.getURL().includes('perplexity.ai') && appState.browserTabIndex === 4) {
+        const script = `var textareaTag = document.querySelector('main textarea');
+                        if (textareaTag) {
+                          setTimeout(() => {
+                            textareaTag.textContent = ${JSON.stringify(text)};
+                          }, 400);
+                          setTimeout(() => {
+                            textareaTag.dispatchEvent(new KeyboardEvent('input', { bubbles: true }));
+                          }, 700);
+                          setTimeout(() => {
+                            var buttonWithSvg = document.querySelector('button svg[data-icon="arrow-right"]');
+                            if (buttonWithSvg) {
+                              var sendButton = buttonWithSvg.parentNode.parentNode;
+                              if (sendButton) {
+                                sendButton.click();
+                              }
+                            } else {
+                              var buttonWithSvg = document.querySelector('button svg[data-icon="arrow-up"]');
+                              if (buttonWithSvg) {
+                                var sendButton = buttonWithSvg.parentNode.parentNode;
+                                if (sendButton) {
+                                sendButton.click();
+                                }
+                              }
+                            }
+                          }, 700);
+                        } 
+                        `;
+        view.webContents.executeJavaScript(script);
       }
     });
   });
