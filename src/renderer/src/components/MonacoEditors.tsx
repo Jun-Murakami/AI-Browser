@@ -27,6 +27,7 @@ interface MonacoEditorsProps {
   setEditor4Value: (value: string) => void;
   setEditor5Value: (value: string) => void;
   setBrowserIndexTimestamp: (timestamp: number) => void;
+  osInfo: string;
 }
 
 export const MonacoEditors = ({
@@ -51,6 +52,7 @@ export const MonacoEditors = ({
   setEditor4Value,
   setEditor5Value,
   setBrowserIndexTimestamp,
+  osInfo,
 }: MonacoEditorsProps) => {
   const handleEditor1Change = (value: string | undefined) => {
     setEditor1Value(value ?? '');
@@ -92,6 +94,7 @@ export const MonacoEditors = ({
     newerLogButtonRef,
     olderLogButtonRef,
     setBrowserIndexTimestamp,
+    osInfo,
   };
 
   return (

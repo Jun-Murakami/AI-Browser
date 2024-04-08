@@ -16,6 +16,7 @@ export interface MonacoEditorProps {
   setBrowserIndexTimestamp: (timestamp: number) => void;
   value?: string;
   onChange?: (value: string) => void;
+  osInfo: string;
 }
 
 export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, MonacoEditorProps>(
@@ -34,6 +35,7 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
       setBrowserIndexTimestamp,
       value,
       onChange,
+      osInfo,
     },
     ref
   ) => {
@@ -91,9 +93,15 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
           }, 500);
         });
 
-        editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Tab, () => {
-          setBrowserIndexTimestamp(new Date().getTime());
-        });
+        if (osInfo === 'darwin') {
+          editor.addCommand(monaco.KeyCode.Ctrl && monaco.KeyCode.Tab, () => {
+            setBrowserIndexTimestamp(new Date().getTime());
+          });
+        } else {
+          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab, () => {
+            setBrowserIndexTimestamp(new Date().getTime());
+          });
+        }
 
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
           newerLogButtonRef.current?.click();

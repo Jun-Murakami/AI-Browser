@@ -55,6 +55,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [browserIndexTimestamp, setBrowserIndexTimestamp] = useState(new Date().getTime());
   const [preferredSize, setPreferredSize] = useState(500);
   const [commandKey, setCommandKey] = useState('Ctrl');
+  const [osInfo, setOsInfo] = useState('');
   const [isChipVisible, setIsChipVisible] = useState(false);
 
   const checkForUpdates = useCheckForUpdates();
@@ -124,6 +125,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         // OS情報に基づいてコマンドキーを設定
         const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
         setCommandKey(commandKey);
+        setOsInfo(settings.osInfo);
         const result = await checkForUpdates(settings.currentVersion);
         if (result) {
           setLatestVersion(result.latestVersion);
@@ -300,7 +302,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
-            <Tooltip title={`(Shift + Tab) to switch AI`} placement='right' arrow>
+            <Tooltip title={`(Ctrl + Tab) to switch AI`} placement='right' arrow>
               <Tabs
                 value={browserIndex}
                 onChange={handleBrowserTabChange}
@@ -475,6 +477,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               setBrowserIndexTimestamp={setBrowserIndexTimestamp}
               browserWidth={browserWidth}
               browserHeight={browserHeight}
+              osInfo={osInfo}
             />
 
             <Box
