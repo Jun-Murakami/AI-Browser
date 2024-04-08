@@ -94,7 +94,7 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
         });
 
         if (osInfo === 'darwin') {
-          editor.addCommand(monaco.KeyCode.Ctrl && monaco.KeyCode.Tab, () => {
+          editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.Tab, () => {
             setBrowserIndexTimestamp(new Date().getTime());
           });
         } else {
