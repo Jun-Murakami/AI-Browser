@@ -19,6 +19,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useTheme } from '@mui/system';
+import * as monaco from 'monaco-editor';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SendIcon from '@mui/icons-material/Send';
@@ -126,9 +127,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         const result = await checkForUpdates(settings.currentVersion);
         if (result) {
           setLatestVersion(result.latestVersion);
-          setReleasePageUrl(result.releasePageUrl);
+          setReleasePageUrl('https://jun-murakami.web.app/#aiBrowser');
           setIsChipVisible(true);
         }
+        setTimeout(() => {
+          monaco.editor.remeasureFonts(); // 一定時間後に呼び出す
+        }, 500);
       })
       .catch((error) => {
         console.error(error);
