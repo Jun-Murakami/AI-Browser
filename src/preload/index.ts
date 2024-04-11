@@ -17,6 +17,7 @@ if (process.contextIsolated) {
       sendIsDarkModeToMain: (isDarkMode: boolean) => ipcRenderer.send('is-dark-mode', isDarkMode),
       sendEditorModeToMain: (editorMode: number) => ipcRenderer.send('editor-mode', editorMode),
       sendLanguageToMain: (language: string) => ipcRenderer.send('language', language),
+      sendFontSizeToMain: (fontSize: number) => ipcRenderer.send('font-size', fontSize),
       sendTextToMain: (text: string) => ipcRenderer.send('text', text),
       sendLogsToMain: (logs: { id: number; text: string }[]) => ipcRenderer.send('logs', logs),
       getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),

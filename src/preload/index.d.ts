@@ -6,6 +6,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   sendIsDarkModeToMain: (isDarkMode: boolean) => void;
   sendEditorModeToMain: (editorMode: number) => void;
   sendLanguageToMain: (language: string) => void;
+  sendFontSizeToMain: (fontSize: number) => void;
   sendTextToMain: (text: string) => void;
   sendLogsToMain: (logs: { id: number; text: string }[]) => void;
   getInitialSettings: () => Promise<InitialSettings>;
@@ -19,6 +20,7 @@ interface InitialSettings {
   browserWidth: number;
   logs: { id: number; text: string }[];
   language: string;
+  fontSize: number;
   osInfo: string;
 }
 

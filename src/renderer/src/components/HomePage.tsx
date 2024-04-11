@@ -45,6 +45,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [browserIndex, setBrowserIndex] = useState(3);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
+  const [fontSize, setFontSize] = useState(16);
   const [logs, setLogs] = useState<Log[]>([]);
   const [selectedLog, setSelectedLog] = useState<Log | null>(null);
   const [editor1Value, setEditor1Value] = useState('');
@@ -122,6 +123,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
           setEditor1Value('Type your message here.');
         }
         setLanguage(settings.language);
+        setFontSize(settings.fontSize);
+        console.log(settings.fontSize);
         // OS情報に基づいてコマンドキーを設定
         const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
         setCommandKey(commandKey);
@@ -297,6 +300,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     navigator.clipboard.writeText(combinedEditorValue);
   };
 
+  const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+
   return (
     <Box sx={{ height: '100vh', borderTop: 1, borderColor: theme.palette.divider }}>
       <Allotment ref={editorSplitRef}>
@@ -459,6 +464,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               darkMode={darkMode}
               editorIndex={editorIndex}
               language={language}
+              fontSize={fontSize}
               editor1Value={editor1Value}
               setEditor1Value={setEditor1Value}
               editor2Value={editor2Value}
@@ -490,7 +496,34 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 justifyContent: 'space-between',
               }}
             >
-              <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <FormControl>
+                  <InputLabel size='small' sx={{ fontSize: 15 }}>
+                    Font size
+                  </InputLabel>
+                  <Select
+                    label='Font size'
+                    value={fontSize}
+                    onChange={(e) => {
+                      setFontSize(e.target.value as number);
+                      window.electron.sendFontSizeToMain(e.target.value as number);
+                    }}
+                    size='small'
+                    sx={{
+                      width: 80,
+                      mx: 1,
+                    }}
+                    MenuProps={{
+                      PaperProps: { sx: { maxHeight: '30vh' } },
+                    }}
+                  >
+                    {fontSizeOptions.map((size) => (
+                      <MenuItem key={size} value={size}>
+                        <Typography variant='body2'>{size}</Typography>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <MaterialUISwitch
                   checked={darkMode}
                   onChange={() => {
@@ -503,7 +536,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     ref={clearButtonRef}
                     variant='outlined'
                     size='small'
-                    sx={{ textTransform: 'none', ml: 0 }}
+                    sx={{ textTransform: 'none', ml: 1 }}
                     startIcon={<EraseIcon />}
                     onClick={handleClearButtonClick}
                   >

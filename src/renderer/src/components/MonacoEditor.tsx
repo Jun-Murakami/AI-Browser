@@ -5,6 +5,7 @@ import { useWatchBoxHeight } from '../utils/useWatchBoxHeight';
 export interface MonacoEditorProps {
   darkMode: boolean;
   language: string;
+  fontSize: number;
   editorIndex: number;
   browserWidth?: number;
   browserHeight?: number;
@@ -24,6 +25,7 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
     {
       darkMode,
       language,
+      fontSize,
       editorIndex,
       browserWidth,
       browserHeight,
@@ -139,9 +141,10 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
     // ウィンドウのリサイズ時にエディターのレイアウトを更新
     useEffect(() => {
       if (editorRef.current && isBoxReady && editorInstance && browserWidth && browserHeight) {
+        editorInstance.updateOptions({ fontSize: fontSize });
         editorInstance.layout();
       }
-    }, [editorRef, isBoxReady, editorInstance, browserWidth, browserHeight]);
+    }, [editorRef, isBoxReady, editorInstance, browserWidth, browserHeight, fontSize]);
 
     return <div ref={editorRef} style={{ width: '100%', height: '100%' }} />;
   }

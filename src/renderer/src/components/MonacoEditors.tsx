@@ -8,6 +8,7 @@ import { Box } from '@mui/material';
 interface MonacoEditorsProps {
   darkMode: boolean;
   language: string;
+  fontSize: number;
   editorIndex: number;
   browserWidth?: number;
   browserHeight?: number;
@@ -33,6 +34,7 @@ interface MonacoEditorsProps {
 export const MonacoEditors = ({
   darkMode,
   language,
+  fontSize,
   editorIndex,
   browserWidth,
   browserHeight,
@@ -85,6 +87,7 @@ export const MonacoEditors = ({
   const editorProps: MonacoEditorProps = {
     darkMode,
     language,
+    fontSize,
     editorIndex,
     browserWidth,
     browserHeight,

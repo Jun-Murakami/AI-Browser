@@ -18,6 +18,7 @@ interface AppState {
   browserWidth?: number;
   browserTabIndex?: number;
   language?: string;
+  fontSize?: number;
 }
 
 let appState: AppState = {
@@ -28,6 +29,7 @@ let appState: AppState = {
   browserWidth: 500,
   browserTabIndex: 0,
   language: 'text',
+  fontSize: 16,
 };
 
 interface Log {
@@ -82,6 +84,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     appState.language = language;
   });
 
+  ipcMain.on('font-size', (_, fontSize) => {
+    appState.fontSize = fontSize;
+  });
+
   ipcMain.on('logs', (_, newLogs: Log[]) => {
     logs = newLogs;
   });
@@ -94,6 +100,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       browserWidth: appState.browserWidth,
       logs: logs,
       language: appState.language,
+      fontSize: appState.fontSize,
       osInfo: await process.platform,
     };
   });
@@ -173,6 +180,7 @@ function removeIpcHandlers() {
   ipcMain.removeAllListeners('is-dark-mode');
   ipcMain.removeAllListeners('editor-mode');
   ipcMain.removeAllListeners('language');
+  ipcMain.removeAllListeners('font-size');
   ipcMain.removeAllListeners('logs');
   ipcMain.removeAllListeners('get-initial-settings');
   ipcMain.removeAllListeners('text');
