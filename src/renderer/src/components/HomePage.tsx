@@ -45,7 +45,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [browserIndex, setBrowserIndex] = useState(3);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState(15);
   const [logs, setLogs] = useState<Log[]>([]);
   const [selectedLog, setSelectedLog] = useState<Log | null>(null);
   const [editor1Value, setEditor1Value] = useState('');

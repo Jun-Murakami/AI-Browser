@@ -64,6 +64,7 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
           renderLineHighlightOnlyWhenFocus: true,
           unicodeHighlight: { allowedLocales: { _os: true, _vscode: true }, ambiguousCharacters: false },
           wordWrap: 'on',
+          occurrencesHighlight: 'off',
         });
 
         monaco.editor.remeasureFonts();
