@@ -57,7 +57,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     }
     appState.browserTabIndex = index;
     mainWindow.getBrowserViews().forEach((view) => {
-      if (index === 0 && view.webContents.getURL().includes('openai.com')) {
+      if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
         mainWindow.setTopBrowserView(view);
       } else if (index === 1 && view.webContents.getURL().includes('google.com')) {
         mainWindow.setTopBrowserView(view);
@@ -110,7 +110,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       return;
     }
     mainWindow.getBrowserViews().forEach((view) => {
-      if (view.webContents.getURL().includes('openai.com') && appState.browserTabIndex === 0) {
+      if (view.webContents.getURL().includes('chatgpt.com') && appState.browserTabIndex === 0) {
         const script = `var textareaTag = document.querySelector('main form textarea');
                         textareaTag.value = ${JSON.stringify(text)};
                         textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
@@ -250,7 +250,7 @@ function createWindow(): void {
   setupView('https://www.phind.com/');
   setupView('https://claude.ai/');
   setupView('https://gemini.google.com/');
-  setupView('https://chat.openai.com/');
+  setupView('https://chatgpt.com/');
 
   if (appState.isDarkMode) {
     nativeTheme.themeSource = 'dark';
