@@ -26,6 +26,11 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: { teamId: 'AQDS3A93CQ' }
+  target:
+    - target: dmg
+      arch: arm64
+    - target: dmg
+      arch: x64
 dmg:
   artifactName: ${productName}-${version}_mac_${arch}.${ext}
 linux:
