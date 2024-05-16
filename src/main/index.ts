@@ -115,9 +115,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                         textareaTag.value = ${JSON.stringify(text)};
                         textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
                         setTimeout(() => {
-                          var sendButton = document.querySelector('main form button[data-testid="send-button"]');
-                          if (sendButton) {
-                            sendButton.click();
+                          var buttons = document.querySelectorAll('main form button');
+                          if (buttons.length > 0) {
+                            buttons[buttons.length - 1].click();
                           }
                         }, 700);
                         `;
@@ -273,6 +273,10 @@ function createWindow(): void {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+  }
+
+  if (is.dev) {
+    mainWindow.webContents.openDevTools();
   }
 
   mainWindow.on('close', (e) => {
