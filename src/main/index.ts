@@ -71,6 +71,23 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     });
   });
 
+  ipcMain.on('reload-current-view', () => {
+    const index = appState.browserTabIndex;
+    mainWindow.getBrowserViews().forEach((view) => {
+      if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
+        view.webContents.reload();
+      } else if (index === 1 && view.webContents.getURL().includes('google.com')) {
+        view.webContents.reload();
+      } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
+        view.webContents.reload();
+      } else if (index === 3 && view.webContents.getURL().includes('phind.com')) {
+        view.webContents.reload();
+      } else if (index === 4 && view.webContents.getURL().includes('perplexity.ai')) {
+        view.webContents.reload();
+      }
+    });
+  });
+
   ipcMain.on('is-dark-mode', (_, isDarkMode) => {
     appState.isDarkMode = isDarkMode;
     nativeTheme.themeSource = isDarkMode ? 'dark' : 'light';
@@ -94,14 +111,14 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
   ipcMain.handle('get-initial-settings', async () => {
     return {
-      currentVersion: await app.getVersion(),
+      currentVersion: app.getVersion(),
       isDarkMode: appState.isDarkMode,
       editorMode: appState.editorMode,
       browserWidth: appState.browserWidth,
       logs: logs,
       language: appState.language,
       fontSize: appState.fontSize,
-      osInfo: await process.platform,
+      osInfo: process.platform,
     };
   });
 
@@ -121,7 +138,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                           }
                         }, 700);
                         `;
-        view.webContents.executeJavaScript(script);
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
       } else if (view.webContents.getURL().includes('google.com') && appState.browserTabIndex === 1) {
         const script = `var textareaTag = document.querySelector('main rich-textarea div[role="textbox"] p');
                         textareaTag.textContent = ${JSON.stringify(text)};
@@ -133,7 +152,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                           }
                         }, 700);
                         `;
-        view.webContents.executeJavaScript(script);
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
       } else if (view.webContents.getURL().includes('claude.ai') && appState.browserTabIndex === 2) {
         const script = `
                         var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
@@ -152,7 +173,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                           }
                         }, 700);
                         `;
-        view.webContents.executeJavaScript(script);
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
       } else if (view.webContents.getURL().includes('phind.com') && appState.browserTabIndex === 3) {
         const script = `var textareaTag = document.querySelector('main form textarea');
                         textareaTag.textContent = ${JSON.stringify(text)};
@@ -164,7 +187,27 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                           }
                         }, 700);
                         `;
-        view.webContents.executeJavaScript(script);
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
+      } else if (view.webContents.getURL().includes('perplexity.ai') && appState.browserTabIndex === 4) {
+        const script = `var textareaTags = document.querySelectorAll('main textarea');
+                        var textareaTag = textareaTags[textareaTags.length - 1];
+                        if (textareaTag) {
+                          const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+                          nativeTextAreaValueSetter.call(textareaTag, ${JSON.stringify(text)});
+                          textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+                          setTimeout(() => {
+                            var buttons = document.querySelectorAll('main button[aria-label="Submit"]');
+                            var sendButton = buttons[buttons.length - 1];
+                            if (sendButton) {
+                              sendButton.click();
+                            }
+                          }, 300);
+                        }`;
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
       }
     });
   });
@@ -247,6 +290,7 @@ function createWindow(): void {
     });
   }
 
+  setupView('https://www.perplexity.ai/');
   setupView('https://www.phind.com/');
   setupView('https://claude.ai/');
   setupView('https://gemini.google.com/');

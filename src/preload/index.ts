@@ -22,6 +22,7 @@ if (process.contextIsolated) {
       sendLogsToMain: (logs: { id: number; text: string }[]) => ipcRenderer.send('logs', logs),
       getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),
       openExternalLink: (url: string) => ipcRenderer.send('open-external-link', url),
+      reloadCurrentView: () => ipcRenderer.send('reload-current-view'),
     });
 
     contextBridge.exposeInMainWorld('api', api);
