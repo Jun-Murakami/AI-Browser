@@ -197,12 +197,13 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   };
 
   // テキストを送信
-  const handleSendButtonClick = () => {
+  const handleSendButtonClick = (sendToAll: boolean) => {
     const combinedEditorValue = getCombinedEditorValue();
     if (combinedEditorValue.trim() === '') {
       return;
     }
-    window.electron.sendTextToMain(combinedEditorValue);
+
+    window.electron.sendTextToMain(combinedEditorValue, sendToAll);
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
       window.electron.sendLogsToMain(newLogs);
@@ -567,11 +568,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                   <Button
                     ref={sendButtonRef}
                     variant='contained'
-                    sx={{ width: 180, textTransform: 'none', mr: 1 }}
-                    startIcon={<SendIcon />}
-                    onClick={handleSendButtonClick}
+                    sx={{ width: 100, textTransform: 'none', mr: 1 }}
+                    startIcon={<SendIcon sx={{ mr: -0.5 }} />}
+                    onClick={() => handleSendButtonClick(false)}
                   >
-                    Send to{' '}
                     {browserIndex === 0
                       ? 'ChatGPT'
                       : browserIndex === 1
@@ -583,6 +583,14 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                             : 'Perplexity'}
                   </Button>
                 </Tooltip>
+                <Button
+                  variant='contained'
+                  sx={{ width: 40, textTransform: 'none', mr: 1 }}
+                  startIcon={<SendIcon sx={{ mr: -0.5 }} />}
+                  onClick={() => handleSendButtonClick(true)}
+                >
+                  All
+                </Button>
               </Box>
             </Box>
           </Box>

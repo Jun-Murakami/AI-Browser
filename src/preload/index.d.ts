@@ -7,7 +7,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   sendEditorModeToMain: (editorMode: number) => void;
   sendLanguageToMain: (language: string) => void;
   sendFontSizeToMain: (fontSize: number) => void;
-  sendTextToMain: (text: string) => void;
+  sendTextToMain: (text: string, sendToAll: boolean) => void;
   sendLogsToMain: (logs: { id: number; text: string }[]) => void;
   getInitialSettings: () => Promise<InitialSettings>;
   openExternalLink: (url: string) => void;

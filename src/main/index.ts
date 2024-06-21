@@ -122,12 +122,12 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     };
   });
 
-  ipcMain.on('text', (_, text) => {
+  ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
     if (mainWindow.getBrowserViews().length === 0) {
       return;
     }
     mainWindow.getBrowserViews().forEach((view) => {
-      if (view.webContents.getURL().includes('chatgpt.com') && appState.browserTabIndex === 0) {
+      if (view.webContents.getURL().includes('chatgpt.com') && (appState.browserTabIndex === 0 || sendToAll)) {
         const script = `var textareaTag = document.querySelector('main form textarea');
                         textareaTag.value = ${JSON.stringify(text)};
                         textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
@@ -141,7 +141,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.executeJavaScript(script).catch((error) => {
           console.error('Script execution failed:', error);
         });
-      } else if (view.webContents.getURL().includes('google.com') && appState.browserTabIndex === 1) {
+      } else if (view.webContents.getURL().includes('google.com') && (appState.browserTabIndex === 1 || sendToAll)) {
         const script = `var textareaTag = document.querySelector('main rich-textarea div[role="textbox"] p');
                         textareaTag.textContent = ${JSON.stringify(text)};
                         textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
@@ -155,7 +155,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.executeJavaScript(script).catch((error) => {
           console.error('Script execution failed:', error);
         });
-      } else if (view.webContents.getURL().includes('claude.ai') && appState.browserTabIndex === 2) {
+      } else if (view.webContents.getURL().includes('claude.ai') && (appState.browserTabIndex === 2 || sendToAll)) {
         const script = `
                         var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
                         var textareaTag = textareaTags[textareaTags.length - 1];
@@ -176,7 +176,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.executeJavaScript(script).catch((error) => {
           console.error('Script execution failed:', error);
         });
-      } else if (view.webContents.getURL().includes('phind.com') && appState.browserTabIndex === 3) {
+      } else if (view.webContents.getURL().includes('phind.com') && (appState.browserTabIndex === 3 || sendToAll)) {
         const script = `var textareaTag = document.querySelector('main form textarea');
                         textareaTag.textContent = ${JSON.stringify(text)};
                         textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
@@ -190,7 +190,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.executeJavaScript(script).catch((error) => {
           console.error('Script execution failed:', error);
         });
-      } else if (view.webContents.getURL().includes('perplexity.ai') && appState.browserTabIndex === 4) {
+      } else if (view.webContents.getURL().includes('perplexity.ai') && (appState.browserTabIndex === 4 || sendToAll)) {
         const script = `var textareaTags = document.querySelectorAll('main textarea');
                         var textareaTag = textareaTags[textareaTags.length - 1];
                         if (textareaTag) {
