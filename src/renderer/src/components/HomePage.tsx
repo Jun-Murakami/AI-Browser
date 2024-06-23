@@ -320,11 +320,13 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <Tab label='Claude' value={2} />
                 <Tab label='Phind' value={3} />
                 <Tab label='Perplexity' value={4} />
-                <Tooltip title={`Reload`} placement='right' arrow>
-                  <IconButton onClick={() => window.electron.reloadCurrentView()}>
-                    <ReplayOutlinedIcon sx={{ transform: 'scaleX(-1)', color: theme.palette.text.secondary }} />
-                  </IconButton>
-                </Tooltip>
+                <IconButton onClick={() => window.electron.reloadCurrentView()}>
+                  <ReplayOutlinedIcon sx={{ transform: 'scaleX(-1)', color: theme.palette.text.secondary }} />
+                </IconButton>
+                <IconButton onClick={() => window.electron.reloadAllViews()}>
+                  <ReplayOutlinedIcon sx={{ transform: 'scaleX(-1)', color: theme.palette.text.secondary }} />
+                  <Typography variant='caption'>all</Typography>
+                </IconButton>
               </Tabs>
             </Tooltip>
             <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>

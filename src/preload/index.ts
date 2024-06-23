@@ -23,6 +23,7 @@ if (process.contextIsolated) {
       getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),
       openExternalLink: (url: string) => ipcRenderer.send('open-external-link', url),
       reloadCurrentView: () => ipcRenderer.send('reload-current-view'),
+      reloadAllViews: () => ipcRenderer.send('reload-all-views'),
     });
 
     contextBridge.exposeInMainWorld('api', api);

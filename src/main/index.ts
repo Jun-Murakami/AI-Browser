@@ -88,6 +88,22 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     });
   });
 
+  ipcMain.on('reload-all-views', () => {
+    mainWindow.getBrowserViews().forEach((view) => {
+      if (view.webContents.getURL().includes('chatgpt.com')) {
+        view.webContents.loadURL('https://chatgpt.com/');
+      } else if (view.webContents.getURL().includes('google.com')) {
+        view.webContents.loadURL('https://gemini.google.com/');
+      } else if (view.webContents.getURL().includes('claude.ai')) {
+        view.webContents.loadURL('https://claude.ai/');
+      } else if (view.webContents.getURL().includes('phind.com')) {
+        view.webContents.loadURL('https://www.phind.com/');
+      } else if (view.webContents.getURL().includes('perplexity.ai')) {
+        view.webContents.loadURL('https://www.perplexity.ai/');
+      }
+    });
+  });
+
   ipcMain.on('is-dark-mode', (_, isDarkMode) => {
     appState.isDarkMode = isDarkMode;
     nativeTheme.themeSource = isDarkMode ? 'dark' : 'light';
