@@ -13,6 +13,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   openExternalLink: (url: string) => void;
   reloadCurrentView: () => void;
   reloadAllViews: () => void;
+  getUrls: () => Promise<string[]>;
 }
 
 interface InitialSettings {

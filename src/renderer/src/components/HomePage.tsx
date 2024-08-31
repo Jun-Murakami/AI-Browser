@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { ipcRenderer } from 'electron';
 import useResizeObserver from 'use-resize-observer';
 import { Allotment, AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
@@ -17,6 +18,7 @@ import {
   Tooltip,
   Typography,
   Chip,
+  TextField,
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 import * as monaco from 'monaco-editor';
@@ -44,6 +46,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
   const [browserIndex, setBrowserIndex] = useState(4);
+  const [browserUrls, setBrowserUrls] = useState<string[]>([]);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
   const [fontSize, setFontSize] = useState(15);
@@ -142,6 +145,24 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       .catch((error) => {
         console.error(error);
       });
+
+    // 初期URLを取得
+    const fetchInitialUrls = async () => {
+      const urls = await window.electron.getUrls();
+      setBrowserUrls(urls);
+    };
+    fetchInitialUrls();
+
+    // URL更新リスナーを設定
+    const updateUrlsListener = (_: any, urls: string[]) => {
+      setBrowserUrls(urls);
+    };
+    ipcRenderer.on('update-urls', updateUrlsListener);
+
+    // クリーンアップ
+    return () => {
+      ipcRenderer.removeListener('update-urls', updateUrlsListener);
+    };
   }, []);
 
   // エディターテキストを結合して取得
@@ -158,7 +179,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       combinedValue = editor1Value + divider + editor2Value + divider + editor3Value + divider + editor4Value;
     } else {
       combinedValue =
-        editor1Value + divider + editor2Value + divider + editor3Value + divider + editor4Value + divider + editor5Value;
+        editor1Value +
+        divider +
+        editor2Value +
+        divider +
+        editor3Value +
+        divider +
+        editor4Value +
+        divider +
+        editor5Value;
     }
     // 空白のある行があればディバイダ―ごと削除
     combinedValue = combinedValue
@@ -301,7 +330,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     navigator.clipboard.writeText(combinedEditorValue);
   };
 
-  const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+  const fontSizeOptions = [
+    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+  ];
 
   return (
     <Box sx={{ height: '100vh', borderTop: 1, borderColor: theme.palette.divider }}>
@@ -329,7 +360,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 </IconButton>
               </Tabs>
             </Tooltip>
-            <Box sx={{ height: 'calc(100% - 50px)', textAlign: 'center' }} ref={browserRef}>
+            <Box sx={{ height: 50 }}>
+              <Box sx={{ height: '100%' }}>
+                <TextField label='URL' value={browserUrls[browserIndex]} disabled />
+              </Box>
+            </Box>
+            <Box sx={{ height: 'calc(100% - 100px)', textAlign: 'center' }} ref={browserRef}>
               <Box sx={{ height: '100%' }}>
                 <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
               </Box>
@@ -358,23 +394,43 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             >
               <Tab
                 value={0}
-                icon={<Split1Icon sx={{ fontSize: 22, color: editorIndex !== 0 ? theme.palette.action.disabled : undefined }} />}
+                icon={
+                  <Split1Icon
+                    sx={{ fontSize: 22, color: editorIndex !== 0 ? theme.palette.action.disabled : undefined }}
+                  />
+                }
               />
               <Tab
                 value={1}
-                icon={<Split2Icon sx={{ fontSize: 22, color: editorIndex !== 1 ? theme.palette.action.disabled : undefined }} />}
+                icon={
+                  <Split2Icon
+                    sx={{ fontSize: 22, color: editorIndex !== 1 ? theme.palette.action.disabled : undefined }}
+                  />
+                }
               />
               <Tab
                 value={2}
-                icon={<Split3Icon sx={{ fontSize: 22, color: editorIndex !== 2 ? theme.palette.action.disabled : undefined }} />}
+                icon={
+                  <Split3Icon
+                    sx={{ fontSize: 22, color: editorIndex !== 2 ? theme.palette.action.disabled : undefined }}
+                  />
+                }
               />
               <Tab
                 value={3}
-                icon={<Split4Icon sx={{ fontSize: 22, color: editorIndex !== 3 ? theme.palette.action.disabled : undefined }} />}
+                icon={
+                  <Split4Icon
+                    sx={{ fontSize: 22, color: editorIndex !== 3 ? theme.palette.action.disabled : undefined }}
+                  />
+                }
               />
               <Tab
                 value={4}
-                icon={<Split5Icon sx={{ fontSize: 22, color: editorIndex !== 4 ? theme.palette.action.disabled : undefined }} />}
+                icon={
+                  <Split5Icon
+                    sx={{ fontSize: 22, color: editorIndex !== 4 ? theme.palette.action.disabled : undefined }}
+                  />
+                }
               />
             </Tabs>
             <Box sx={{ w: '100%', p: 1 }}>

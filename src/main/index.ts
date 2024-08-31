@@ -291,7 +291,15 @@ function createWindow(): void {
     mainWindow.maximize();
   }
 
-  function setupView(url) {
+  const urls = [
+    'https://www.perplexity.ai/',
+    'https://www.phind.com/',
+    'https://claude.ai/',
+    'https://gemini.google.com/',
+    'https://chatgpt.com/',
+  ];
+
+  function setupView(url: string, index: number) {
     const view = new BrowserView({
       webPreferences: {
         spellcheck: false,
@@ -304,13 +312,14 @@ function createWindow(): void {
       window: view.webContents,
       showInspectElement: is.dev,
     });
+
+    view.webContents.on('did-navigate', (_, newUrl) => {
+      urls[index] = newUrl;
+      mainWindow.webContents.send('update-urls', urls);
+    });
   }
 
-  setupView('https://www.perplexity.ai/');
-  setupView('https://www.phind.com/');
-  setupView('https://claude.ai/');
-  setupView('https://gemini.google.com/');
-  setupView('https://chatgpt.com/');
+  urls.forEach((url, index) => setupView(url, index));
 
   if (appState.isDarkMode) {
     nativeTheme.themeSource = 'dark';
