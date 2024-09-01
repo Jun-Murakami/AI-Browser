@@ -42,10 +42,10 @@ interface Log {
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
-  const [browserIndex, setBrowserIndex] = useState(5);
+  const [browserIndex, setBrowserIndex] = useState(6);
   const [browserUrls, setBrowserUrls] = useState<string[]>([]);
-  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([true, true, true, true, true, true]);
-  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([true, true, true, true, true, true]);
+  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([true, true, true, true, true, true, true]);
+  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([true, true, true, true, true, true, true]);
   const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
@@ -101,14 +101,16 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
-    if (browserIndex < 4) {
-      const newBrowserIndex = browserIndex + 1;
-      setBrowserIndex(newBrowserIndex);
-      window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
-    } else {
-      setBrowserIndex(0);
-      window.electron.sendBrowserTabIndexToMain(0);
+    let newBrowserIndex = browserIndex + 1;
+    console.log(newBrowserIndex);
+    while (!enabledBrowsers[newBrowserIndex]) {
+      newBrowserIndex = newBrowserIndex + 1;
+      if (newBrowserIndex > enabledBrowsers.filter((enabled) => enabled).length + 1) {
+        newBrowserIndex = 0;
+      }
     }
+    setBrowserIndex(newBrowserIndex);
+    window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
   }, [browserIndexTimestamp]);
 
   // 初期設定を取得
@@ -340,6 +342,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     { label: 'Phind', index: 3 },
     { label: 'Perplexity', index: 4 },
     { label: 'Genspark', index: 5 },
+    { label: 'AI Studio', index: 6 },
   ];
 
   const fontSizeOptions = [
@@ -359,21 +362,18 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                   sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
                   key='browser-tabs'
                 >
-                  {browserTabs.map(
-                    ({ label, index }) =>
-                      (isEditingBrowserShow || enabledBrowsers[index]) && (
-                        <BrowserTab
-                          key={index}
-                          isEditingBrowserShow={isEditingBrowserShow}
-                          enabled={enabledBrowsers[index]}
-                          setEnabledBrowsers={setEnabledBrowsers}
-                          index={index}
-                          label={label}
-                          loading={browserLoadings[index]}
-                          onClick={handleBrowserTabChange}
-                        />
-                      )
-                  )}
+                  {browserTabs.map(({ label, index }) => (
+                    <BrowserTab
+                      key={index}
+                      isEditingBrowserShow={isEditingBrowserShow}
+                      enabled={enabledBrowsers[index]}
+                      setEnabledBrowsers={setEnabledBrowsers}
+                      index={index}
+                      label={label}
+                      loading={browserLoadings[index]}
+                      onClick={handleBrowserTabChange}
+                    />
+                  ))}
                 </Tabs>
               </Tooltip>
               <Box>
@@ -695,7 +695,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                             ? 'Phind'
                             : browserIndex === 4
                               ? 'Perplexity'
-                              : 'Genspark'}
+                              : browserIndex === 5
+                                ? 'Genspark'
+                                : 'AIStudio'}
                   </Button>
                 </Tooltip>
                 <Button

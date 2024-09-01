@@ -31,7 +31,7 @@ let appState: AppState = {
   browserTabIndex: 0,
   language: 'text',
   fontSize: 16,
-  enabledBrowsers: [true, true, true, true, true, true],
+  enabledBrowsers: [true, true, true, true, true, true, true],
 };
 
 interface Log {
@@ -71,6 +71,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         mainWindow.setTopBrowserView(view);
       } else if (index === 5 && view.webContents.getURL().includes('genspark.ai')) {
         mainWindow.setTopBrowserView(view);
+      } else if (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) {
+        mainWindow.setTopBrowserView(view);
       }
     });
   });
@@ -90,6 +92,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.reload();
       } else if (index === 5 && view.webContents.getURL().includes('genspark.ai')) {
         view.webContents.reload();
+      } else if (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) {
+        view.webContents.reload();
       }
     });
   });
@@ -108,6 +112,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.loadURL('https://www.perplexity.ai/');
       } else if (view.webContents.getURL().includes('genspark.ai')) {
         view.webContents.loadURL('https://www.genspark.ai/');
+      } else if (view.webContents.getURL().includes('aistudio.google.com')) {
+        view.webContents.loadURL('https://aistudio.google.com/');
       }
     });
   });
@@ -200,8 +206,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         appState.enabledBrowsers[2] &&
         (appState.browserTabIndex === 2 || sendToAll)
       ) {
-        const script = `
-                        var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
+        const script = `var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
                         var textareaTag = textareaTags[textareaTags.length - 1];
                         if (textareaTag) {
                           textareaTag.textContent = ${JSON.stringify(text)};
@@ -278,6 +283,24 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.executeJavaScript(script).catch((error) => {
           console.error('Script execution failed:', error);
         });
+      } else if (
+        view.webContents.getURL().includes('aistudio.google.com') &&
+        appState.enabledBrowsers[6] &&
+        (appState.browserTabIndex === 6 || sendToAll)
+      ) {
+        const script = `var textareaTag = document.querySelector('textarea[aria-label="User text input"]');
+                        textareaTag.value = ${JSON.stringify(text)};
+                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+                        setTimeout(() => {
+                          var sendButton = document.querySelector('button.run-button');
+                          if (sendButton) {
+                            sendButton.click();
+                          }
+                        }, 700);
+                        `;
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
       }
     });
   });
@@ -317,7 +340,7 @@ function createWindow(): void {
 
   // Ensure enabledBrowsers is initialized
   if (!appState.enabledBrowsers) {
-    appState.enabledBrowsers = [true, true, true, true, true, true];
+    appState.enabledBrowsers = [true, true, true, true, true, true, true];
   }
 
   const logsPath = path.join(userDataPath, 'logs.json');
@@ -357,6 +380,7 @@ function createWindow(): void {
     'https://www.phind.com/',
     'https://www.perplexity.ai/',
     'https://www.genspark.ai/',
+    'https://aistudio.google.com/',
   ];
 
   function setupView(url: string, index: number) {

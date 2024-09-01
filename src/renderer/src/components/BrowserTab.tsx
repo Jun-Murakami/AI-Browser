@@ -32,6 +32,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
                 setEnabledBrowsers((prev) => {
                   const newEnabledBrowsers = [...prev];
                   newEnabledBrowsers[index] = e.target.checked;
+                  if (newEnabledBrowsers.every((enabled) => enabled === false)) {
+                    newEnabledBrowsers[index] = true;
+                  }
                   window.electron.sendEnabledBrowsersToMain(newEnabledBrowsers);
                   return newEnabledBrowsers;
                 });
@@ -46,8 +49,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         </Box>
       }
       value={index}
-      onClick={(event) => onClick(event, index)}
-      sx={{ p: 0 }}
+      onClick={(event) => {
+        onClick(event, index);
+      }}
+      sx={{ p: 0, display: enabled || isEditingBrowserShow ? 'flex' : 'none' }}
     />
   );
 };
