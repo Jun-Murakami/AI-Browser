@@ -61,7 +61,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     mainWindow.getBrowserViews().forEach((view) => {
       if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
         mainWindow.setTopBrowserView(view);
-      } else if (index === 1 && view.webContents.getURL().includes('google.com')) {
+      } else if (index === 1 && view.webContents.getURL().includes('gemini.google.com')) {
         mainWindow.setTopBrowserView(view);
       } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
         mainWindow.setTopBrowserView(view);
@@ -82,7 +82,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     mainWindow.getBrowserViews().forEach((view) => {
       if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
         view.webContents.reload();
-      } else if (index === 1 && view.webContents.getURL().includes('google.com')) {
+      } else if (index === 1 && view.webContents.getURL().includes('gemini.google.com')) {
         view.webContents.reload();
       } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
         view.webContents.reload();
@@ -102,7 +102,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     mainWindow.getBrowserViews().forEach((view) => {
       if (view.webContents.getURL().includes('chatgpt.com')) {
         view.webContents.loadURL('https://chatgpt.com/');
-      } else if (view.webContents.getURL().includes('google.com')) {
+      } else if (view.webContents.getURL().includes('gemini.google.com')) {
         view.webContents.loadURL('https://gemini.google.com/');
       } else if (view.webContents.getURL().includes('claude.ai')) {
         view.webContents.loadURL('https://claude.ai/');
@@ -184,7 +184,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
           console.error('Script execution failed:', error);
         });
       } else if (
-        view.webContents.getURL().includes('google.com') &&
+        view.webContents.getURL().includes('gemini.google.com') &&
         appState.enabledBrowsers[1] &&
         (appState.browserTabIndex === 1 || sendToAll)
       ) {
