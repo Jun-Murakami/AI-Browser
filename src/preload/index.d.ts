@@ -13,7 +13,11 @@ interface ExtendedElectronAPI extends ElectronAPI {
   openExternalLink: (url: string) => void;
   reloadCurrentView: () => void;
   reloadAllViews: () => void;
-  getUrls: () => Promise<string[]>;
+  onUpdateUrls: (callback: (urls: string[]) => void) => void;
+  removeUpdateUrlsListener: () => void;
+  onUpdateLoadingStatus: (callback: (status: { index: number; isLoading: boolean }) => void) => void;
+  removeUpdateLoadingStatusListener: () => void;
+  sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) => void;
 }
 
 interface InitialSettings {
@@ -25,6 +29,7 @@ interface InitialSettings {
   language: string;
   fontSize: number;
   osInfo: string;
+  enabledBrowsers: boolean[];
 }
 
 declare global {

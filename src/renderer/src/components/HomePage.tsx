@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ipcRenderer } from 'electron';
 import useResizeObserver from 'use-resize-observer';
 import { Allotment, AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
@@ -19,18 +18,16 @@ import {
   Typography,
   Chip,
   TextField,
+  Divider,
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 import * as monaco from 'monaco-editor';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import SendIcon from '@mui/icons-material/Send';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
-import ReplayOutlinedIcon from '@mui/icons-material/ReplayOutlined';
+import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings } from '@mui/icons-material';
 import { supportedLanguages } from '../utils/supportedLanguages';
 import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
 import { useCheckForUpdates } from '../utils/useCheckForUpdates';
+import BrowserTab from './BrowserTab';
 
 interface HomePageProps {
   darkMode: boolean;
@@ -45,8 +42,11 @@ interface Log {
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
-  const [browserIndex, setBrowserIndex] = useState(4);
+  const [browserIndex, setBrowserIndex] = useState(5);
   const [browserUrls, setBrowserUrls] = useState<string[]>([]);
+  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([true, true, true, true, true, true]);
+  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([true, true, true, true, true, true]);
+  const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
   const [fontSize, setFontSize] = useState(15);
@@ -117,6 +117,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       .getInitialSettings()
       .then(async (settings) => {
         setDarkMode(settings.isDarkMode);
+        setEnabledBrowsers(settings.enabledBrowsers);
         setEditorIndex(settings.editorMode);
         setPreferredSize(settings.browserWidth);
         setTimeout(() => {
@@ -146,22 +147,24 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         console.error(error);
       });
 
-    // 初期URLを取得
-    const fetchInitialUrls = async () => {
-      const urls = await window.electron.getUrls();
-      setBrowserUrls(urls);
-    };
-    fetchInitialUrls();
+    // ブラウザのURLを監視
+    window.electron.onUpdateUrls((newUrls) => {
+      setBrowserUrls(newUrls);
+    });
 
-    // URL更新リスナーを設定
-    const updateUrlsListener = (_: any, urls: string[]) => {
-      setBrowserUrls(urls);
-    };
-    ipcRenderer.on('update-urls', updateUrlsListener);
+    // ローディング状態を監視
+    window.electron.onUpdateLoadingStatus((status) => {
+      setBrowserLoadings((prev) => {
+        const newLoadings = [...prev];
+        newLoadings[status.index] = status.isLoading;
+        return newLoadings;
+      });
+    });
 
     // クリーンアップ
     return () => {
-      ipcRenderer.removeListener('update-urls', updateUrlsListener);
+      window.electron.removeUpdateUrlsListener();
+      window.electron.removeUpdateLoadingStatusListener();
     };
   }, []);
 
@@ -330,6 +333,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     navigator.clipboard.writeText(combinedEditorValue);
   };
 
+  const browserTabs = [
+    { label: 'ChatGPT', index: 0 },
+    { label: 'Gemini', index: 1 },
+    { label: 'Claude', index: 2 },
+    { label: 'Phind', index: 3 },
+    { label: 'Perplexity', index: 4 },
+    { label: 'Genspark', index: 5 },
+  ];
+
   const fontSizeOptions = [
     5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
   ];
@@ -339,32 +351,75 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
-            <Tooltip title={`(Ctrl + Tab) to switch AI`} placement='right' arrow>
-              <Tabs
-                value={browserIndex}
-                onChange={handleBrowserTabChange}
-                sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
-                key='browser-tabs'
-              >
-                <Tab label='ChatGPT' value={0} />
-                <Tab label='Gemini' value={1} />
-                <Tab label='Claude' value={2} />
-                <Tab label='Phind' value={3} />
-                <Tab label='Perplexity' value={4} />
-                <IconButton onClick={() => window.electron.reloadCurrentView()}>
-                  <ReplayOutlinedIcon sx={{ transform: 'scaleX(-1)', color: theme.palette.text.secondary }} />
-                </IconButton>
-                <IconButton onClick={() => window.electron.reloadAllViews()}>
-                  <ReplayOutlinedIcon sx={{ transform: 'scaleX(-1)', color: theme.palette.text.secondary }} />
-                  <Typography variant='caption'>all</Typography>
-                </IconButton>
-              </Tabs>
-            </Tooltip>
-            <Box sx={{ height: 50 }}>
-              <Box sx={{ height: '100%' }}>
-                <TextField label='URL' value={browserUrls[browserIndex]} disabled />
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Tooltip title={`(Ctrl + Tab) to switch AI`} placement='right' arrow>
+                <Tabs
+                  value={browserIndex}
+                  onChange={handleBrowserTabChange}
+                  sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
+                  key='browser-tabs'
+                >
+                  {browserTabs.map(
+                    ({ label, index }) =>
+                      (isEditingBrowserShow || enabledBrowsers[index]) && (
+                        <BrowserTab
+                          key={index}
+                          isEditingBrowserShow={isEditingBrowserShow}
+                          enabled={enabledBrowsers[index]}
+                          setEnabledBrowsers={setEnabledBrowsers}
+                          index={index}
+                          label={label}
+                          loading={browserLoadings[index]}
+                          onClick={handleBrowserTabChange}
+                        />
+                      )
+                  )}
+                </Tabs>
+              </Tooltip>
+              <Box>
+                <Tooltip title={`Edit tabs`} placement='right' arrow>
+                  <IconButton
+                    onClick={() => setIsEditingBrowserShow(!isEditingBrowserShow)}
+                    sx={{ color: isEditingBrowserShow ? theme.palette.primary.main : theme.palette.text.secondary }}
+                  >
+                    <Settings />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Box>
+
+            <Box sx={{ height: 57 }}>
+              <Box sx={{ height: '100%', p: 1, display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+                <Tooltip title='Reload' placement='top' arrow>
+                  <IconButton onClick={() => window.electron.reloadCurrentView()}>
+                    <ReplayOutlined sx={{ transform: 'scaleX(-1)', color: theme.palette.text.secondary }} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Reload all tabs' placement='top' arrow>
+                  <IconButton onClick={() => window.electron.reloadAllViews()} sx={{ mr: 1 }}>
+                    <ReplayOutlined sx={{ transform: 'scaleX(-1)', color: theme.palette.text.secondary }} />
+                    <Typography variant='subtitle2'>all</Typography>
+                  </IconButton>
+                </Tooltip>
+                <TextField
+                  value={browserUrls[browserIndex] || ''}
+                  size='small'
+                  fullWidth
+                  sx={{
+                    '& fieldset': {
+                      borderColor:
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.23) !important'
+                          : 'rgba(0, 0, 0, 0.23) !important',
+                    },
+                    '& input': { color: theme.palette.text.secondary },
+                  }}
+                  disabled
+                />
+              </Box>
+              <Divider />
+            </Box>
+
             <Box sx={{ height: 'calc(100% - 100px)', textAlign: 'center' }} ref={browserRef}>
               <Box sx={{ height: '100%' }}>
                 <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
@@ -475,7 +530,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     disabled={selectedLog === logs[0] || !selectedLog || logs.length === 0}
                     onClick={handleNextLogButtonClick}
                   >
-                    <KeyboardArrowUpIcon />
+                    <KeyboardArrowUp />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -489,7 +544,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     disabled={selectedLog === logs[logs.length - 1]}
                     onClick={handlePrevLogButtonClick}
                   >
-                    <KeyboardArrowDownIcon />
+                    <KeyboardArrowDown />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -601,7 +656,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     ref={clearButtonRef}
                     variant='outlined'
                     size='small'
-                    sx={{ textTransform: 'none', ml: 1 }}
+                    sx={{ ml: 1 }}
                     startIcon={<EraseIcon />}
                     onClick={handleClearButtonClick}
                   >
@@ -615,8 +670,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     ref={copyButtonRef}
                     variant='outlined'
                     size='small'
-                    sx={{ textTransform: 'none', mr: 1 }}
-                    startIcon={<ContentPasteIcon />}
+                    sx={{ mr: 1 }}
+                    startIcon={<ContentPaste />}
                     onClick={handleCopyButtonClick}
                   >
                     Copy
@@ -626,8 +681,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                   <Button
                     ref={sendButtonRef}
                     variant='contained'
-                    sx={{ width: 100, textTransform: 'none', mr: 1 }}
-                    startIcon={<SendIcon sx={{ mr: -0.5 }} />}
+                    sx={{ width: 100, mr: 1 }}
+                    startIcon={<Send sx={{ mr: -0.5 }} />}
                     onClick={() => handleSendButtonClick(false)}
                   >
                     {browserIndex === 0
@@ -638,13 +693,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                           ? 'Claude'
                           : browserIndex === 3
                             ? 'Phind'
-                            : 'Perplexity'}
+                            : browserIndex === 4
+                              ? 'Perplexity'
+                              : 'Genspark'}
                   </Button>
                 </Tooltip>
                 <Button
                   variant='contained'
-                  sx={{ width: 40, textTransform: 'none', mr: 1 }}
-                  startIcon={<SendIcon sx={{ mr: -0.5 }} />}
+                  sx={{ width: 40, mr: 1 }}
+                  startIcon={<Send sx={{ mr: -0.5 }} />}
                   onClick={() => handleSendButtonClick(true)}
                 >
                   All

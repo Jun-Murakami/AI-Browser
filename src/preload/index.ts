@@ -24,7 +24,14 @@ if (process.contextIsolated) {
       openExternalLink: (url: string) => ipcRenderer.send('open-external-link', url),
       reloadCurrentView: () => ipcRenderer.send('reload-current-view'),
       reloadAllViews: () => ipcRenderer.send('reload-all-views'),
-      getUrls: () => ipcRenderer.invoke('update-urls'),
+      onUpdateUrls: (callback: (urls: string[]) => void) =>
+        ipcRenderer.on('update-urls', (_, urls: string[]) => callback(urls)),
+      removeUpdateUrlsListener: () => ipcRenderer.removeAllListeners('update-urls'),
+      onUpdateLoadingStatus: (callback: (status: { index: number; isLoading: boolean }) => void) =>
+        ipcRenderer.on('loading-status', (_, status: { index: number; isLoading: boolean }) => callback(status)),
+      removeUpdateLoadingStatusListener: () => ipcRenderer.removeAllListeners('loading-status'),
+      sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) =>
+        ipcRenderer.send('update-enabled-browsers', enabledBrowsers),
     });
 
     contextBridge.exposeInMainWorld('api', api);

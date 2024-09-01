@@ -100,6 +100,8 @@ export const MonacoEditors = ({
     osInfo,
   };
 
+  const placeholderText = 'Type your prompt for the AI assistant...';
+
   return (
     <Box sx={{ height: 'calc(100% - 156px)', p: 1, pt: 0 }}>
       <Box
@@ -113,7 +115,13 @@ export const MonacoEditors = ({
       >
         {editorIndex === 0 && (
           <Box sx={{ pt: 1, height: '100%' }}>
-            <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} ref={editor1Ref} />
+            <MonacoEditor
+              {...editorProps}
+              value={editor1Value}
+              onChange={handleEditor1Change}
+              ref={editor1Ref}
+              placeholder={placeholderText}
+            />
           </Box>
         )}
         {editorIndex === 1 && (
@@ -126,7 +134,13 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={200}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} ref={editor1Ref} />
+                <MonacoEditor
+                  {...editorProps}
+                  value={editor1Value}
+                  onChange={handleEditor1Change}
+                  ref={editor1Ref}
+                  placeholder={placeholderText}
+                />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>
@@ -147,7 +161,13 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} ref={editor1Ref} />
+                <MonacoEditor
+                  {...editorProps}
+                  value={editor1Value}
+                  onChange={handleEditor1Change}
+                  ref={editor1Ref}
+                  placeholder={placeholderText}
+                />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
@@ -174,7 +194,13 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} ref={editor1Ref} />
+                <MonacoEditor
+                  {...editorProps}
+                  value={editor1Value}
+                  onChange={handleEditor1Change}
+                  ref={editor1Ref}
+                  placeholder={placeholderText}
+                />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
@@ -206,7 +232,13 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor {...editorProps} value={editor1Value} onChange={handleEditor1Change} ref={editor1Ref} />
+                <MonacoEditor
+                  {...editorProps}
+                  value={editor1Value}
+                  onChange={handleEditor1Change}
+                  ref={editor1Ref}
+                  placeholder={placeholderText}
+                />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>

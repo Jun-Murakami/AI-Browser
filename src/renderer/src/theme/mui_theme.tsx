@@ -1,7 +1,9 @@
 import { createTheme } from '@mui/material/styles';
 import '@fontsource/m-plus-1p';
+import '@fontsource/lato';
 
 const fontFamilySet = [
+  'Lato',
   'M PLUS 1p',
   '-apple-system',
   'BlinkMacSystemFont',
@@ -74,7 +76,8 @@ export const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         // ユーザーエージェントにWinを含むか、プラットフォームがWinから始まる場合にスクロールバーのスタイルを適用
-        body: navigator.userAgent?.indexOf('Win') > 0 || navigator.platform.startsWith('Win') ? windowsScrollbarStyles : {},
+        body:
+          navigator.userAgent?.indexOf('Win') > 0 || navigator.platform.startsWith('Win') ? windowsScrollbarStyles : {},
       },
     },
     MuiTab: {
@@ -111,10 +114,20 @@ export const darkTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        body: navigator.userAgent?.indexOf('Win') > 0 || navigator.platform.startsWith('Win') ? windowsScrollbarStylesDark : {},
+        body:
+          navigator.userAgent?.indexOf('Win') > 0 || navigator.platform.startsWith('Win')
+            ? windowsScrollbarStylesDark
+            : {},
       },
     },
     MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
+    MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',

@@ -18,6 +18,7 @@ export interface MonacoEditorProps {
   value?: string;
   onChange?: (value: string) => void;
   osInfo: string;
+  placeholder?: string;
 }
 
 export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, MonacoEditorProps>(
@@ -38,6 +39,7 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
       value,
       onChange,
       osInfo,
+      placeholder,
     },
     ref
   ) => {
@@ -65,6 +67,7 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
           unicodeHighlight: { allowedLocales: { _os: true, _vscode: true }, ambiguousCharacters: false },
           wordWrap: 'on',
           occurrencesHighlight: 'off',
+          placeholder: placeholder,
         });
 
         monaco.editor.remeasureFonts();
