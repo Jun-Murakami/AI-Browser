@@ -5,7 +5,6 @@
   "main": "./out/main/index.js",
   "author": "JunMurakami",
   "homepage": "https://github.com/Jun-Murakami/AI-Browser",
-  "type": "module",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -31,7 +30,7 @@
     "@mui/icons-material": "^6.0.1",
     "@mui/material": "^6.0.1",
     "allotment": "^1.20.2",
-    "electron-context-menu": "^4.0.4",
+    "electron-context-menu": "^3.6.1",
     "electron-updater": "^6.3.0-alpha.5",
     "monaco-editor": "^0.51.0",
     "use-resize-observer": "^9.1.0"
@@ -44,7 +43,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "electron": "^31",
+    "electron": "^30",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",
     "eslint": "^8.57.0",
