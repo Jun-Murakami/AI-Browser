@@ -102,7 +102,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
     let newBrowserIndex = browserIndex + 1;
-    console.log(newBrowserIndex);
     while (!enabledBrowsers[newBrowserIndex]) {
       newBrowserIndex = newBrowserIndex + 1;
       if (newBrowserIndex > enabledBrowsers.filter((enabled) => enabled).length + 1) {

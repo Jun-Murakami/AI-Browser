@@ -71,7 +71,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         mainWindow.setTopBrowserView(view);
       } else if (index === 5 && view.webContents.getURL().includes('genspark.ai')) {
         mainWindow.setTopBrowserView(view);
-      } else if (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) {
+      } else if (
+        (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) ||
+        view.webContents.getURL().includes('ai.google.dev')
+      ) {
         mainWindow.setTopBrowserView(view);
       }
     });
@@ -92,7 +95,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.reload();
       } else if (index === 5 && view.webContents.getURL().includes('genspark.ai')) {
         view.webContents.reload();
-      } else if (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) {
+      } else if (
+        (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) ||
+        view.webContents.getURL().includes('ai.google.dev')
+      ) {
         view.webContents.reload();
       }
     });
@@ -112,7 +118,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.loadURL('https://www.perplexity.ai/');
       } else if (view.webContents.getURL().includes('genspark.ai')) {
         view.webContents.loadURL('https://www.genspark.ai/');
-      } else if (view.webContents.getURL().includes('aistudio.google.com')) {
+      } else if (
+        view.webContents.getURL().includes('aistudio.google.com') ||
+        view.webContents.getURL().includes('ai.google.dev')
+      ) {
         view.webContents.loadURL('https://aistudio.google.com/');
       }
     });
