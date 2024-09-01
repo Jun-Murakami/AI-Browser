@@ -11,11 +11,11 @@ let mainWindow: BaseWindow;
 //const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 interface AppState {
-  bounds?: {
-    width?: number;
-    height?: number;
-    x?: number;
-    y?: number;
+  bounds: {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
   };
   isMaximized?: boolean;
   isDarkMode?: boolean;
@@ -28,7 +28,7 @@ interface AppState {
 }
 
 let appState: AppState = {
-  bounds: {},
+  bounds: { x: 0, y: 0, width: 1000, height: 700 },
   isMaximized: false,
   isDarkMode: false,
   editorMode: 0,
@@ -82,12 +82,12 @@ function registerIpcHandlers(mainWindow: BaseWindow, browserViews: WebContentsVi
     });
   });
 
-  function switchView(url) {
+  function switchView(url: string) {
     const views = browserViews.filter((view) => view.webContents.getURL().includes(url));
     setTopWebContentsView(views[0]);
   }
 
-  function setTopWebContentsView(view) {
+  function setTopWebContentsView(view: WebContentsView) {
     mainWindow.contentView.removeChildView(view);
     mainWindow.contentView.addChildView(view);
   }
@@ -369,9 +369,7 @@ function createWindow(): void {
 
   // Create the browser window.
   mainWindow = new BaseWindow({
-    width: 1000,
     minWidth: 1000,
-    height: 700,
     minHeight: 700,
     show: false,
     autoHideMenuBar: true,
@@ -388,6 +386,7 @@ function createWindow(): void {
   });
 
   mainWindow.contentView.addChildView(mainView);
+  mainWindow.contentView.setBounds(appState.bounds);
 
   // 保存された状態が最大化なら最大化する
   if (appState.isMaximized) {
@@ -437,20 +436,22 @@ function createWindow(): void {
     return view;
   }
 
-  const browserViews = urls
-    .slice()
-    .reverse()
-    .map((url, index) => setupView(url, urls.length - 1 - index));
+  mainView.webContents.on('did-finish-load', () => {
+    const browserViews = urls
+      .slice()
+      .reverse()
+      .map((url, index) => setupView(url, urls.length - 1 - index));
 
-  if (appState.isDarkMode) {
-    nativeTheme.themeSource = 'dark';
-  }
+    if (appState.isDarkMode) {
+      nativeTheme.themeSource = 'dark';
+    }
 
-  registerIpcHandlers(mainWindow, browserViews);
+    registerIpcHandlers(mainWindow, browserViews);
 
-  //mainView.webContents.on('ready-to-show', () => {
-  mainWindow.show();
-  //});
+    //mainView.webContents.on('ready-to-show', () => {
+    mainWindow.show();
+    //});
+  });
 
   mainView.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
