@@ -1,9 +1,14 @@
-import { app, shell, BrowserWindow, ipcMain, BrowserView, nativeTheme } from 'electron';
+import { app, shell, BaseWindow, ipcMain, WebContentsView, nativeTheme } from 'electron';
 import fs from 'fs';
 import path, { join } from 'path';
+//import { fileURLToPath } from 'url';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import contextMenu from 'electron-context-menu';
 import icon from '../../resources/icon.png?asset';
+
+let mainWindow: BaseWindow;
+
+//const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 interface AppState {
   bounds?: {
@@ -41,45 +46,55 @@ interface Log {
 
 let logs: Log[] = [];
 
-function registerIpcHandlers(mainWindow: BrowserWindow) {
+function registerIpcHandlers(mainWindow: BaseWindow, browserViews: WebContentsView[]): void {
   ipcMain.on('browser-size', (_, arg) => {
     const { width, height } = arg;
-    if (!width || !height || mainWindow.getBrowserViews().length === 0) {
+    if (!width || !height || mainWindow.contentView.children.length === 0) {
       return;
     }
-    mainWindow.getBrowserViews().forEach((view) => {
+    mainWindow.contentView.children.forEach((view) => {
       view.setBounds({ x: 0, y: 108, width: width - 2, height: height - 8 });
     });
     appState.browserWidth = width;
   });
 
   ipcMain.on('browser-tab-index', (_, index) => {
-    if (mainWindow.getBrowserViews().length === 0) {
+    if (mainWindow.contentView.children.length === 0) {
       return;
     }
     appState.browserTabIndex = index;
-    mainWindow.getBrowserViews().forEach((view) => {
+    browserViews.forEach((view) => {
       if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
-        mainWindow.setTopBrowserView(view);
+        switchView('chatgpt.com');
       } else if (index === 1 && view.webContents.getURL().includes('gemini.google.com')) {
-        mainWindow.setTopBrowserView(view);
+        switchView('gemini.google.com');
       } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
-        mainWindow.setTopBrowserView(view);
+        switchView('claude.ai');
       } else if (index === 3 && view.webContents.getURL().includes('phind.com')) {
-        mainWindow.setTopBrowserView(view);
+        switchView('phind.com');
       } else if (index === 4 && view.webContents.getURL().includes('perplexity.ai')) {
-        mainWindow.setTopBrowserView(view);
+        switchView('perplexity.ai');
       } else if (index === 5 && view.webContents.getURL().includes('genspark.ai')) {
-        mainWindow.setTopBrowserView(view);
+        switchView('genspark.ai');
       } else if (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) {
-        mainWindow.setTopBrowserView(view);
+        switchView('aistudio.google.com');
       }
     });
   });
 
+  function switchView(url) {
+    const views = browserViews.filter((view) => view.webContents.getURL().includes(url));
+    setTopWebContentsView(views[0]);
+  }
+
+  function setTopWebContentsView(view) {
+    mainWindow.contentView.removeChildView(view);
+    mainWindow.contentView.addChildView(view);
+  }
+
   ipcMain.on('reload-current-view', () => {
     const index = appState.browserTabIndex;
-    mainWindow.getBrowserViews().forEach((view) => {
+    browserViews.forEach((view) => {
       if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
         view.webContents.reload();
       } else if (index === 1 && view.webContents.getURL().includes('gemini.google.com')) {
@@ -99,7 +114,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.on('reload-all-views', () => {
-    mainWindow.getBrowserViews().forEach((view) => {
+    browserViews.forEach((view) => {
       if (view.webContents.getURL().includes('chatgpt.com')) {
         view.webContents.loadURL('https://chatgpt.com/');
       } else if (view.webContents.getURL().includes('gemini.google.com')) {
@@ -158,10 +173,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
-    if (mainWindow.getBrowserViews().length === 0) {
+    if (browserViews.length === 0) {
       return;
     }
-    mainWindow.getBrowserViews().forEach((view) => {
+    browserViews.forEach((view) => {
       if (!appState.enabledBrowsers) {
         return;
       }
@@ -310,7 +325,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   });
 }
 
-function removeIpcHandlers() {
+function removeIpcHandlers(): void {
   ipcMain.removeAllListeners('browser-size');
   ipcMain.removeAllListeners('browser-tab-index');
   ipcMain.removeAllListeners('is-dark-mode');
@@ -353,7 +368,7 @@ function createWindow(): void {
   }
 
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BaseWindow({
     width: 1000,
     minWidth: 1000,
     height: 700,
@@ -362,11 +377,17 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...appState.bounds,
     ...(process.platform === 'linux' ? { icon } : {}),
+  });
+
+  const mainView = new WebContentsView({
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
+      spellcheck: false,
     },
   });
+
+  mainWindow.contentView.addChildView(mainView);
 
   // 保存された状態が最大化なら最大化する
   if (appState.isMaximized) {
@@ -383,13 +404,13 @@ function createWindow(): void {
     'https://aistudio.google.com/',
   ];
 
-  function setupView(url: string, index: number) {
-    const view = new BrowserView({
+  function setupView(url: string, index: number): WebContentsView {
+    const view = new WebContentsView({
       webPreferences: {
         spellcheck: false,
       },
     });
-    mainWindow.addBrowserView(view);
+    mainWindow.contentView.addChildView(view);
     view.webContents.loadURL(url);
 
     contextMenu({
@@ -400,36 +421,38 @@ function createWindow(): void {
     // ブラウザのURLを更新
     view.webContents.on('did-navigate', (_, newUrl) => {
       urls[index] = newUrl;
-      mainWindow.webContents.send('update-urls', urls);
+      mainView.webContents.send('update-urls', urls);
     });
 
     // ローディング開始時のイベント
     view.webContents.on('did-start-loading', () => {
-      mainWindow.webContents.send('loading-status', { index, isLoading: true });
+      mainView.webContents.send('loading-status', { index, isLoading: true });
     });
 
     // ローディング終了時のイベント
     view.webContents.on('did-stop-loading', () => {
-      mainWindow.webContents.send('loading-status', { index, isLoading: false });
+      mainView.webContents.send('loading-status', { index, isLoading: false });
     });
+
+    return view;
   }
 
-  urls
+  const browserViews = urls
     .slice()
     .reverse()
-    .forEach((url, index) => setupView(url, urls.length - 1 - index));
+    .map((url, index) => setupView(url, urls.length - 1 - index));
 
   if (appState.isDarkMode) {
     nativeTheme.themeSource = 'dark';
   }
 
-  registerIpcHandlers(mainWindow);
+  registerIpcHandlers(mainWindow, browserViews);
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show();
-  });
+  //mainView.webContents.on('ready-to-show', () => {
+  mainWindow.show();
+  //});
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
+  mainView.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
     return { action: 'deny' };
   });
@@ -437,9 +460,9 @@ function createWindow(): void {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
+    mainView.webContents.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+    mainView.webContents.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
   if (is.dev) {
@@ -502,7 +525,7 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (mainWindow.contentView.children.length === 0) createWindow();
   });
 });
 
