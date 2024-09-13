@@ -179,8 +179,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         appState.enabledBrowsers[0] &&
         (appState.browserTabIndex === 0 || sendToAll)
       ) {
-        const script = `var textareaTag = document.querySelector('main textarea[id="prompt-textarea"]');
-                        textareaTag.value = ${JSON.stringify(text)};
+        const script = `var textareaTag = document.querySelector('main div[id="prompt-textarea"]');
+                        textareaTag.textContent = ${JSON.stringify(text)};
                         textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
                         setTimeout(() => {
                           var buttons = document.querySelectorAll('main button[data-testid="send-button"]');
