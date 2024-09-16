@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 import * as monaco from 'monaco-editor';
-import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings } from '@mui/icons-material';
+import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings, Save } from '@mui/icons-material';
 import { supportedLanguages } from '../utils/supportedLanguages';
 import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
@@ -72,6 +72,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const copyButtonRef = useRef<HTMLButtonElement>(null);
   const clearButtonRef = useRef<HTMLButtonElement>(null);
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
   const newerLogButtonRef = useRef<HTMLButtonElement>(null);
   const olderLogButtonRef = useRef<HTMLButtonElement>(null);
   const editorSplitRef = useRef<AllotmentHandle>(null!);
@@ -183,15 +184,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       combinedValue = editor1Value + divider + editor2Value + divider + editor3Value + divider + editor4Value;
     } else {
       combinedValue =
-        editor1Value +
-        divider +
-        editor2Value +
-        divider +
-        editor3Value +
-        divider +
-        editor4Value +
-        divider +
-        editor5Value;
+        editor1Value + divider + editor2Value + divider + editor3Value + divider + editor4Value + divider + editor5Value;
     }
     // 空白のある行があればディバイダ―ごと削除
     combinedValue = combinedValue
@@ -242,6 +235,14 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       window.electron.sendLogsToMain(newLogs);
     }
     handleClearButtonClick();
+  };
+
+  const handleSaveButtonClick = () => {
+    const combinedEditorValue = getCombinedEditorValue();
+    const newLogs = addLog(combinedEditorValue);
+    if (newLogs) {
+      window.electron.sendLogsToMain(newLogs);
+    }
   };
 
   // 選択されたログが変更されたらエディターに反映
@@ -344,9 +345,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     { label: 'AI Studio', index: 6 },
   ];
 
-  const fontSizeOptions = [
-    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-  ];
+  const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
   return (
     <Box sx={{ height: '100vh', borderTop: 1, borderColor: theme.palette.divider }}>
@@ -407,9 +406,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                   sx={{
                     '& fieldset': {
                       borderColor:
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.23) !important'
-                          : 'rgba(0, 0, 0, 0.23) !important',
+                        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23) !important' : 'rgba(0, 0, 0, 0.23) !important',
                     },
                     '& input': { color: theme.palette.text.secondary },
                   }}
@@ -448,43 +445,23 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             >
               <Tab
                 value={0}
-                icon={
-                  <Split1Icon
-                    sx={{ fontSize: 22, color: editorIndex !== 0 ? theme.palette.action.disabled : undefined }}
-                  />
-                }
+                icon={<Split1Icon sx={{ fontSize: 22, color: editorIndex !== 0 ? theme.palette.action.disabled : undefined }} />}
               />
               <Tab
                 value={1}
-                icon={
-                  <Split2Icon
-                    sx={{ fontSize: 22, color: editorIndex !== 1 ? theme.palette.action.disabled : undefined }}
-                  />
-                }
+                icon={<Split2Icon sx={{ fontSize: 22, color: editorIndex !== 1 ? theme.palette.action.disabled : undefined }} />}
               />
               <Tab
                 value={2}
-                icon={
-                  <Split3Icon
-                    sx={{ fontSize: 22, color: editorIndex !== 2 ? theme.palette.action.disabled : undefined }}
-                  />
-                }
+                icon={<Split3Icon sx={{ fontSize: 22, color: editorIndex !== 2 ? theme.palette.action.disabled : undefined }} />}
               />
               <Tab
                 value={3}
-                icon={
-                  <Split4Icon
-                    sx={{ fontSize: 22, color: editorIndex !== 3 ? theme.palette.action.disabled : undefined }}
-                  />
-                }
+                icon={<Split4Icon sx={{ fontSize: 22, color: editorIndex !== 3 ? theme.palette.action.disabled : undefined }} />}
               />
               <Tab
                 value={4}
-                icon={
-                  <Split5Icon
-                    sx={{ fontSize: 22, color: editorIndex !== 4 ? theme.palette.action.disabled : undefined }}
-                  />
-                }
+                icon={<Split5Icon sx={{ fontSize: 22, color: editorIndex !== 4 ? theme.palette.action.disabled : undefined }} />}
               />
             </Tabs>
             <Box sx={{ w: '100%', p: 1 }}>
@@ -597,6 +574,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               sendButtonRef={sendButtonRef}
               copyButtonRef={copyButtonRef}
               clearButtonRef={clearButtonRef}
+              saveButtonRef={saveButtonRef}
               newerLogButtonRef={newerLogButtonRef}
               olderLogButtonRef={olderLogButtonRef}
               setBrowserIndexTimestamp={setBrowserIndexTimestamp}
@@ -664,6 +642,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 </Tooltip>
               </Box>
               <Box>
+                <Tooltip title={`Save log only (${commandKey} + S)`} arrow>
+                  <IconButton ref={saveButtonRef} color='primary' size='small' onClick={handleSaveButtonClick}>
+                    <Save />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title={`(${commandKey} + Shift + C)`} arrow>
                   <Button
                     ref={copyButtonRef}

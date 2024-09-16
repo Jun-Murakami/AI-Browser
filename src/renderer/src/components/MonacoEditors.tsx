@@ -15,6 +15,7 @@ interface MonacoEditorsProps {
   sendButtonRef: React.RefObject<HTMLButtonElement>;
   copyButtonRef: React.RefObject<HTMLButtonElement>;
   clearButtonRef: React.RefObject<HTMLButtonElement>;
+  saveButtonRef: React.RefObject<HTMLButtonElement>;
   newerLogButtonRef: React.RefObject<HTMLButtonElement>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement>;
   editor1Value: string;
@@ -43,6 +44,7 @@ export const MonacoEditors = ({
   clearButtonRef,
   newerLogButtonRef,
   olderLogButtonRef,
+  saveButtonRef,
   editor1Value,
   editor2Value,
   editor3Value,
@@ -94,6 +96,7 @@ export const MonacoEditors = ({
     sendButtonRef,
     copyButtonRef,
     clearButtonRef,
+    saveButtonRef,
     newerLogButtonRef,
     olderLogButtonRef,
     setBrowserIndexTimestamp,

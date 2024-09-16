@@ -12,6 +12,7 @@ export interface MonacoEditorProps {
   sendButtonRef: React.RefObject<HTMLButtonElement>;
   copyButtonRef: React.RefObject<HTMLButtonElement>;
   clearButtonRef: React.RefObject<HTMLButtonElement>;
+  saveButtonRef: React.RefObject<HTMLButtonElement>;
   newerLogButtonRef: React.RefObject<HTMLButtonElement>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement>;
   setBrowserIndexTimestamp: (timestamp: number) => void;
@@ -33,6 +34,7 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
       sendButtonRef,
       copyButtonRef,
       clearButtonRef,
+      saveButtonRef,
       newerLogButtonRef,
       olderLogButtonRef,
       setBrowserIndexTimestamp,
@@ -80,6 +82,14 @@ export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, Mona
           }, 100);
           setTimeout(() => {
             sendButtonRef.current?.blur();
+          }, 500);
+        });
+
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+          saveButtonRef.current?.focus();
+          saveButtonRef.current?.click();
+          setTimeout(() => {
+            saveButtonRef.current?.blur();
           }, 500);
         });
 
