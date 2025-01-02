@@ -76,6 +76,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.getURL().includes('ai.google.dev')
       ) {
         mainWindow.setTopBrowserView(view);
+      } else if (index === 7 && view.webContents.getURL().includes('jenova.ai')) {
+        mainWindow.setTopBrowserView(view);
       }
     });
   });
@@ -100,6 +102,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.getURL().includes('ai.google.dev')
       ) {
         view.webContents.reload();
+      } else if (index === 7 && view.webContents.getURL().includes('jenova.ai')) {
+        view.webContents.reload();
       }
     });
   });
@@ -123,6 +127,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.getURL().includes('ai.google.dev')
       ) {
         view.webContents.loadURL('https://aistudio.google.com/');
+      } else if (view.webContents.getURL().includes('jenova.ai')) {
+        view.webContents.loadURL('https://app.jenova.ai/');
       }
     });
   });
@@ -310,6 +316,31 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         view.webContents.executeJavaScript(script).catch((error) => {
           console.error('Script execution failed:', error);
         });
+      } else if (
+        view.webContents.getURL().includes('jenova.ai') &&
+        appState.enabledBrowsers[7] &&
+        (appState.browserTabIndex === 7 || sendToAll)
+      ) {
+        const script = `var textareaTag = document.querySelector('textarea[name="message"]');
+                        var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+                          window.HTMLTextAreaElement.prototype,
+                          "value"
+                        ).set;
+                        nativeTextAreaValueSetter.call(textareaTag, ${JSON.stringify(text)});
+                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+                        
+                        setTimeout(() => {
+                          var siblingDivs = textareaTag.parentElement.querySelectorAll(':scope > div');
+                          var sendButton = siblingDivs[siblingDivs.length - 1];
+                          if (sendButton) {
+                            console.log('sendButton', sendButton);
+                            sendButton.click();
+                          }
+                        }, 700);
+                        `;
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
       }
     });
   });
@@ -390,6 +421,7 @@ function createWindow(): void {
     'https://www.perplexity.ai/',
     'https://www.genspark.ai/',
     'https://aistudio.google.com/',
+    'https://app.jenova.ai/',
   ];
 
   function setupView(url: string, index: number) {
