@@ -12,12 +12,12 @@ interface MonacoEditorsProps {
   editorIndex: number;
   browserWidth?: number;
   browserHeight?: number;
-  sendButtonRef: React.RefObject<HTMLButtonElement>;
-  copyButtonRef: React.RefObject<HTMLButtonElement>;
-  clearButtonRef: React.RefObject<HTMLButtonElement>;
-  saveButtonRef: React.RefObject<HTMLButtonElement>;
-  newerLogButtonRef: React.RefObject<HTMLButtonElement>;
-  olderLogButtonRef: React.RefObject<HTMLButtonElement>;
+  sendButtonRef: React.RefObject<HTMLButtonElement | null>;
+  copyButtonRef: React.RefObject<HTMLButtonElement | null>;
+  clearButtonRef: React.RefObject<HTMLButtonElement | null>;
+  saveButtonRef: React.RefObject<HTMLButtonElement | null>;
+  newerLogButtonRef: React.RefObject<HTMLButtonElement | null>;
+  olderLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   editor1Value: string;
   editor2Value: string;
   editor3Value: string;

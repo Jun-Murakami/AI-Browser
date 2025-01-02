@@ -366,6 +366,20 @@ contextMenu({
   showInspectElement: is.dev,
 });
 
+function removeBrowserViewListeners(view: BrowserView) {
+  const wc = view.webContents;
+  wc.removeAllListeners('did-navigate');
+  wc.removeAllListeners('did-start-loading');
+  wc.removeAllListeners('did-stop-loading');
+  // ほかに付与しているイベントがあれば追加で削除
+}
+
+function removeAllBrowserViewsListeners(mainWindow: BrowserWindow) {
+  mainWindow.getBrowserViews().forEach((view) => {
+    removeBrowserViewListeners(view);
+  });
+}
+
 function createWindow(): void {
   // 保存されたウィンドウの状態を読み込む
   const userDataPath = app.getPath('userData');
@@ -403,7 +417,7 @@ function createWindow(): void {
     ...appState.bounds,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
     },
   });
@@ -490,6 +504,9 @@ function createWindow(): void {
   mainWindow.on('close', (e) => {
     // Mac以外でデフォルトの閉じる動作をキャンセル
     e.preventDefault();
+
+    // ここでBrowserViewのイベントリスナーを削除
+    removeAllBrowserViewsListeners(mainWindow);
 
     if (mainWindow && !mainWindow.isDestroyed()) {
       // ウィンドウの状態を取得

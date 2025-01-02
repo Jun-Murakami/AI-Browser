@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import useResizeObserver from 'use-resize-observer';
 import { Allotment, AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
 import { EraseIcon, Split1Icon, Split2Icon, Split3Icon, Split4Icon, Split5Icon } from './Icons';
@@ -28,6 +27,34 @@ import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
 import { useCheckForUpdates } from '../utils/useCheckForUpdates';
 import BrowserTab from './BrowserTab';
+
+// カスタムフックを追加
+const useResizeObserver = <T extends HTMLElement>() => {
+  const [size, setSize] = useState<{ width?: number; height?: number }>({});
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+
+    observer.observe(ref.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return { ref, width: size.width, height: size.height };
+};
 
 interface HomePageProps {
   darkMode: boolean;
@@ -67,8 +94,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   const theme = useTheme();
 
-  const browserRef = useRef<HTMLDivElement>(null);
-  const promptHistoryRef = useRef<HTMLSelectElement>(null);
+  const { ref: browserRef, width: browserWidth, height: browserHeight } = useResizeObserver<HTMLDivElement>();
+  const { ref: promptHistoryRef, width: promptHistoryWidth } = useResizeObserver<HTMLSelectElement>();
+
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const copyButtonRef = useRef<HTMLButtonElement>(null);
   const clearButtonRef = useRef<HTMLButtonElement>(null);
@@ -76,9 +104,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const newerLogButtonRef = useRef<HTMLButtonElement>(null);
   const olderLogButtonRef = useRef<HTMLButtonElement>(null);
   const editorSplitRef = useRef<AllotmentHandle>(null!);
-
-  const { width: browserWidth, height: browserHeight } = useResizeObserver<HTMLDivElement>({ ref: browserRef });
-  const { width: promptHistoryWidth } = useResizeObserver<HTMLSelectElement>({ ref: promptHistoryRef });
 
   // ブラウザのサイズが変更されたらメインプロセスに通知
   useEffect(() => {
