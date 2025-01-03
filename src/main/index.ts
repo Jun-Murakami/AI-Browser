@@ -79,6 +79,12 @@ function setupView(mainWindow: BrowserWindow, url: string, index: number, urls: 
     mainWindow.webContents.send('update-urls', urls);
   });
 
+  // 初期ロード時のURLを取得するために追加
+  view.webContents.on('did-finish-load', () => {
+    urls[index] = view.webContents.getURL();
+    mainWindow.webContents.send('update-urls', urls);
+  });
+
   // ローディング開始時
   view.webContents.on('did-start-loading', () => {
     mainWindow.webContents.send('loading-status', { index, isLoading: true });
@@ -248,6 +254,7 @@ function removeIpcHandlers() {
 function removeBrowserViewListeners(view: BrowserView) {
   const wc = view.webContents;
   wc.removeAllListeners('did-navigate');
+  wc.removeAllListeners('did-finish-load');
   wc.removeAllListeners('did-start-loading');
   wc.removeAllListeners('did-stop-loading');
 }

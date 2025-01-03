@@ -1,6 +1,6 @@
 import { UrlPattern } from '../types/interfaces';
 
-export const EXPECTED_BROWSER_COUNT = 9;
+export const EXPECTED_BROWSER_COUNT = 8;
 
 export const BROWSER_URLS = {
   CHATGPT: 'https://chatgpt.com/',
@@ -21,7 +21,7 @@ export const URL_PATTERNS: UrlPattern[] = [
   { index: 3, pattern: 'phind.com', url: BROWSER_URLS.PHIND },
   { index: 4, pattern: 'perplexity.ai', url: BROWSER_URLS.PERPLEXITY },
   { index: 5, pattern: 'genspark.ai', url: BROWSER_URLS.GENSPARK },
-  { index: 6, pattern: ['aistudio.google.com', 'ai.google.dev'], url: BROWSER_URLS.AISTUDIO },
-  { index: 7, pattern: 'felo.ai', url: BROWSER_URLS.FELO },
-  { index: 8, pattern: 'jenova.ai', url: BROWSER_URLS.JENOVA },
+  //{ index: 6, pattern: ['aistudio.google.com', 'ai.google.dev'], url: BROWSER_URLS.AISTUDIO },
+  { index: 6, pattern: 'felo.ai', url: BROWSER_URLS.FELO },
+  { index: 7, pattern: 'jenova.ai', url: BROWSER_URLS.JENOVA },
 ];
