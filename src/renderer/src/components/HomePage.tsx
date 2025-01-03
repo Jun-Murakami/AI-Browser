@@ -69,10 +69,10 @@ interface Log {
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
-  const [browserIndex, setBrowserIndex] = useState(7);
+  const [browserIndex, setBrowserIndex] = useState(8);
   const [browserUrls, setBrowserUrls] = useState<string[]>([]);
-  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([true, true, true, true, true, true, true, true]);
-  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([true, true, true, true, true, true, true, true]);
+  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([true, true, true, true, true, true, true, true, true]);
+  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([true, true, true, true, true, true, true, true, true]);
   const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
@@ -368,7 +368,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     { label: 'Perplexity', index: 4 },
     { label: 'Genspark', index: 5 },
     { label: 'AI Studio', index: 6 },
-    { label: 'Jenova', index: 7 },
+    { label: 'Felo', index: 7 },
+    { label: 'JENOVA', index: 8 },
   ];
 
   const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
@@ -707,7 +708,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                                 ? 'Genspark'
                                 : browserIndex === 6
                                   ? 'AIStudio'
-                                  : 'Jenova'}
+                                  : browserIndex === 7
+                                    ? 'Felo'
+                                    : 'JENOVA'}
                   </Button>
                 </Tooltip>
                 <Button

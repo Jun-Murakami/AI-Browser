@@ -4,131 +4,145 @@ import path, { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import contextMenu from 'electron-context-menu';
 import icon from '../../resources/icon.png?asset';
-
-interface AppState {
-  bounds?: {
-    width?: number;
-    height?: number;
-    x?: number;
-    y?: number;
-  };
-  isMaximized?: boolean;
-  isDarkMode?: boolean;
-  editorMode?: number;
-  browserWidth?: number;
-  browserTabIndex?: number;
-  language?: string;
-  fontSize?: number;
-  enabledBrowsers?: boolean[];
-}
+import { AppState, Log, TabManager } from './types/interfaces';
+import { EXPECTED_BROWSER_COUNT, BROWSER_URLS, URL_PATTERNS } from './constants/browsers';
+import { BROWSER_SCRIPTS } from './scripts/browserScripts';
 
 let appState: AppState = {
-  bounds: {},
+  bounds: { x: 0, y: 0, width: 1100, height: 800 },
   isMaximized: false,
   isDarkMode: false,
   editorMode: 0,
-  browserWidth: 500,
+  browserWidth: 550,
   browserTabIndex: 0,
   language: 'text',
   fontSize: 16,
-  enabledBrowsers: [true, true, true, true, true, true, true],
+  enabledBrowsers: [true, true, true, true, true, true, true, true],
 };
-
-interface Log {
-  id: number;
-  text: string;
-}
 
 let logs: Log[] = [];
 
+const tabManager: TabManager = {
+  views: [],
+  currentIndex: 0,
+};
+
+/**
+ * タブの表示/非表示を切り替える
+ */
+function switchTab(mainWindow: BrowserWindow, newIndex: number) {
+  if (newIndex < 0 || newIndex >= tabManager.views.length) return;
+
+  // 現在のビューを非表示
+  if (tabManager.currentIndex >= 0 && tabManager.currentIndex < tabManager.views.length) {
+    const currentView = tabManager.views[tabManager.currentIndex];
+    mainWindow.removeBrowserView(currentView);
+  }
+
+  // 新しいビューを表示
+  const newView = tabManager.views[newIndex];
+  mainWindow.addBrowserView(newView);
+  const bounds = mainWindow.getBounds();
+  newView.setBounds({
+    x: 0,
+    y: 108,
+    width: appState.browserWidth ? appState.browserWidth - 2 : bounds.width - 2,
+    height: bounds.height - 108 - 36,
+  });
+
+  tabManager.currentIndex = newIndex;
+}
+
+/**
+ * 新しい BrowserView を生成し、イベントリスナーを付与
+ */
+function setupView(mainWindow: BrowserWindow, url: string, index: number, urls: string[]) {
+  const view = new BrowserView({
+    webPreferences: {
+      spellcheck: false,
+    },
+  });
+
+  // タブマネージャーに追加
+  tabManager.views.push(view);
+
+  view.webContents.loadURL(url);
+
+  contextMenu({
+    window: view.webContents,
+    showInspectElement: is.dev,
+  });
+
+  // ブラウザのURLを更新するイベント
+  view.webContents.on('did-navigate', (_, newUrl) => {
+    urls[index] = newUrl;
+    mainWindow.webContents.send('update-urls', urls);
+  });
+
+  // ローディング開始時
+  view.webContents.on('did-start-loading', () => {
+    mainWindow.webContents.send('loading-status', { index, isLoading: true });
+  });
+
+  // ローディング終了時
+  view.webContents.on('did-stop-loading', () => {
+    mainWindow.webContents.send('loading-status', { index, isLoading: false });
+  });
+
+  // 最初のタブを表示
+  if (index === urls.length - 1) {
+    switchTab(mainWindow, 0);
+  }
+}
+
+/**
+ * メインウィンドウ用のIPCハンドラを登録
+ */
 function registerIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.on('browser-size', (_, arg) => {
     const { width, height } = arg;
-    if (!width || !height || mainWindow.getBrowserViews().length === 0) {
+    if (!width || !height || tabManager.views.length === 0) {
       return;
     }
-    mainWindow.getBrowserViews().forEach((view) => {
-      view.setBounds({ x: 0, y: 108, width: width - 2, height: height - 8 });
-    });
+    // 現在表示中のビューのサイズのみを更新
+    const currentView = tabManager.views[tabManager.currentIndex];
+    if (currentView) {
+      currentView.setBounds({ x: 0, y: 108, width: width - 2, height: height - 8 });
+    }
     appState.browserWidth = width;
   });
 
   ipcMain.on('browser-tab-index', (_, index) => {
-    if (mainWindow.getBrowserViews().length === 0) {
+    if (tabManager.views.length === 0) {
       return;
     }
     appState.browserTabIndex = index;
-    mainWindow.getBrowserViews().forEach((view) => {
-      if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
-        mainWindow.setTopBrowserView(view);
-      } else if (index === 1 && view.webContents.getURL().includes('gemini.google.com')) {
-        mainWindow.setTopBrowserView(view);
-      } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
-        mainWindow.setTopBrowserView(view);
-      } else if (index === 3 && view.webContents.getURL().includes('phind.com')) {
-        mainWindow.setTopBrowserView(view);
-      } else if (index === 4 && view.webContents.getURL().includes('perplexity.ai')) {
-        mainWindow.setTopBrowserView(view);
-      } else if (index === 5 && view.webContents.getURL().includes('genspark.ai')) {
-        mainWindow.setTopBrowserView(view);
-      } else if (
-        (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) ||
-        view.webContents.getURL().includes('ai.google.dev')
-      ) {
-        mainWindow.setTopBrowserView(view);
-      } else if (index === 7 && view.webContents.getURL().includes('jenova.ai')) {
-        mainWindow.setTopBrowserView(view);
-      }
-    });
+    switchTab(mainWindow, index);
   });
 
   ipcMain.on('reload-current-view', () => {
-    const index = appState.browserTabIndex;
-    mainWindow.getBrowserViews().forEach((view) => {
-      if (index === 0 && view.webContents.getURL().includes('chatgpt.com')) {
-        view.webContents.reload();
-      } else if (index === 1 && view.webContents.getURL().includes('gemini.google.com')) {
-        view.webContents.reload();
-      } else if (index === 2 && view.webContents.getURL().includes('claude.ai')) {
-        view.webContents.reload();
-      } else if (index === 3 && view.webContents.getURL().includes('phind.com')) {
-        view.webContents.reload();
-      } else if (index === 4 && view.webContents.getURL().includes('perplexity.ai')) {
-        view.webContents.reload();
-      } else if (index === 5 && view.webContents.getURL().includes('genspark.ai')) {
-        view.webContents.reload();
-      } else if (
-        (index === 6 && view.webContents.getURL().includes('aistudio.google.com')) ||
-        view.webContents.getURL().includes('ai.google.dev')
-      ) {
-        view.webContents.reload();
-      } else if (index === 7 && view.webContents.getURL().includes('jenova.ai')) {
-        view.webContents.reload();
-      }
-    });
+    const currentView = tabManager.views[tabManager.currentIndex];
+    if (!currentView) return;
+
+    // 現在のタブのURLに基づいてリロード
+    const url = currentView.webContents.getURL();
+    const urlPattern = URL_PATTERNS.find(
+      (pattern) =>
+        tabManager.currentIndex === pattern.index &&
+        (Array.isArray(pattern.pattern) ? pattern.pattern.some((p) => url.includes(p)) : url.includes(pattern.pattern))
+    );
+
+    if (urlPattern) {
+      currentView.webContents.reload();
+    }
   });
 
   ipcMain.on('reload-all-views', () => {
-    mainWindow.getBrowserViews().forEach((view) => {
-      if (view.webContents.getURL().includes('chatgpt.com')) {
-        view.webContents.loadURL('https://chatgpt.com/');
-      } else if (view.webContents.getURL().includes('gemini.google.com')) {
-        view.webContents.loadURL('https://gemini.google.com/');
-      } else if (view.webContents.getURL().includes('claude.ai')) {
-        view.webContents.loadURL('https://claude.ai/');
-      } else if (view.webContents.getURL().includes('phind.com')) {
-        view.webContents.loadURL('https://www.phind.com/');
-      } else if (view.webContents.getURL().includes('perplexity.ai')) {
-        view.webContents.loadURL('https://www.perplexity.ai/');
-      } else if (view.webContents.getURL().includes('genspark.ai')) {
-        view.webContents.loadURL('https://www.genspark.ai/');
-      } else if (
-        view.webContents.getURL().includes('aistudio.google.com') ||
-        view.webContents.getURL().includes('ai.google.dev')
-      ) {
-        view.webContents.loadURL('https://aistudio.google.com/');
-      } else if (view.webContents.getURL().includes('jenova.ai')) {
-        view.webContents.loadURL('https://app.jenova.ai/');
+    // 全てのビューを初期URLにリセット
+    tabManager.views.forEach((view, index) => {
+      const urlPattern = URL_PATTERNS.find((pattern) => pattern.index === index);
+      if (urlPattern) {
+        view.webContents.loadURL(urlPattern.url);
       }
     });
   });
@@ -173,174 +187,37 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
-    if (mainWindow.getBrowserViews().length === 0) {
+    if (tabManager.views.length === 0) {
       return;
     }
-    mainWindow.getBrowserViews().forEach((view) => {
-      if (!appState.enabledBrowsers) {
+
+    tabManager.views.forEach((view, index) => {
+      if (!appState.enabledBrowsers?.[index]) {
         return;
       }
-      if (
-        view.webContents.getURL().includes('chatgpt.com') &&
-        appState.enabledBrowsers[0] &&
-        (appState.browserTabIndex === 0 || sendToAll)
-      ) {
-        const script = `var textareaTag = document.querySelector('main div[id="prompt-textarea"]');
-                        textareaTag.textContent = ${JSON.stringify(text)};
-                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                        setTimeout(() => {
-                          var buttons = document.querySelectorAll('main button[data-testid="send-button"]');
-                          if (buttons.length > 0) {
-                            buttons[buttons.length - 1].click();
-                          }
-                        }, 700);
-                        `;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
-      } else if (
-        view.webContents.getURL().includes('gemini.google.com') &&
-        appState.enabledBrowsers[1] &&
-        (appState.browserTabIndex === 1 || sendToAll)
-      ) {
-        const script = `var textareaTag = document.querySelector('main rich-textarea div[role="textbox"] p');
-                        textareaTag.textContent = ${JSON.stringify(text)};
-                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                        setTimeout(() => {
-                          var sendButton = document.querySelector('main div.send-button-container button.send-button');
-                          if (sendButton) {
-                            sendButton.click();
-                          }
-                        }, 700);
-                        `;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
-      } else if (
-        view.webContents.getURL().includes('claude.ai') &&
-        appState.enabledBrowsers[2] &&
-        (appState.browserTabIndex === 2 || sendToAll)
-      ) {
-        const script = `var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
-                        var textareaTag = textareaTags[textareaTags.length - 1];
-                        if (textareaTag) {
-                          textareaTag.textContent = ${JSON.stringify(text)};
-                          textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                        setTimeout(() => {
-                          var sendButton = document.querySelector('div[data-value="new chat"] button');
-                          if (!sendButton) {
-                            sendButton = document.querySelector('button[aria-label="Send Message"]');
-                          }
-                          if (sendButton) {
-                            sendButton.click();
-                          }
-                        }, 700);
-                        `;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
-      } else if (
-        view.webContents.getURL().includes('phind.com') &&
-        appState.enabledBrowsers[3] &&
-        (appState.browserTabIndex === 3 || sendToAll)
-      ) {
-        const script = `var textareaTag = document.querySelector('main form textarea');
-                        textareaTag.textContent = ${JSON.stringify(text)};
-                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                        setTimeout(() => {
-                          var sendButton = document.querySelector('main form button[type="submit"]');
-                          if (sendButton) {
-                            sendButton.click();
-                          }
-                        }, 700);
-                        `;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
-      } else if (
-        view.webContents.getURL().includes('perplexity.ai') &&
-        appState.enabledBrowsers[4] &&
-        (appState.browserTabIndex === 4 || sendToAll)
-      ) {
-        const script = `var textareaTags = document.querySelectorAll('main textarea');
-                        var textareaTag = textareaTags[textareaTags.length - 1];
-                        if (textareaTag) {
-                          const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-                          nativeTextAreaValueSetter.call(textareaTag, ${JSON.stringify(text)});
-                          textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                          setTimeout(() => {
-                            var buttons = document.querySelectorAll('main button[aria-label="Submit"]');
-                            var sendButton = buttons[buttons.length - 1];
-                            if (sendButton) {
-                              sendButton.click();
-                            }
-                          }, 300);
-                        }`;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
-      } else if (
-        view.webContents.getURL().includes('genspark.ai') &&
-        appState.enabledBrowsers[5] &&
-        (appState.browserTabIndex === 5 || sendToAll)
-      ) {
-        const script = `var textareaTag = document.querySelector('.search-input') || document.querySelector('textarea[id="searchInput"]');
-                        textareaTag.value = ${JSON.stringify(text)};
-                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                        setTimeout(() => {
-                          var sendButton = document.querySelector('div.input-icon') || document.querySelector('div.enter-icon-wrapper');
-                          if (sendButton) {
-                            sendButton.click();
-                          }
-                        }, 700);  
-                        `;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
-      } else if (
-        view.webContents.getURL().includes('aistudio.google.com') &&
-        appState.enabledBrowsers[6] &&
-        (appState.browserTabIndex === 6 || sendToAll)
-      ) {
-        const script = `var textareaTag = document.querySelector('textarea[aria-label="User text input"]');
-                        textareaTag.value = ${JSON.stringify(text)};
-                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                        setTimeout(() => {
-                          var sendButton = document.querySelector('button.run-button');
-                          if (sendButton) {
-                            sendButton.click();
-                          }
-                        }, 700);
-                        `;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
-      } else if (
-        view.webContents.getURL().includes('jenova.ai') &&
-        appState.enabledBrowsers[7] &&
-        (appState.browserTabIndex === 7 || sendToAll)
-      ) {
-        const script = `var textareaTag = document.querySelector('textarea[name="message"]');
-                        var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
-                          window.HTMLTextAreaElement.prototype,
-                          "value"
-                        ).set;
-                        nativeTextAreaValueSetter.call(textareaTag, ${JSON.stringify(text)});
-                        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-                        
-                        setTimeout(() => {
-                          var siblingDivs = textareaTag.parentElement.querySelectorAll(':scope > div');
-                          var sendButton = siblingDivs[siblingDivs.length - 1];
-                          if (sendButton) {
-                            console.log('sendButton', sendButton);
-                            sendButton.click();
-                          }
-                        }, 700);
-                        `;
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
+
+      const urlPattern = URL_PATTERNS.find((pattern) => pattern.index === index);
+      if (!urlPattern) return;
+
+      const currentUrl = view.webContents.getURL();
+      const shouldSend =
+        sendToAll ||
+        (tabManager.currentIndex === index &&
+          (Array.isArray(urlPattern.pattern)
+            ? urlPattern.pattern.some((p) => currentUrl.includes(p))
+            : currentUrl.includes(urlPattern.pattern)));
+
+      if (shouldSend) {
+        // スクリプトを取得し、テキストを置換
+        const scriptKey = Object.keys(BROWSER_URLS).find(
+          (key) => BROWSER_URLS[key as keyof typeof BROWSER_URLS] === urlPattern.url
+        );
+        if (scriptKey) {
+          const script = BROWSER_SCRIPTS[scriptKey as keyof typeof BROWSER_SCRIPTS].replace('TEXT_TO_SEND', JSON.stringify(text));
+          view.webContents.executeJavaScript(script).catch((error) => {
+            console.error('Script execution failed:', error);
+          });
+        }
       }
     });
   });
@@ -350,6 +227,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   });
 }
 
+/**
+ * メインウィンドウ用のIPCハンドラを削除
+ */
 function removeIpcHandlers() {
   ipcMain.removeAllListeners('browser-size');
   ipcMain.removeAllListeners('browser-tab-index');
@@ -362,25 +242,29 @@ function removeIpcHandlers() {
   ipcMain.removeAllListeners('text');
 }
 
-contextMenu({
-  showInspectElement: is.dev,
-});
-
+/**
+ * BrowserView に登録しているイベントリスナーを削除
+ */
 function removeBrowserViewListeners(view: BrowserView) {
   const wc = view.webContents;
   wc.removeAllListeners('did-navigate');
   wc.removeAllListeners('did-start-loading');
   wc.removeAllListeners('did-stop-loading');
-  // ほかに付与しているイベントがあれば追加で削除
 }
 
+/**
+ * メインウィンドウに登録されている全ての BrowserView のイベントを削除
+ */
 function removeAllBrowserViewsListeners(mainWindow: BrowserWindow) {
-  mainWindow.getBrowserViews().forEach((view) => {
+  tabManager.views.forEach((view) => {
     removeBrowserViewListeners(view);
   });
 }
 
-function createWindow(): void {
+/**
+ * メインウィンドウ（BrowserWindow）を生成する
+ */
+function createMainWindow(): BrowserWindow {
   // 保存されたウィンドウの状態を読み込む
   const userDataPath = app.getPath('userData');
   const appStatePath = path.join(userDataPath, 'appState.json');
@@ -392,9 +276,9 @@ function createWindow(): void {
     }
   }
 
-  // Ensure enabledBrowsers is initialized
-  if (!appState.enabledBrowsers) {
-    appState.enabledBrowsers = [true, true, true, true, true, true, true];
+  // 有効ブラウザの数が期待値と一致しない場合、全てのブラウザを有効にする
+  if (!appState.enabledBrowsers || appState.enabledBrowsers.length !== EXPECTED_BROWSER_COUNT) {
+    appState.enabledBrowsers = Array(EXPECTED_BROWSER_COUNT).fill(true);
   }
 
   const logsPath = path.join(userDataPath, 'logs.json');
@@ -408,9 +292,7 @@ function createWindow(): void {
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1000,
     minWidth: 1000,
-    height: 700,
     minHeight: 700,
     show: false,
     autoHideMenuBar: true,
@@ -427,52 +309,11 @@ function createWindow(): void {
     mainWindow.maximize();
   }
 
-  const urls = [
-    'https://chatgpt.com/',
-    'https://gemini.google.com/',
-    'https://claude.ai/',
-    'https://www.phind.com/',
-    'https://www.perplexity.ai/',
-    'https://www.genspark.ai/',
-    'https://aistudio.google.com/',
-    'https://app.jenova.ai/',
-  ];
+  // 各ブラウザのURLリスト
+  const urls = URL_PATTERNS.map((pattern) => pattern.url);
 
-  function setupView(url: string, index: number) {
-    const view = new BrowserView({
-      webPreferences: {
-        spellcheck: false,
-      },
-    });
-    mainWindow.addBrowserView(view);
-    view.webContents.loadURL(url);
-
-    contextMenu({
-      window: view.webContents,
-      showInspectElement: is.dev,
-    });
-
-    // ブラウザのURLを更新
-    view.webContents.on('did-navigate', (_, newUrl) => {
-      urls[index] = newUrl;
-      mainWindow.webContents.send('update-urls', urls);
-    });
-
-    // ローディング開始時のイベント
-    view.webContents.on('did-start-loading', () => {
-      mainWindow.webContents.send('loading-status', { index, isLoading: true });
-    });
-
-    // ローディング終了時のイベント
-    view.webContents.on('did-stop-loading', () => {
-      mainWindow.webContents.send('loading-status', { index, isLoading: false });
-    });
-  }
-
-  urls
-    .slice()
-    .reverse()
-    .forEach((url, index) => setupView(url, urls.length - 1 - index));
+  // WebContentsViewを生成
+  urls.forEach((url, index) => setupView(mainWindow, url, index, urls));
 
   if (appState.isDarkMode) {
     nativeTheme.themeSource = 'dark';
@@ -539,6 +380,8 @@ function createWindow(): void {
     removeIpcHandlers();
     mainWindow.destroy();
   });
+
+  return mainWindow;
 }
 
 // This method will be called when Electron has finished
@@ -555,12 +398,12 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  createWindow();
+  createMainWindow();
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
 });
 
