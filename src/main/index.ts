@@ -255,7 +255,7 @@ function removeBrowserViewListeners(view: BrowserView) {
 /**
  * メインウィンドウに登録されている全ての BrowserView のイベントを削除
  */
-function removeAllBrowserViewsListeners(mainWindow: BrowserWindow) {
+function removeAllBrowserViewsListeners() {
   tabManager.views.forEach((view) => {
     removeBrowserViewListeners(view);
   });
@@ -347,7 +347,7 @@ function createMainWindow(): BrowserWindow {
     e.preventDefault();
 
     // ここでBrowserViewのイベントリスナーを削除
-    removeAllBrowserViewsListeners(mainWindow);
+    removeAllBrowserViewsListeners();
 
     if (mainWindow && !mainWindow.isDestroyed()) {
       // ウィンドウの状態を取得
