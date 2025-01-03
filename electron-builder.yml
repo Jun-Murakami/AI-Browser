@@ -28,9 +28,7 @@ mac:
   notarize: { teamId: 'AQDS3A93CQ' }
   target:
     - target: dmg
-      arch: arm64
-    - target: dmg
-      arch: x64
+      arch: universal
 dmg:
   artifactName: ${productName}-${version}_mac_${arch}.${ext}
 linux:
