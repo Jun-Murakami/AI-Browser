@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, BrowserView, nativeTheme } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, WebContentsView } from 'electron';
 import fs from 'fs';
 import path, { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
@@ -31,17 +31,18 @@ const tabManager: TabManager = {
  * タブの表示/非表示を切り替える
  */
 function switchTab(mainWindow: BrowserWindow, newIndex: number) {
+  // BrowserWindow を BaseWindow に変更
   if (newIndex < 0 || newIndex >= tabManager.views.length) return;
 
   // 現在のビューを非表示
   if (tabManager.currentIndex >= 0 && tabManager.currentIndex < tabManager.views.length) {
     const currentView = tabManager.views[tabManager.currentIndex];
-    mainWindow.removeBrowserView(currentView);
+    mainWindow.contentView.removeChildView(currentView); // removeBrowserView を removeChildView に変更
   }
 
   // 新しいビューを表示
   const newView = tabManager.views[newIndex];
-  mainWindow.addBrowserView(newView);
+  mainWindow.contentView.addChildView(newView); // addBrowserView を addChildView に変更
   const bounds = mainWindow.getBounds();
   newView.setBounds({
     x: 0,
@@ -54,10 +55,12 @@ function switchTab(mainWindow: BrowserWindow, newIndex: number) {
 }
 
 /**
- * 新しい BrowserView を生成し、イベントリスナーを付与
+ * 新しい WebContentsView を生成し、イベントリスナーを付与
  */
 function setupView(mainWindow: BrowserWindow, url: string, index: number, urls: string[]) {
-  const view = new BrowserView({
+  // BrowserWindow を BaseWindow に変更
+  const view = new WebContentsView({
+    // BrowserView を WebContentsView に変更
     webPreferences: {
       spellcheck: false,
     },
@@ -105,6 +108,7 @@ function setupView(mainWindow: BrowserWindow, url: string, index: number, urls: 
  * メインウィンドウ用のIPCハンドラを登録
  */
 function registerIpcHandlers(mainWindow: BrowserWindow) {
+  // BrowserWindow を BaseWindow に変更
   ipcMain.on('browser-size', (_, arg) => {
     const { width, height } = arg;
     if (!width || !height || tabManager.views.length === 0) {
@@ -251,7 +255,8 @@ function removeIpcHandlers() {
 /**
  * BrowserView に登録しているイベントリスナーを削除
  */
-function removeBrowserViewListeners(view: BrowserView) {
+function removeBrowserViewListeners(view: WebContentsView) {
+  // BrowserView を WebContentsView に変更
   const wc = view.webContents;
   wc.removeAllListeners('did-navigate');
   wc.removeAllListeners('did-finish-load');
@@ -269,9 +274,10 @@ function removeAllBrowserViewsListeners() {
 }
 
 /**
- * メインウィンドウ（BrowserWindow）を生成する
+ * メインウィンドウ（BaseWindow）を生成する
  */
 function createMainWindow(): BrowserWindow {
+  // BrowserWindow を BaseWindow に変更
   // 保存されたウィンドウの状態を読み込む
   const userDataPath = app.getPath('userData');
   const appStatePath = path.join(userDataPath, 'appState.json');
@@ -299,6 +305,7 @@ function createMainWindow(): BrowserWindow {
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
+    // BrowserWindow を BaseWindow に変更
     minWidth: 1000,
     minHeight: 700,
     show: false,
@@ -410,7 +417,7 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow(); // BrowserWindow を BaseWindow に変更
   });
 });
 

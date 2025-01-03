@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Allotment, AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
+import { toast } from 'sonner';
 import { EraseIcon, Split1Icon, Split2Icon, Split3Icon, Split4Icon, Split5Icon } from './Icons';
 import {
   Box,
@@ -69,10 +70,10 @@ interface Log {
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
-  const [browserIndex, setBrowserIndex] = useState(7);
+  const [browserIndex, setBrowserIndex] = useState(8);
   const [browserUrls, setBrowserUrls] = useState<string[]>([]);
-  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([true, true, true, true, true, true, true, true]);
-  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([true, true, true, true, true, true, true, true]);
+  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([true, true, true, true, true, true, true, true, true]);
+  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([true, true, true, true, true, true, true, true, true]);
   const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('text');
@@ -262,11 +263,13 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     handleClearButtonClick();
   };
 
+  // ログを保存
   const handleSaveButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
       window.electron.sendLogsToMain(newLogs);
+      toast('Log saved.');
     }
   };
 
@@ -357,7 +360,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // コピーボタンがクリックされたらエディターの内容をクリップボードにコピー
   const handleCopyButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
+    if (combinedEditorValue.trim() === '') {
+      return;
+    }
     navigator.clipboard.writeText(combinedEditorValue);
+    toast('Copied to clipboard.');
   };
 
   const browserTabs = [
@@ -370,12 +377,13 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     //{ label: 'AI Studio', index: 6 },
     { label: 'Felo', index: 6 },
     { label: 'JENOVA', index: 7 },
+    { label: 'Cody', index: 8 },
   ];
 
   const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
   return (
-    <Box sx={{ height: '100vh', borderTop: 1, borderColor: theme.palette.divider }}>
+    <Box sx={{ height: '100vh', borderTop: 1, borderColor: theme.palette.divider }} component='main'>
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
@@ -655,7 +663,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     window.electron.sendIsDarkModeToMain(!darkMode);
                   }}
                 />
-                <Tooltip title={`(${commandKey} + Backspace)`} arrow>
+                <Tooltip title={`Clear (${commandKey} + Backspace)`} arrow>
                   <Button
                     ref={clearButtonRef}
                     variant='outlined'
@@ -669,24 +677,17 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 </Tooltip>
               </Box>
               <Box>
-                <Tooltip title={`Save log only (${commandKey} + S)`} arrow>
+                <Tooltip title={`Save log (${commandKey} + S)`} arrow>
                   <IconButton ref={saveButtonRef} color='primary' size='small' onClick={handleSaveButtonClick}>
                     <Save />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title={`(${commandKey} + Shift + C)`} arrow>
-                  <Button
-                    ref={copyButtonRef}
-                    variant='outlined'
-                    size='small'
-                    sx={{ mr: 1 }}
-                    startIcon={<ContentPaste />}
-                    onClick={handleCopyButtonClick}
-                  >
-                    Copy
-                  </Button>
+                <Tooltip title={`Copy to clipboard (${commandKey} + Shift + C)`} arrow>
+                  <IconButton ref={copyButtonRef} color='primary' size='small' sx={{ mr: 1 }} onClick={handleCopyButtonClick}>
+                    <ContentPaste />
+                  </IconButton>
                 </Tooltip>
-                <Tooltip title={`(${commandKey} + Enter)`} arrow>
+                <Tooltip title={`Send to ${browserTabs[browserIndex].label} (${commandKey} + Enter)`} arrow>
                   <Button
                     ref={sendButtonRef}
                     variant='contained'
@@ -694,31 +695,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     startIcon={<Send sx={{ mr: -0.5 }} />}
                     onClick={() => handleSendButtonClick(false)}
                   >
-                    {browserIndex === 0
-                      ? 'ChatGPT'
-                      : browserIndex === 1
-                        ? 'Gemini'
-                        : browserIndex === 2
-                          ? 'Claude'
-                          : browserIndex === 3
-                            ? 'Phind'
-                            : browserIndex === 4
-                              ? 'Perplexity'
-                              : browserIndex === 5
-                                ? 'Genspark'
-                                : browserIndex === 6
-                                  ? 'Felo'
-                                  : 'JENOVA'}
+                    {browserTabs[browserIndex].label}
                   </Button>
                 </Tooltip>
-                <Button
-                  variant='contained'
-                  sx={{ width: 40, mr: 1 }}
-                  startIcon={<Send sx={{ mr: -0.5 }} />}
-                  onClick={() => handleSendButtonClick(true)}
-                >
-                  All
-                </Button>
+                <Tooltip title={`Send to all tabs`} arrow>
+                  <Button
+                    variant='contained'
+                    sx={{ width: 40, mr: 1 }}
+                    startIcon={<Send sx={{ mr: -0.5 }} />}
+                    onClick={() => handleSendButtonClick(true)}
+                  >
+                    All
+                  </Button>
+                </Tooltip>
               </Box>
             </Box>
           </Box>

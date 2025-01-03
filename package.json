@@ -35,7 +35,8 @@
     "allotment": "^1.20.2",
     "electron-context-menu": "^4.0.4",
     "electron-updater": "^6.3.9",
-    "monaco-editor": "^0.52.2"
+    "monaco-editor": "^0.52.2",
+    "sonner": "^1.7.1"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",

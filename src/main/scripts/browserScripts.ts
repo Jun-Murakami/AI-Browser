@@ -119,4 +119,60 @@ export const BROWSER_SCRIPTS = {
       }
     }, 700);
   `,
+  CODY: `
+    var textAreaTags = document.querySelectorAll('div[data-lexical-editor="true"]');
+    console.log(textAreaTags);
+    var textareaTag = textAreaTags[textAreaTags.length - 1];
+
+    // Lexicalエディタのインスタンスを取得
+    var editor = textareaTag.__lexicalEditor;
+    console.log(editor);
+    if (editor) {
+      // 新しい状態をJSONとして構築
+      const state = {
+        root: {
+          children: [
+            {
+              children: [
+                {
+                  detail: 0,
+                  format: 0,
+                  mode: "normal",
+                  style: "",
+                  text: TEXT_TO_SEND,
+                  type: "text",
+                  version: 1
+                }
+              ],
+              direction: "ltr",
+              format: "",
+              indent: 0,
+              type: "paragraph",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "root",
+          version: 1
+        }
+      };
+
+      const editorState = editor.parseEditorState(JSON.stringify(state));
+      editor.setEditorState(editorState);
+      
+      // 入力イベントをディスパッチ
+      textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    setTimeout(() => {
+      var sendButtons = document.querySelectorAll('button[type="submit"]');
+      console.log(sendButtons);
+      var sendButton = sendButtons[sendButtons.length - 1];
+      if (sendButton) {
+        sendButton.click();
+      }
+    }, 100);
+  `,
 } as const;

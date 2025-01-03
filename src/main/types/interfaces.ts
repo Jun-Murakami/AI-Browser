@@ -1,4 +1,4 @@
-import { BrowserView } from 'electron';
+import { WebContentsView } from 'electron';
 
 export interface AppState {
   bounds: Electron.Rectangle;
@@ -18,7 +18,7 @@ export interface Log {
 }
 
 export interface TabManager {
-  views: BrowserView[];
+  views: WebContentsView[];
   currentIndex: number;
 }
 

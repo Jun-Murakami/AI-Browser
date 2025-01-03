@@ -1,6 +1,6 @@
 import { UrlPattern } from '../types/interfaces';
 
-export const EXPECTED_BROWSER_COUNT = 8;
+export const EXPECTED_BROWSER_COUNT = 9;
 
 export const BROWSER_URLS = {
   CHATGPT: 'https://chatgpt.com/',
@@ -12,6 +12,7 @@ export const BROWSER_URLS = {
   AISTUDIO: 'https://aistudio.google.com/',
   FELO: 'https://felo.ai/',
   JENOVA: 'https://app.jenova.ai/',
+  CODY: 'https://sourcegraph.com/cody/chat',
 } as const;
 
 export const URL_PATTERNS: UrlPattern[] = [
@@ -24,4 +25,5 @@ export const URL_PATTERNS: UrlPattern[] = [
   //{ index: 6, pattern: ['aistudio.google.com', 'ai.google.dev'], url: BROWSER_URLS.AISTUDIO },
   { index: 6, pattern: 'felo.ai', url: BROWSER_URLS.FELO },
   { index: 7, pattern: 'jenova.ai', url: BROWSER_URLS.JENOVA },
+  { index: 8, pattern: 'sourcegraph.com', url: BROWSER_URLS.CODY },
 ];
