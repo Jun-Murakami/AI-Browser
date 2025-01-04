@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Tab, Checkbox, CircularProgress } from '@mui/material';
-import { ChatGPTIcon, GeminiIcon, ClaudeIcon } from './Icons';
+import { ChatGPTIcon, GeminiIcon, ClaudeIcon, DeepSeekIcon } from './Icons';
 
 interface BrowserTabProps {
   isEditingBrowserShow: boolean;
@@ -33,7 +33,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     });
   };
 
-  const isIconOnly = ['ChatGPT', 'Gemini', 'Claude'].includes(label);
+  const isIconOnly = ['ChatGPT', 'Gemini', 'Claude', 'DeepSeek'].includes(label);
 
   const renderTabContent = () => {
     if (isEditingBrowserShow) {
@@ -53,6 +53,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             <GeminiIcon sx={{ fontSize: 18 }} />
           ) : label === 'Claude' ? (
             <ClaudeIcon sx={{ fontSize: 18 }} />
+          ) : label === 'DeepSeek' ? (
+            <DeepSeekIcon sx={{ fontSize: 20 }} />
           ) : (
             label
           )}
@@ -67,6 +69,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       return <GeminiIcon sx={{ fontSize: 18 }} />;
     } else if (label === 'Claude') {
       return <ClaudeIcon sx={{ fontSize: 18 }} />;
+    } else if (label === 'DeepSeek') {
+      return <DeepSeekIcon sx={{ fontSize: 20 }} />;
     }
 
     // その他のタブは通常通りラベルを表示

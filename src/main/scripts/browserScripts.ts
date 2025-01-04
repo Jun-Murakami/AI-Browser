@@ -38,6 +38,23 @@ export const BROWSER_SCRIPTS = {
       }
     }, 700);
   `,
+  DEEPSEEK: `
+    var textareaTag = document.querySelector('textarea[id="chat-input"]');
+    var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      "value"
+    ).set;
+    nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
+    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+    
+    setTimeout(() => {
+      var sendButtons = document.querySelectorAll('div[role="button"]');
+      var sendButton = sendButtons[sendButtons.length - 1];
+      if (sendButton) {
+        sendButton.click();
+      }
+    }, 700);
+  `,
   PHIND: `
     var textareaTag = document.querySelector('main form textarea');
     textareaTag.textContent = TEXT_TO_SEND;
