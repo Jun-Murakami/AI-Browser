@@ -17,7 +17,7 @@ let appState: AppState = {
   browserTabIndex: 0,
   language: 'text',
   fontSize: 16,
-  enabledBrowsers: [true, true, true, true, true, true, true, true],
+  enabledBrowsers: [true, true, true, true, true, true, true, true, true, true, true],
 };
 
 let logs: Log[] = [];

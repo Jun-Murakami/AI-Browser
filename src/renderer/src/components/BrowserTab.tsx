@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Tab, Checkbox, CircularProgress } from '@mui/material';
-import { ChatGPTIcon, GeminiIcon, ClaudeIcon, DeepSeekIcon } from './Icons';
+import { ChatGPTIcon, GeminiIcon, ClaudeIcon, DeepSeekIcon, AIStudioIcon } from './Icons';
 
 interface BrowserTabProps {
   isEditingBrowserShow: boolean;
@@ -33,7 +33,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     });
   };
 
-  const isIconOnly = ['ChatGPT', 'Gemini', 'Claude', 'DeepSeek'].includes(label);
+  const isIconOnly = ['ChatGPT', 'Gemini', 'AIStudio', 'Claude', 'DeepSeek'].includes(label);
 
   const renderTabContent = () => {
     if (isEditingBrowserShow) {
@@ -51,6 +51,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             <ChatGPTIcon sx={{ fontSize: 18 }} />
           ) : label === 'Gemini' ? (
             <GeminiIcon sx={{ fontSize: 18 }} />
+          ) : label === 'AIStudio' ? (
+            <AIStudioIcon sx={{ fontSize: 18 }} />
           ) : label === 'Claude' ? (
             <ClaudeIcon sx={{ fontSize: 18 }} />
           ) : label === 'DeepSeek' ? (
@@ -67,6 +69,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       return <ChatGPTIcon sx={{ fontSize: 18 }} />;
     } else if (label === 'Gemini') {
       return <GeminiIcon sx={{ fontSize: 18 }} />;
+    } else if (label === 'AIStudio') {
+      return <AIStudioIcon sx={{ fontSize: 18 }} />;
     } else if (label === 'Claude') {
       return <ClaudeIcon sx={{ fontSize: 18 }} />;
     } else if (label === 'DeepSeek') {

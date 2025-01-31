@@ -1,6 +1,6 @@
 {
   "name": "ai-browser",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "AI Browser",
   "type": "module",
   "main": "./out/main/index.js",
@@ -29,32 +29,32 @@
     "@emotion/styled": "^11.14.0",
     "@fontsource/lato": "^5.1.1",
     "@fontsource/m-plus-1p": "^5.1.1",
-    "@mui/icons-material": "^6.3.0",
-    "@mui/material": "^6.3.0",
-    "@types/react-rnd": "^7.4.4",
+    "@mui/icons-material": "^6.4.2",
+    "@mui/material": "^6.4.2",
+    "@types/react-rnd": "^8.0.0",
     "allotment": "^1.20.2",
     "electron-context-menu": "^4.0.4",
     "electron-updater": "^6.3.9",
     "monaco-editor": "^0.52.2",
-    "sonner": "^1.7.1"
+    "sonner": "^1.7.3"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "@electron-toolkit/eslint-config-ts": "^2.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
-    "@types/node": "^22.10.4",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
+    "@types/node": "^22.12.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^33",
+    "electron": "^34",
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
-    "eslint": "^9.17.0",
-    "eslint-plugin-react": "^7.37.3",
+    "eslint": "^9.19.0",
+    "eslint-plugin-react": "^7.37.4",
     "prettier": "^3.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11"
   }
 }

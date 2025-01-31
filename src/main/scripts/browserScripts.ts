@@ -94,7 +94,7 @@ export const BROWSER_SCRIPTS = {
     }, 700);
   `,
   AISTUDIO: `
-    var textareaTag = document.querySelector('textarea[aria-label="User text input"]');
+    var textareaTag = document.querySelector('textarea[aria-label="Type something"]');
     textareaTag.value = TEXT_TO_SEND;
     textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
     setTimeout(() => {
