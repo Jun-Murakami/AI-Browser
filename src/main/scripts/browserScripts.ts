@@ -1,8 +1,17 @@
 export const BROWSER_SCRIPTS = {
   CHATGPT: `
-    var textareaTag = document.querySelector('main div[id="prompt-textarea"]');
-    textareaTag.textContent = TEXT_TO_SEND;
-    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+    var dataTransfer = new DataTransfer();
+    dataTransfer.setData('text', TEXT_TO_SEND);
+    var pasteEvent = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+
+    var editorContent = document.querySelector('main div[id="prompt-textarea"]');
+    editorContent.focus();
+    editorContent.dispatchEvent(pasteEvent);
+
     setTimeout(() => {
       var buttons = document.querySelectorAll('main button[data-testid="send-button"]');
       if (buttons.length > 0) {
@@ -11,23 +20,43 @@ export const BROWSER_SCRIPTS = {
     }, 700);
   `,
   GEMINI: `
-    var textareaTag = document.querySelector('main rich-textarea div[role="textbox"] p');
-    textareaTag.textContent = TEXT_TO_SEND;
-    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-    setTimeout(() => {
-      var sendButton = document.querySelector('main div.send-button-container button.send-button');
-      if (sendButton) {
-        sendButton.click();
+    try {
+      console.log('Send to GEMINI');
+      var textareaTag = document.querySelector('main div[contenteditable="true"]');
+      const style = document.createElement('style');
+      style.textContent = \`
+      main div[contenteditable="true"]::before,
+      main div[contenteditable="true"]::after {
+        content: none !important;
+        display: none !important;
       }
-    }, 700);
+      \`;
+      document.head.appendChild(style);
+      
+      textareaTag.textContent = TEXT_TO_SEND;
+      textareaTag.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true }));
+      setTimeout(() => {
+        var sendButton = document.querySelector('main button.send-button');
+        if (sendButton) {
+          sendButton.click();
+        }
+      }, 700);
+    } catch (error) {
+      console.error('Error in GEMINI script:', error);
+    }
   `,
   CLAUDE: `
     var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
     var textareaTag = textareaTags[textareaTags.length - 1];
-    if (textareaTag) {
-      textareaTag.textContent = TEXT_TO_SEND;
-      textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    var dataTransfer = new DataTransfer();
+    dataTransfer.setData('text', TEXT_TO_SEND);
+    var pasteEvent = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+    textareaTag.focus();
+    textareaTag.dispatchEvent(pasteEvent);
     setTimeout(() => {
       var sendButton = document.querySelector('div[data-value="new chat"] button');
       if (!sendButton) {
@@ -56,15 +85,43 @@ export const BROWSER_SCRIPTS = {
     }, 700);
   `,
   PHIND: `
-    var textareaTag = document.querySelector('main form textarea');
-    textareaTag.textContent = TEXT_TO_SEND;
-    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+    var dataTransfer = new DataTransfer();
+    dataTransfer.setData('text', TEXT_TO_SEND);
+
+    var pasteEvent = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+
+    var editorContent = document.querySelector('.public-DraftEditor-content');
+    editorContent.focus();
+    editorContent.dispatchEvent(pasteEvent);
+
     setTimeout(() => {
-      var sendButton = document.querySelector('main form button[type="submit"]');
-      if (sendButton) {
-        sendButton.click();
-      }
-    }, 700);
+      var enterKeydownEvent = new KeyboardEvent('keydown', {
+        key: 'Enter',    // 重要
+        code: 'Enter',   // 重要
+        which: 13,       // 一部レガシー
+        keyCode: 13,     // 一部レガシー
+        bubbles: true,   // イベントをバブルさせる
+        cancelable: true
+      });
+
+      // keydown -> keyup など、連続イベントを投げる場合
+      editorContent.dispatchEvent(enterKeydownEvent);
+
+      var enterKeyupEvent = new KeyboardEvent('keyup', {
+        key: 'Enter',
+        code: 'Enter',
+        which: 13,
+        keyCode: 13,
+        bubbles: true,
+        cancelable: true
+      });
+
+      editorContent.dispatchEvent(enterKeyupEvent);
+    }, 1000);
   `,
   PERPLEXITY: `
     var textareaTags = document.querySelectorAll('main textarea');
