@@ -1,6 +1,23 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import * as monaco from 'monaco-editor';
-import { useWatchBoxHeight } from '../utils/useWatchBoxHeight';
+import { useWatchBoxHeight } from '../hooks/useWatchBoxHeight';
+
+export interface LanguageInfo {
+  id: string;
+  extensions?: string[];
+  aliases?: string[];
+  mimetypes?: string[];
+  filenames?: string[];
+  firstLine?: string;
+}
+
+let _supportedLanguages: LanguageInfo[] | null = null;
+export const getSupportedLanguages = (): LanguageInfo[] => {
+  if (!_supportedLanguages) {
+    _supportedLanguages = monaco.languages.getLanguages();
+  }
+  return _supportedLanguages;
+};
 
 export interface MonacoEditorProps {
   darkMode: boolean;

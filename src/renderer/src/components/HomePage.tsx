@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Allotment, type AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
 import { toast } from 'sonner';
@@ -23,39 +23,14 @@ import {
 import { useTheme } from '@mui/system';
 import * as monaco from 'monaco-editor';
 import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings, Save } from '@mui/icons-material';
-import { supportedLanguages } from '../utils/supportedLanguages';
+import { getSupportedLanguages } from './MonacoEditor';
 import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
-import { useCheckForUpdates } from '../utils/useCheckForUpdates';
+import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import BrowserTab from './BrowserTab';
+import { useResizeObserver } from '../hooks/useResizeObserver';
+import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
 
-// カスタムフックを追加
-const useResizeObserver = <T extends HTMLElement>() => {
-  const [size, setSize] = useState<{ width?: number; height?: number }>({});
-  const ref = useRef<T>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        setSize({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height,
-        });
-      }
-    });
-
-    observer.observe(ref.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  return { ref, width: size.width, height: size.height };
-};
 
 interface HomePageProps {
   darkMode: boolean;
@@ -106,7 +81,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   ]);
   const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
-  const [language, setLanguage] = useState('text');
+  const [language, setLanguage] = useState('plaintext');
   const [fontSize, setFontSize] = useState(15);
   const [logs, setLogs] = useState<Log[]>([]);
   const [selectedLog, setSelectedLog] = useState<Log | null>(null);
@@ -145,32 +120,34 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   }, [browserWidth, browserHeight]);
 
   // ブラウザタブが切り替わったらメインプロセスに通知
-  const handleBrowserTabChange = (_: React.SyntheticEvent, index: number) => {
+  const handleBrowserTabChange = useCallback((_: React.SyntheticEvent, index: number) => {
     setBrowserIndex(index);
     window.electron.sendBrowserTabIndexToMain(index);
-  };
+  }, []);
 
   // エディタのタブが切り替わったらメインプロセスに通知
-  const handleEditorTabChange = (_: React.SyntheticEvent, index: number) => {
+  const handleEditorTabChange = useCallback((_: React.SyntheticEvent, index: number) => {
     setEditorIndex(index);
     window.electron.sendEditorModeToMain(index);
-  };
+  }, []);
 
   // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
-    if (!enabledBrowsers || !browserIndex || !browserIndexTimestamp) {
+    if (!enabledBrowsers || !browserIndexTimestamp) {
       return;
     }
-    let newBrowserIndex = browserIndex + 1;
-    while (!enabledBrowsers[newBrowserIndex]) {
-      newBrowserIndex = newBrowserIndex + 1;
-      if (newBrowserIndex > enabledBrowsers.filter((enabled) => enabled).length + 1) {
-        newBrowserIndex = 0;
+    setBrowserIndex((prev) => {
+      let newBrowserIndex = prev + 1;
+      while (!enabledBrowsers[newBrowserIndex]) {
+        newBrowserIndex = newBrowserIndex + 1;
+        if (newBrowserIndex > enabledBrowsers.filter((enabled) => enabled).length + 1) {
+          newBrowserIndex = 0;
+        }
       }
-    }
-    setBrowserIndex(newBrowserIndex);
-    window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
-  }, [browserIndexTimestamp, enabledBrowsers, browserIndex]);
+      window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
+      return newBrowserIndex;
+    });
+  }, [browserIndexTimestamp, enabledBrowsers]);
 
   // 初期設定を取得
   useEffect(() => {
@@ -234,7 +211,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   }, [checkForUpdates, setDarkMode]);
 
   // エディターテキストを結合して取得
-  const getCombinedEditorValue = () => {
+  const getCombinedEditorValue = useCallback(() => {
     const divider = '\n----\n';
     let combinedValue = '';
     if (editorIndex === 0) {
@@ -257,10 +234,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     // 末尾のディバイダーを削除
     combinedValue = combinedValue.replace(new RegExp(`${divider}$`), '');
     return combinedValue;
-  };
+  }, [editorIndex, editor1Value, editor2Value, editor3Value, editor4Value, editor5Value]);
 
   // ログを追加
-  const addLog = (text: string) => {
+  const addLog = useCallback((text: string) => {
     const newLog: Log = {
       id: logs.length > 0 ? logs[0].id + 1 : 1,
       text,
@@ -279,9 +256,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
     
     setLogs([newLog, ...logs]);
-    setSelectedLog(null);
-    return [newLog, ...logs];
-  };
+      setSelectedLog(null);
+      return [newLog, ...logs];
+    },
+    [logs]
+  );
 
   // テキストを送信
   const handleSendButtonClick = (sendToAll: boolean) => {
@@ -417,6 +396,18 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   ];
 
   const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+
+  // グローバルショートカットの設定
+  useGlobalShortcuts({
+    sendButtonRef,
+    saveButtonRef,
+    copyButtonRef,
+    clearButtonRef,
+    newerLogButtonRef,
+    olderLogButtonRef,
+    setBrowserIndexTimestamp,
+    osInfo,
+  });
 
   return (
     <Box sx={{ height: '100vh', borderTop: 1, borderColor: theme.palette.divider }} component='main'>
@@ -616,10 +607,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     PaperProps: { sx: { maxHeight: '50vh' } },
                   }}
                 >
-                  {supportedLanguages.map((language) => (
-                    <MenuItem key={language.id} value={language.name}>
+                  {getSupportedLanguages().map((language) => (
+                    <MenuItem key={language.id} value={language.id}>
                       <Typography noWrap variant='body2'>
-                        {language.name}
+                        {language.aliases?.[0] || language.id}
                       </Typography>
                     </MenuItem>
                   ))}
