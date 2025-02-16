@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 
 interface UseGlobalShortcutsProps {
   sendButtonRef: React.RefObject<HTMLButtonElement | null>;
@@ -7,6 +8,12 @@ interface UseGlobalShortcutsProps {
   clearButtonRef: React.RefObject<HTMLButtonElement | null>;
   newerLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement | null>;
+  sendButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
+  copyButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
+  clearButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
+  saveButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
+  newerLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
+  olderLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
   setBrowserIndexTimestamp: (timestamp: number) => void;
   osInfo: string;
 }
@@ -18,6 +25,12 @@ export const useGlobalShortcuts = ({
   clearButtonRef,
   newerLogButtonRef,
   olderLogButtonRef,
+  sendButtonTouchRippleRef,
+  copyButtonTouchRippleRef,
+  clearButtonTouchRippleRef,
+  saveButtonTouchRippleRef,
+  newerLogButtonTouchRippleRef,
+  olderLogButtonTouchRippleRef,
   setBrowserIndexTimestamp,
   osInfo,
 }: UseGlobalShortcutsProps) => {
@@ -36,28 +49,45 @@ export const useGlobalShortcuts = ({
       // Send command (Cmd/Ctrl + Enter)
       if (cmdKey && e.key === 'Enter') {
         e.preventDefault();
+        sendButtonRef.current?.focus();
+        sendButtonTouchRippleRef.current?.start();
         sendButtonRef.current?.click();
+        setTimeout(() => {
+          sendButtonTouchRippleRef.current?.stop();
+        }, 200);
       }
 
       // Save command (Cmd/Ctrl + S)
       if (cmdKey && e.key === 's') {
         e.preventDefault();
+        saveButtonRef.current?.focus();
+        saveButtonTouchRippleRef.current?.start();
         saveButtonRef.current?.click();
+        setTimeout(() => {
+          saveButtonTouchRippleRef.current?.stop();
+        }, 200);
       }
 
       // Copy command (Cmd/Ctrl + Shift + C)
       if (cmdKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
         e.preventDefault();
-        e.stopPropagation();  // イベントの伝播を停止
+        copyButtonRef.current?.focus();
+        copyButtonTouchRippleRef.current?.start();
         setTimeout(() => {
           copyButtonRef.current?.click();
-        }, 0);
+          copyButtonTouchRippleRef.current?.stop();
+        }, 200);
       }
 
       // Clear command (Cmd/Ctrl + Backspace)
       if (cmdKey && e.key === 'Backspace') {
         e.preventDefault();
-        clearButtonRef.current?.click();
+        clearButtonRef.current?.focus();
+        clearButtonTouchRippleRef.current?.start();
+        setTimeout(() => {
+          clearButtonRef.current?.click();
+          clearButtonTouchRippleRef.current?.stop();
+        }, 200);
       }
 
       // Tab switch command (Cmd/Ctrl + Tab or WinCtrl + Tab for Mac)
@@ -69,12 +99,22 @@ export const useGlobalShortcuts = ({
       // Log navigation commands (Cmd/Ctrl + Up/Down)
       if (cmdKey && e.key === 'ArrowUp') {
         e.preventDefault();
-        newerLogButtonRef.current?.click();
+        newerLogButtonRef.current?.focus();
+        newerLogButtonTouchRippleRef.current?.start();
+        setTimeout(() => {
+          newerLogButtonRef.current?.click();
+          newerLogButtonTouchRippleRef.current?.stop();
+        }, 200);
       }
 
       if (cmdKey && e.key === 'ArrowDown') {
         e.preventDefault();
-        olderLogButtonRef.current?.click();
+        olderLogButtonRef.current?.focus();
+        olderLogButtonTouchRippleRef.current?.start();
+        setTimeout(() => {
+          olderLogButtonRef.current?.click();
+          olderLogButtonTouchRippleRef.current?.stop();
+        }, 200);
       }
     };
 
@@ -87,6 +127,12 @@ export const useGlobalShortcuts = ({
     clearButtonRef,
     newerLogButtonRef,
     olderLogButtonRef,
+    sendButtonTouchRippleRef,
+    copyButtonTouchRippleRef,
+    clearButtonTouchRippleRef,
+    saveButtonTouchRippleRef,
+    newerLogButtonTouchRippleRef,
+    olderLogButtonTouchRippleRef,
     setBrowserIndexTimestamp,
     osInfo,
   ]);

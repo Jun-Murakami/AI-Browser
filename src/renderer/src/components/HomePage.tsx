@@ -20,9 +20,10 @@ import {
   TextField,
   Divider,
 } from '@mui/material';
+import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 import { useTheme } from '@mui/system';
 import * as monaco from 'monaco-editor';
-import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings, Save } from '@mui/icons-material';
+import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings, Save, Clear } from '@mui/icons-material';
 import { getSupportedLanguages } from './MonacoEditor';
 import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
@@ -86,6 +87,14 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const saveButtonRef = useRef<HTMLButtonElement>(null);
   const newerLogButtonRef = useRef<HTMLButtonElement>(null);
   const olderLogButtonRef = useRef<HTMLButtonElement>(null);
+
+  const sendButtonTouchRippleRef = useRef<TouchRippleActions>(null);
+  const copyButtonTouchRippleRef = useRef<TouchRippleActions>(null);
+  const clearButtonTouchRippleRef = useRef<TouchRippleActions>(null);
+  const saveButtonTouchRippleRef = useRef<TouchRippleActions>(null);
+  const newerLogButtonTouchRippleRef = useRef<TouchRippleActions>(null);
+  const olderLogButtonTouchRippleRef = useRef<TouchRippleActions>(null);
+
   const editorSplitRef = useRef<AllotmentHandle | null>(null);
 
   // ブラウザのサイズが変更されたらメインプロセスに通知
@@ -236,6 +245,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     };
 
     if (logs.length > 0 && logs[0].text === text) {
+      toast('Failed to add log. (Same prompt already exists.)');
       return;
     }
 
@@ -284,11 +294,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   };
 
   // 選択されたログが変更されたらエディターに反映
-  const handleSelectedLogChange = (selectedText: string) => {
-    const selected = logs.find((log) => log.text === selectedText);
+  const handleSelectedLogChange = (selectedId: number) => {
+    const selected = logs.find((log) => log.id === selectedId);
     if (selected) {
       setSelectedLog(selected);
-      const parts = selectedText.split('\n----\n');
+      const parts = selected.text.split('\n----\n');
       
       // すべてのエディターの値をリセット
       const setters = [setEditor1Value, setEditor2Value, setEditor3Value, setEditor4Value, setEditor5Value];
@@ -314,10 +324,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     if (selectedLog) {
       const index = logs.indexOf(selectedLog);
       if (index < logs.length - 1) {
-        handleSelectedLogChange(logs[index + 1].text);
+        handleSelectedLogChange(logs[index + 1].id);
       }
-    } else {
-      handleSelectedLogChange(logs[0].text);
+    } else if (logs.length > 0) {
+      handleSelectedLogChange(logs[0].id);
     }
   };
 
@@ -326,10 +336,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     if (selectedLog) {
       const index = logs.indexOf(selectedLog);
       if (index > 0) {
-        handleSelectedLogChange(logs[index - 1].text);
+        handleSelectedLogChange(logs[index - 1].id);
       }
-    } else {
-      handleSelectedLogChange(logs[0].text);
+    } else if (logs.length > 0) {
+      handleSelectedLogChange(logs[0].id);
     }
   };
 
@@ -341,6 +351,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     setEditor4Value('');
     setEditor5Value('');
     setSelectedLog(null);
+    toast('Editor cleared.');
   };
 
   // コピーボタンがクリックされたらエディターの内容をクリップボードにコピー
@@ -354,6 +365,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     toast('Copied to clipboard.');
   };
 
+  // ログを削除
+  const handleDeleteLog = (logId: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    const newLogs = logs.filter(log => log.id !== logId);
+    setLogs(newLogs);
+    if (selectedLog?.id === logId) {
+      setSelectedLog(null);
+      handleClearButtonClick();
+    }
+    window.electron.sendLogsToMain(newLogs);
+    toast('Log deleted.');
+  };
+
   const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
   // グローバルショートカットの設定
@@ -364,6 +388,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     clearButtonRef,
     newerLogButtonRef,
     olderLogButtonRef,
+    sendButtonTouchRippleRef,
+    copyButtonTouchRippleRef,
+    clearButtonTouchRippleRef,
+    saveButtonTouchRippleRef,
+    newerLogButtonTouchRippleRef,
+    olderLogButtonTouchRippleRef,
     setBrowserIndexTimestamp,
     osInfo,
   });
@@ -511,9 +541,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <Select
                   ref={promptHistoryRef}
                   label='Logs'
-                  value={selectedLog ? selectedLog.text : ''}
+                  value={selectedLog ? selectedLog.id : ''}
                   onChange={(e) => {
-                    handleSelectedLogChange(e.target.value);
+                    const log = logs.find(log => log.id === e.target.value);
+                    if (log) {
+                      handleSelectedLogChange(log.id);
+                    }
                   }}
                   size='small'
                   sx={{
@@ -527,10 +560,37 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                   }}
                 >
                   {logs.map((log) => (
-                    <MenuItem key={log.id} value={log.text} sx={{ width: promptHistoryWidth }}>
-                      <Typography noWrap sx={{ width: `calc(${promptHistoryWidth} - 10px` }} variant='body2'>
+                    <MenuItem
+                      key={log.id}
+                      value={log.id}
+                      sx={{
+                        width: promptHistoryWidth,
+                        position: 'relative',
+                        '&:hover .delete-button': {
+                          opacity: 1,
+                        },
+                      }}
+                    >
+                      <Typography noWrap sx={{ width: `calc(${promptHistoryWidth} - 40px)` }} variant='body2'>
                         {log.displayText}
                       </Typography>
+                      <IconButton
+                        className="delete-button"
+                        size="small"
+                        onClick={(e) => handleDeleteLog(log.id, e)}
+                        sx={{
+                          position: 'absolute',
+                          right: 8,
+                          opacity: 0,
+                          transition: 'opacity 0.2s',
+                          color: theme.palette.text.secondary,
+                          '&:hover': {
+                            color: theme.palette.error.main,
+                          },
+                        }}
+                      >
+                        <Clear fontSize="small" />
+                      </IconButton>
                     </MenuItem>
                   ))}
                 </Select>
@@ -540,6 +600,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <span>
                   <IconButton
                     ref={newerLogButtonRef}
+                    touchRippleRef={newerLogButtonTouchRippleRef}
                     size='small'
                     sx={{ width: 22, ml: 0.5 }}
                     disabled={selectedLog === logs[0] || !selectedLog || logs.length === 0}
@@ -554,6 +615,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <span>
                   <IconButton
                     ref={olderLogButtonRef}
+                    touchRippleRef={olderLogButtonTouchRippleRef}
                     size='small'
                     sx={{ width: 22, mr: 0.5 }}
                     disabled={selectedLog === logs[logs.length - 1]}
@@ -670,6 +732,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 <Tooltip title={`Clear (${commandKey} + Backspace)`} arrow>
                   <Button
                     ref={clearButtonRef}
+                    touchRippleRef={clearButtonTouchRippleRef}
                     variant='outlined'
                     size='small'
                     sx={{ ml: 1 }}
@@ -682,12 +745,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               </Box>
               <Box>
                 <Tooltip title={`Save log (${commandKey} + S)`} arrow>
-                  <IconButton ref={saveButtonRef} color='primary' size='small' onClick={handleSaveButtonClick}>
+                  <IconButton ref={saveButtonRef} touchRippleRef={saveButtonTouchRippleRef} color='primary' size='small' onClick={handleSaveButtonClick}>
                     <Save />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title={`Copy to clipboard (${commandKey} + Shift + C)`} arrow>
-                  <IconButton ref={copyButtonRef} color='primary' size='small' sx={{ mr: 1 }} onClick={handleCopyButtonClick}>
+                  <IconButton ref={copyButtonRef} touchRippleRef={copyButtonTouchRippleRef} color='primary' size='small' sx={{ mr: 1 }} onClick={handleCopyButtonClick}>
                     <ContentPaste />
                   </IconButton>
                 </Tooltip>
@@ -696,6 +759,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     <Tooltip title={`Send to ${browserTabs[browserIndex].label} (${commandKey} + Enter)`} arrow>
                       <Button
                         ref={sendButtonRef}
+                        touchRippleRef={sendButtonTouchRippleRef}
                         variant='contained'
                         sx={{ width: 100, mr: 1 }}
                         startIcon={<Send sx={{ mr: -0.5 }} />}
