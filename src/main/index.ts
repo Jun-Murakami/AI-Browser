@@ -1,10 +1,10 @@
 import { app, shell, BrowserWindow, ipcMain, nativeTheme, WebContentsView } from 'electron';
-import fs from 'fs';
-import path, { join } from 'path';
+import fs from 'node:fs';
+import path, { join } from 'node:path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import contextMenu from 'electron-context-menu';
 import icon from '../../resources/icon.png?asset';
-import { AppState, Log, TabManager } from './types/interfaces';
+import type{ AppState, Log, TabManager } from './types/interfaces';
 import { EXPECTED_BROWSER_COUNT, BROWSER_URLS, URL_PATTERNS } from './constants/browsers';
 import { BROWSER_SCRIPTS } from './scripts/browserScripts';
 
@@ -268,9 +268,9 @@ function removeBrowserViewListeners(view: WebContentsView) {
  * メインウィンドウに登録されている全ての BrowserView のイベントを削除
  */
 function removeAllBrowserViewsListeners() {
-  tabManager.views.forEach((view) => {
+  for (const view of tabManager.views) {
     removeBrowserViewListeners(view);
-  });
+  }
 }
 
 /**
@@ -315,6 +315,7 @@ function createMainWindow(): BrowserWindow {
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
+      devTools: true,
     },
   });
 
@@ -346,8 +347,8 @@ function createMainWindow(): BrowserWindow {
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
+  if (is.dev && process.env.ELECTRON_RENDERER_URL) {
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
@@ -414,10 +415,10 @@ app.whenReady().then(() => {
 
   createMainWindow();
 
-  app.on('activate', function () {
+  app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow(); // BrowserWindow を BaseWindow に変更
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
 });
 

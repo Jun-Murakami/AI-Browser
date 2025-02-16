@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material/styles';
-import { Switch, SwitchProps } from '@mui/material';
+import { Switch, type SwitchProps } from '@mui/material';
 
 export const MaterialUISwitch = (props: SwitchProps) => {
   const theme = useTheme();

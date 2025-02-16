@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Tab, Checkbox, CircularProgress } from '@mui/material';
 import { ChatGPTIcon, GeminiIcon, ClaudeIcon, DeepSeekIcon, AIStudioIcon } from './Icons';
 
@@ -12,7 +11,7 @@ interface BrowserTabProps {
   onClick: (event: React.MouseEvent, index: number) => void;
 }
 
-export const BrowserTab: React.FC<BrowserTabProps> = ({
+export const BrowserTab = ({
   isEditingBrowserShow,
   enabled,
   setEnabledBrowsers,
@@ -20,7 +19,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   label,
   loading,
   onClick,
-}) => {
+}: BrowserTabProps) => {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEnabledBrowsers((prev) => {
       const newEnabledBrowsers = [...prev];
@@ -67,13 +66,17 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     // アイコンのみ表示するタブの場合
     if (label === 'ChatGPT') {
       return <ChatGPTIcon sx={{ fontSize: 18 }} />;
-    } else if (label === 'Gemini') {
+    }
+    if (label === 'Gemini') {
       return <GeminiIcon sx={{ fontSize: 18 }} />;
-    } else if (label === 'AIStudio') {
+    }
+    if (label === 'AIStudio') {
       return <AIStudioIcon sx={{ fontSize: 18 }} />;
-    } else if (label === 'Claude') {
+    }
+    if (label === 'Claude') {
       return <ClaudeIcon sx={{ fontSize: 18 }} />;
-    } else if (label === 'DeepSeek') {
+    }
+    if (label === 'DeepSeek') {
       return <DeepSeekIcon sx={{ fontSize: 20 }} />;
     }
 

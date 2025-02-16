@@ -1,8 +1,9 @@
-import { SvgIcon, SvgIconProps } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
 export const EraseIcon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 68.03 68.03' strokeWidth={3} stroke='currentColor'>
+      <title>Erase</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'
@@ -15,6 +16,7 @@ export const EraseIcon = (props: SvgIconProps) => (
 export const Split1Icon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 64.78 64.78' strokeWidth={2} stroke='currentColor'>
+      <title>Split 1</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'
@@ -27,6 +29,7 @@ export const Split1Icon = (props: SvgIconProps) => (
 export const Split2Icon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 64.78 64.78' strokeWidth={2} stroke='currentColor'>
+      <title>Split 2</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'
@@ -39,6 +42,7 @@ export const Split2Icon = (props: SvgIconProps) => (
 export const Split3Icon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 64.78 64.78' strokeWidth={2} stroke='currentColor'>
+      <title>Split 3</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'
@@ -51,6 +55,7 @@ export const Split3Icon = (props: SvgIconProps) => (
 export const Split4Icon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 64.78 64.78' strokeWidth={2} stroke='currentColor'>
+      <title>Split 4</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'
@@ -63,6 +68,7 @@ export const Split4Icon = (props: SvgIconProps) => (
 export const Split5Icon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 64.78 64.78' strokeWidth={2} stroke='currentColor'>
+      <title>Split 5</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'
@@ -75,6 +81,7 @@ export const Split5Icon = (props: SvgIconProps) => (
 export const ChatGPTIcon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 320 320' strokeWidth={2} stroke='currentColor'>
+      <title>ChatGPT</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'
@@ -123,6 +130,7 @@ export const DeepSeekIcon = (props: SvgIconProps) => (
 export const AIStudioIcon = (props: SvgIconProps) => (
   <SvgIcon {...props} viewBox='0 0 512 411'>
     <svg xmlns='http://www.w3.org/2000/svg' strokeWidth={2} stroke='none'>
+      <title>AIStudio</title>
       <path
         fill='#85a8ff'
         d='M320.6 300.9c-0.8 8.3 1.9 16.7 7.5 22.9 5.6 6.1 13.6 9.4 20.9 12.3 7.9 3.1 14.8 5.7 22.1 10.1 7 4.2 13.3 9.5 18.5 15.9 21.4 26.5 19.4 65.3-4.5 89.4-24 24.1-61.9 25.4-87.4 3-6.5-5.7-12.2-13.1-17-20.3-7.2-47.9 6.8-98.1 39.9-133.4z'
