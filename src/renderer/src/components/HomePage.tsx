@@ -251,6 +251,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleSendButtonClick = (sendToAll: boolean) => {
     const combinedEditorValue = getCombinedEditorValue();
     if (combinedEditorValue.trim() === '') {
+      toast('Prompt is empty.');
       return;
     }
 
@@ -265,6 +266,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // ログを保存
   const handleSaveButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
+    if (combinedEditorValue.trim() === '') {
+      toast('Prompt is empty.');
+      return;
+    }
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
       window.electron.sendLogsToMain(newLogs);
@@ -275,49 +280,25 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // 選択されたログが変更されたらエディターに反映
   const handleSelectedLogChange = (selectedText: string) => {
     const selected = logs.find((log) => log.text === selectedText);
-
     if (selected) {
       setSelectedLog(selected);
       const parts = selectedText.split('\n----\n');
+      
+      // すべてのエディターの値をリセット
+      const setters = [setEditor1Value, setEditor2Value, setEditor3Value, setEditor4Value, setEditor5Value];
+      for (const setter of setters) {
+        setter('');
+      }
 
-      switch (editorIndex) {
-        case 0:
-          setEditor1Value(selectedText);
-          setEditor2Value('');
-          setEditor3Value('');
-          setEditor4Value('');
-          setEditor5Value('');
-          break;
-        case 1:
-          setEditor1Value(parts[0] || '');
-          setEditor2Value(parts.slice(1).join('\n----\n') || '');
-          setEditor3Value('');
-          setEditor4Value('');
-          setEditor5Value('');
-          break;
-        case 2:
-          setEditor1Value(parts[0] || '');
-          setEditor2Value(parts[1] || '');
-          setEditor3Value(parts.slice(2).join('\n----\n') || '');
-          setEditor4Value('');
-          setEditor5Value('');
-          break;
-        case 3:
-          setEditor1Value(parts[0] || '');
-          setEditor2Value(parts[1] || '');
-          setEditor3Value(parts[2] || '');
-          setEditor4Value(parts.slice(3).join('\n----\n') || '');
-          setEditor5Value('');
-          break;
-        case 4:
-          setEditor1Value(parts[0] || '');
-          setEditor2Value(parts[1] || '');
-          setEditor3Value(parts[2] || '');
-          setEditor4Value(parts[3] || '');
-          setEditor5Value(parts.slice(4).join('\n----\n') || '');
-          break;
-        default:
-          break;
+      // 選択されたエディター数に応じて値を設定
+      for (let i = 0; i <= editorIndex; i++) {
+        if (i === editorIndex) {
+          // 最後のエディターには残りのすべての部分を結合して設定
+          setters[i](parts.slice(i).join('\n----\n') || '');
+        } else {
+          // それ以外のエディターには対応する部分を設定
+          setters[i](parts[i] || '');
+        }
       }
     }
   };
@@ -360,6 +341,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleCopyButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
     if (combinedEditorValue.trim() === '') {
+      toast('Prompt is empty.');
       return;
     }
     navigator.clipboard.writeText(combinedEditorValue);
@@ -385,28 +367,40 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box aria-label='Browser tabs container' sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
               <Tooltip title='(Ctrl + Tab) to switch AI' placement='right' arrow>
                 {isInitialized && browserTabs.length > 0 ? (
-                  <Tabs
-                    value={browserIndex}
-                    onChange={handleBrowserTabChange}
-                    sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
-                    key='browser-tabs'
-                  >
-                    {browserTabs.map(({ label, id, index }) => (
-                      <BrowserTab
-                        key={index}
-                        isEditingBrowserShow={isEditingBrowserShow}
-                        enabled={enabledBrowsers[id]}
-                        setEnabledBrowsers={setEnabledBrowsers}
-                        index={index}
-                        label={label}
-                        loading={browserLoadings[index]}
-                        onClick={handleBrowserTabChange}
-                      />
-                    ))}
-                  </Tabs>
+                  <Box sx={{ position: 'relative', width: 'calc(100% - 48px)' }}>
+                    <Tabs
+                      value={browserIndex}
+                      onChange={handleBrowserTabChange}
+                      variant="scrollable"
+                      scrollButtons="auto"
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: theme.palette.divider,
+                        '& .MuiTabs-scrollButtons': {
+                          '&.Mui-disabled': {
+                            opacity: 0.3,
+                          },
+                        },
+                      }}
+                      key='browser-tabs'
+                    >
+                      {browserTabs.map(({ label, id, index }) => (
+                        <BrowserTab
+                          key={index}
+                          isEditingBrowserShow={isEditingBrowserShow}
+                          enabled={enabledBrowsers[id]}
+                          setEnabledBrowsers={setEnabledBrowsers}
+                          index={index}
+                          label={label}
+                          loading={browserLoadings[index]}
+                          onClick={handleBrowserTabChange}
+                        />
+                      ))}
+                    </Tabs>
+                  </Box>
                 ) : (
                   <Box sx={{ borderBottom: 1, borderColor: theme.palette.divider, width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <CircularProgress size={24} />

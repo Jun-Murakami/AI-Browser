@@ -19,6 +19,7 @@ export const App = () => {
           toastOptions={{
             style: { background: darkMode ? '#191919' : '#e9e9e9', width: '200px' },
           }}
+          closeButton
         />
       </Box>
     </ThemeProvider>
