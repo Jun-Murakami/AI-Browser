@@ -17,7 +17,7 @@ export const App = () => {
           theme={darkMode ? 'dark' : 'light'}
           offset={90}
           toastOptions={{
-            style: { background: darkMode ? '#191919' : '#e9e9e9', width: '200px' },
+            style: { background: darkMode ? '#191919' : '#e9e9e9', width: '300px' },
           }}
           closeButton
         />

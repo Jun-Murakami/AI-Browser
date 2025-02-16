@@ -150,40 +150,22 @@ export const MonacoEditor = ({
 
     // Send command
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      sendButtonRef.current?.focus();
-      setTimeout(() => {
-        sendButtonRef.current?.click();
-      }, 100);
-      setTimeout(() => {
-        sendButtonRef.current?.blur();
-      }, 500);
+      sendButtonRef.current?.click();
     });
 
     // Save command
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-      saveButtonRef.current?.focus();
       saveButtonRef.current?.click();
-      setTimeout(() => {
-        saveButtonRef.current?.blur();
-      }, 500);
     });
 
     // Copy command
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC, () => {
-      copyButtonRef.current?.focus();
       copyButtonRef.current?.click();
-      setTimeout(() => {
-        copyButtonRef.current?.blur();
-      }, 500);
     });
 
     // Clear command
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
-      clearButtonRef.current?.focus();
       clearButtonRef.current?.click();
-      setTimeout(() => {
-        clearButtonRef.current?.blur();
-      }, 500);
     });
 
     // Tab switch command

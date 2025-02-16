@@ -229,10 +229,25 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
             : currentUrl.includes(browser.urlPattern)));
 
       if (shouldSend) {
-        const script = browser.script.replace('TEXT_TO_SEND', JSON.stringify(text));
-        view.webContents.executeJavaScript(script).catch((error) => {
-          console.error('Script execution failed:', error);
-        });
+        try {
+          const escapedText = JSON.stringify(text)
+            .replace(/`/g, '\\`')      // バッククォートのエスケープを強化
+          
+          const script = browser.script.replace('TEXT_TO_SEND', escapedText);
+          view.webContents.executeJavaScript(script).catch((error) => {
+            console.error('Script execution failed:', error);
+            mainWindow.webContents.send('script-error', {
+              browser: browser.label,
+              error: error.message
+            });
+          });
+        } catch (error) {
+          console.error('Script preparation failed:', error);
+          mainWindow.webContents.send('script-error', {
+            browser: browser.label,
+            error: 'Failed to prepare script'
+          });
+        }
       }
     });
   });

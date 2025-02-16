@@ -142,6 +142,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       });
     });
 
+    // スクリプトエラーを監視
+    window.electron.onScriptError((error) => {
+      toast.error(`${error.browser}: ${error.error}`);
+    });
+
     window.electron
       .getInitialSettings()
       .then(async (settings) => {
@@ -192,6 +197,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     return () => {
       window.electron.removeUpdateUrlsListener();
       window.electron.removeUpdateLoadingStatusListener();
+      window.electron.removeScriptErrorListener();
     };
   }, [checkForUpdates, setDarkMode]);
 
@@ -251,7 +257,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleSendButtonClick = (sendToAll: boolean) => {
     const combinedEditorValue = getCombinedEditorValue();
     if (combinedEditorValue.trim() === '') {
-      toast('Prompt is empty.');
+      toast('Failed to send. (Prompt is empty)');
       return;
     }
 
@@ -267,7 +273,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleSaveButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
     if (combinedEditorValue.trim() === '') {
-      toast('Prompt is empty.');
+      toast('Failed to save. (Prompt is empty)');
       return;
     }
     const newLogs = addLog(combinedEditorValue);
@@ -341,7 +347,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleCopyButtonClick = () => {
     const combinedEditorValue = getCombinedEditorValue();
     if (combinedEditorValue.trim() === '') {
-      toast('Prompt is empty.');
+      toast('Failed to copy. (Prompt is empty)');
       return;
     }
     navigator.clipboard.writeText(combinedEditorValue);

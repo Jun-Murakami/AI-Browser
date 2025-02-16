@@ -32,6 +32,9 @@ if (process.contextIsolated) {
       removeUpdateLoadingStatusListener: () => ipcRenderer.removeAllListeners('loading-status'),
       sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) =>
         ipcRenderer.send('update-enabled-browsers', enabledBrowsers),
+      onScriptError: (callback: (error: { browser: string; error: string }) => void) =>
+        ipcRenderer.on('script-error', (_, error: { browser: string; error: string }) => callback(error)),
+      removeScriptErrorListener: () => ipcRenderer.removeAllListeners('script-error'),
     });
 
     contextBridge.exposeInMainWorld('api', api);

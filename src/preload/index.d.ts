@@ -18,6 +18,8 @@ interface ExtendedElectronAPI extends ElectronAPI {
   onUpdateLoadingStatus: (callback: (status: { index: number; isLoading: boolean }) => void) => void;
   removeUpdateLoadingStatusListener: () => void;
   sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) => void;
+  onScriptError: (callback: (error: { browser: string; error: string }) => void) => void;
+  removeScriptErrorListener: () => void;
 }
 
 interface Browser {
