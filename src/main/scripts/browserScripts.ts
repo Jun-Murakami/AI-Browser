@@ -84,6 +84,22 @@ export const BROWSER_SCRIPTS = {
       }
     }, 700);
   `,
+  GROK: `
+    var textareaTags = document.querySelectorAll('main textarea');
+    var textareaTag = textareaTags[textareaTags.length - 1];
+    if (textareaTag) {
+      const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+      nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
+      textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+      setTimeout(() => {
+        var buttons = Array.from(document.querySelectorAll('button[aria-label*="Grok"]'));
+        var sendButton = buttons.length > 0 ? buttons[buttons.length - 1] : null;
+        if (sendButton) {
+          sendButton.click();
+        }
+      }, 300);
+    }
+  `,
   PHIND: `
     var dataTransfer = new DataTransfer();
     dataTransfer.setData('text', TEXT_TO_SEND);

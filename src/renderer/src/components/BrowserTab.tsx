@@ -1,5 +1,5 @@
 import { Box, Tab, Checkbox, CircularProgress } from '@mui/material';
-import { ChatGPTIcon, GeminiIcon, ClaudeIcon, DeepSeekIcon, AIStudioIcon } from './Icons';
+import { ChatGPTIcon, GeminiIcon, ClaudeIcon, DeepSeekIcon, AIStudioIcon, GrokIcon } from './Icons';
 
 interface BrowserTabProps {
   isEditingBrowserShow: boolean;
@@ -38,7 +38,7 @@ export const BrowserTab = ({
     });
   };
 
-  const isIconOnly = ['ChatGPT', 'Gemini', 'AIStudio', 'Claude', 'DeepSeek'].includes(label);
+  const isIconOnly = ['ChatGPT', 'Gemini', 'AIStudio', 'Claude', 'DeepSeek', 'Grok'].includes(label);
 
   const renderTabContent = () => {
     if (isEditingBrowserShow) {
@@ -62,6 +62,8 @@ export const BrowserTab = ({
             <ClaudeIcon sx={{ fontSize: 18 }} />
           ) : label === 'DeepSeek' ? (
             <DeepSeekIcon sx={{ fontSize: 20 }} />
+          ) : label === 'Grok' ? (
+            <GrokIcon sx={{ fontSize: 16 }} />
           ) : (
             label
           )}
@@ -84,6 +86,9 @@ export const BrowserTab = ({
     }
     if (label === 'DeepSeek') {
       return <DeepSeekIcon sx={{ fontSize: 20 }} />;
+    }
+    if (label === 'Grok') {
+      return <GrokIcon sx={{ fontSize: 16 }} />;
     }
 
     // その他のタブは通常通りラベルを表示

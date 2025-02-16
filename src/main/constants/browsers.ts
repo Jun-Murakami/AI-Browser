@@ -43,9 +43,17 @@ export const BROWSERS: Browser[] = [
     script: BROWSER_SCRIPTS.DEEPSEEK
   },
   {
+    id: 'GROK',
+    label: 'Grok',
+    index: 5,
+    url: 'https://grok.x.com/',
+    urlPattern: ['x.com', 'grok'],
+    script: BROWSER_SCRIPTS.GROK
+  },
+  {
     id: 'PHIND',
     label: 'Phind',
-    index: 5,
+    index: 6,
     url: 'https://www.phind.com/',
     urlPattern: 'phind.com',
     script: BROWSER_SCRIPTS.PHIND
@@ -53,7 +61,7 @@ export const BROWSERS: Browser[] = [
   {
     id: 'PERPLEXITY',
     label: 'Perplexity',
-    index: 6,
+    index: 7,
     url: 'https://www.perplexity.ai/',
     urlPattern: 'perplexity.ai',
     script: BROWSER_SCRIPTS.PERPLEXITY
@@ -61,7 +69,7 @@ export const BROWSERS: Browser[] = [
   {
     id: 'GENSPARK',
     label: 'Genspark',
-    index: 7,
+    index: 8,
     url: 'https://www.genspark.ai/',
     urlPattern: 'genspark.ai',
     script: BROWSER_SCRIPTS.GENSPARK
@@ -69,7 +77,7 @@ export const BROWSERS: Browser[] = [
   {
     id: 'FELO',
     label: 'Felo',
-    index: 8,
+    index: 9,
     url: 'https://felo.ai/',
     urlPattern: 'felo.ai',
     script: BROWSER_SCRIPTS.FELO
@@ -77,7 +85,7 @@ export const BROWSERS: Browser[] = [
   {
     id: 'JENOVA',
     label: 'JENOVA',
-    index: 9,
+    index: 10,
     url: 'https://app.jenova.ai/',
     urlPattern: 'jenova.ai',
     script: BROWSER_SCRIPTS.JENOVA
@@ -85,7 +93,7 @@ export const BROWSERS: Browser[] = [
   {
     id: 'CODY',
     label: 'Cody',
-    index: 10,
+    index: 11,
     url: 'https://sourcegraph.com/cody/chat',
     urlPattern: 'sourcegraph.com',
     script: BROWSER_SCRIPTS.CODY

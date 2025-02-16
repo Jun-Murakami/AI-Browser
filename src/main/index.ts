@@ -282,7 +282,6 @@ function removeAllBrowserViewsListeners() {
  * メインウィンドウ（BaseWindow）を生成する
  */
 function createMainWindow(): BrowserWindow {
-  // BrowserWindow を BaseWindow に変更
   // 保存されたウィンドウの状態を読み込む
   const userDataPath = app.getPath('userData');
   const appStatePath = path.join(userDataPath, 'appState.json');
@@ -294,32 +293,31 @@ function createMainWindow(): BrowserWindow {
       const isValidEnabledBrowsers = (
         savedState.enabledBrowsers &&
         typeof savedState.enabledBrowsers === 'object' &&
-        !Array.isArray(savedState.enabledBrowsers) &&
-        Object.keys(savedState.enabledBrowsers).every(key => 
-          BROWSERS.some(browser => browser.id === key) && 
-          typeof savedState.enabledBrowsers[key] === 'boolean'
-        )
+        !Array.isArray(savedState.enabledBrowsers)
       );
 
-      // 不正な場合は初期値を使用
-      if (!isValidEnabledBrowsers) {
+      // 保存された設定のブラウザIDと現在のブラウザIDを比較
+      const savedBrowserIds = isValidEnabledBrowsers ? Object.keys(savedState.enabledBrowsers) : [];
+      const currentBrowserIds = BROWSERS.map(browser => browser.id);
+      
+      // ブラウザの構成が変更された場合は設定をリセット
+      if (
+        !isValidEnabledBrowsers ||
+        savedBrowserIds.length !== currentBrowserIds.length ||
+        !currentBrowserIds.every(id => savedBrowserIds.includes(id))
+      ) {
         savedState.enabledBrowsers = Object.fromEntries(
           BROWSERS.map(browser => [browser.id, true])
         );
-      } else {
-        // 古い設定から新しい設定への移行
-        const newEnabledBrowsers = Object.fromEntries(
-          BROWSERS.map(browser => [
-            browser.id,
-            savedState.enabledBrowsers[browser.id] ?? true
-          ])
-        );
-        savedState.enabledBrowsers = newEnabledBrowsers;
       }
 
       appState = savedState;
     } catch (error) {
       console.error('ウィンドウの状態の読み込みに失敗しました:', error);
+      // エラーが発生した場合も全てのブラウザを有効にする
+      appState.enabledBrowsers = Object.fromEntries(
+        BROWSERS.map(browser => [browser.id, true])
+      );
     }
   }
 
