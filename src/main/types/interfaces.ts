@@ -1,4 +1,4 @@
-import { WebContentsView } from 'electron';
+import type{ WebContentsView } from 'electron';
 
 export interface AppState {
   bounds: Electron.Rectangle;

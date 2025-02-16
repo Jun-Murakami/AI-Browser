@@ -315,7 +315,6 @@ function createMainWindow(): BrowserWindow {
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
-      devTools: true,
     },
   });
 
@@ -353,9 +352,10 @@ function createMainWindow(): BrowserWindow {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
-  if (is.dev) {
-    //mainWindow.webContents.openDevTools();
-  }
+  contextMenu({
+    window: mainWindow.webContents,
+    showInspectElement: is.dev,
+  });
 
   mainWindow.on('close', (e) => {
     // Mac以外でデフォルトの閉じる動作をキャンセル

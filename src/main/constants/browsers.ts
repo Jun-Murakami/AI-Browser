@@ -1,4 +1,4 @@
-import { UrlPattern } from '../types/interfaces';
+import type { UrlPattern } from '../types/interfaces';
 
 export const EXPECTED_BROWSER_COUNT = 11;
 

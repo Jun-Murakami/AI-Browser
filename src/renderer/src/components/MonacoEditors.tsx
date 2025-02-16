@@ -1,8 +1,8 @@
 import { useRef } from 'react';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import { Allotment } from 'allotment';
 import 'allotment/dist/style.css';
-import { MonacoEditor, MonacoEditorProps } from './MonacoEditor';
+import { MonacoEditor,type MonacoEditorProps } from './MonacoEditor';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 interface MonacoEditorsProps {
@@ -90,7 +90,6 @@ export const MonacoEditors = ({
     darkMode,
     language,
     fontSize,
-    editorIndex,
     browserWidth,
     browserHeight,
     sendButtonRef,

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Allotment, AllotmentHandle } from 'allotment';
+import { useState, useRef, useEffect } from 'react';
+import { Allotment, type AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
 import { toast } from 'sonner';
 import { EraseIcon, Split1Icon, Split2Icon, Split3Icon, Split4Icon, Split5Icon } from './Icons';
@@ -65,7 +65,13 @@ interface HomePageProps {
 interface Log {
   id: number;
   text: string;
+  displayText: string;
 }
+
+const truncateText = (text: string, maxLength = 100) => {
+  if (text.length <= maxLength) return text;
+  return `${text.substring(0, maxLength)}...`;
+};
 
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
@@ -128,7 +134,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const saveButtonRef = useRef<HTMLButtonElement>(null);
   const newerLogButtonRef = useRef<HTMLButtonElement>(null);
   const olderLogButtonRef = useRef<HTMLButtonElement>(null);
-  const editorSplitRef = useRef<AllotmentHandle>(null!);
+  const editorSplitRef = useRef<AllotmentHandle | null>(null);
 
   // ブラウザのサイズが変更されたらメインプロセスに通知
   useEffect(() => {
@@ -152,6 +158,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
+    if (!enabledBrowsers || !browserIndex || !browserIndexTimestamp) {
+      return;
+    }
     let newBrowserIndex = browserIndex + 1;
     while (!enabledBrowsers[newBrowserIndex]) {
       newBrowserIndex = newBrowserIndex + 1;
@@ -161,7 +170,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
     setBrowserIndex(newBrowserIndex);
     window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
-  }, [browserIndexTimestamp]);
+  }, [browserIndexTimestamp, enabledBrowsers, browserIndex]);
 
   // 初期設定を取得
   useEffect(() => {
@@ -173,9 +182,13 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         setEditorIndex(settings.editorMode);
         setPreferredSize(settings.browserWidth);
         setTimeout(() => {
-          editorSplitRef.current.reset();
+          editorSplitRef.current?.reset();
         }, 100);
-        setLogs(settings.logs);
+        const logsWithDisplay = settings.logs.map(log => ({
+          ...log,
+          displayText: truncateText(log.text)
+        }));
+        setLogs(logsWithDisplay);
         if (settings.logs.length === 0) {
           setEditor1Value('Type your message here.');
         }
@@ -218,7 +231,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       window.electron.removeUpdateUrlsListener();
       window.electron.removeUpdateLoadingStatusListener();
     };
-  }, []);
+  }, [checkForUpdates, setDarkMode]);
 
   // エディターテキストを結合して取得
   const getCombinedEditorValue = () => {
@@ -248,28 +261,26 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // ログを追加
   const addLog = (text: string) => {
-    // 現在の最新のログID＋１を新しいログのIDとしたログを作成
     const newLog: Log = {
       id: logs.length > 0 ? logs[0].id + 1 : 1,
       text,
+      displayText: truncateText(text)
     };
 
-    //最後のログと同じ内容の場合は追加しない
     if (logs.length > 0 && logs[0].text === text) {
       return;
     }
 
-    // ログが500件を超えたら古いログを削除
     if (logs.length >= 500) {
       const newLogs = logs.slice(0, 499);
       setLogs([newLog, ...newLogs]);
       setSelectedLog(null);
       return [newLog, ...newLogs];
-    } else {
-      setLogs([newLog, ...logs]);
-      setSelectedLog(null);
-      return [newLog, ...logs];
     }
+    
+    setLogs([newLog, ...logs]);
+    setSelectedLog(null);
+    return [newLog, ...logs];
   };
 
   // テキストを送信
@@ -413,7 +424,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Tooltip title={`(Ctrl + Tab) to switch AI`} placement='right' arrow>
+              <Tooltip title='(Ctrl + Tab) to switch AI' placement='right' arrow>
                 <Tabs
                   value={browserIndex}
                   onChange={handleBrowserTabChange}
@@ -435,7 +446,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 </Tabs>
               </Tooltip>
               <Box>
-                <Tooltip title={`Edit tabs`} placement='right' arrow>
+                <Tooltip title='Edit tabs' placement='right' arrow>
                   <IconButton
                     onClick={() => setIsEditingBrowserShow(!isEditingBrowserShow)}
                     sx={{ color: isEditingBrowserShow ? theme.palette.primary.main : theme.palette.text.secondary }}
@@ -550,7 +561,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                   {logs.map((log) => (
                     <MenuItem key={log.id} value={log.text} sx={{ width: promptHistoryWidth }}>
                       <Typography noWrap sx={{ width: `calc(${promptHistoryWidth} - 10px` }} variant='body2'>
-                        {log.text}
+                        {log.displayText}
                       </Typography>
                     </MenuItem>
                   ))}
@@ -723,7 +734,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     {browserTabs[browserIndex].label}
                   </Button>
                 </Tooltip>
-                <Tooltip title={`Send to all tabs`} arrow>
+                <Tooltip title='Send to all tabs' arrow>
                   <Button
                     variant='contained'
                     sx={{ width: 40, mr: 1 }}

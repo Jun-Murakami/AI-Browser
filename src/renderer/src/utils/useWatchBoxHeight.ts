@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 
-export const useWatchBoxHeight = (targetRef) => {
+type UseWatchBoxHeightProps = {
+  targetRef: RefObject<HTMLElement | null>;
+};
+
+export const useWatchBoxHeight = ({ targetRef }: UseWatchBoxHeightProps) => {
   const [isBoxReady, setIsBoxReady] = useState(false);
 
   useEffect(() => {
-    if (!targetRef.current) return;
+    if (!targetRef?.current) return;
 
     const observeBoxHeight = () => {
+      if (!targetRef.current) return;
       const boxHeight = targetRef.current.getBoundingClientRect().height;
       if (boxHeight >= 10) {
         setIsBoxReady(true);

@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useEffect, useState, useMemo, useImperativeHandle } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import * as monaco from 'monaco-editor';
 import { useWatchBoxHeight } from '../utils/useWatchBoxHeight';
 
@@ -6,7 +6,6 @@ export interface MonacoEditorProps {
   darkMode: boolean;
   language: string;
   fontSize: number;
-  editorIndex: number;
   browserWidth?: number;
   browserHeight?: number;
   sendButtonRef: React.RefObject<HTMLButtonElement | null>;
@@ -20,146 +19,189 @@ export interface MonacoEditorProps {
   onChange?: (value: string) => void;
   osInfo: string;
   placeholder?: string;
+  ref?: React.Ref<monaco.editor.IStandaloneCodeEditor>;
 }
 
-export const MonacoEditor = forwardRef<monaco.editor.IStandaloneCodeEditor, MonacoEditorProps>(
-  (
-    {
-      darkMode,
-      language,
-      fontSize,
-      editorIndex,
-      browserWidth,
-      browserHeight,
-      sendButtonRef,
-      copyButtonRef,
-      clearButtonRef,
-      saveButtonRef,
-      newerLogButtonRef,
-      olderLogButtonRef,
-      setBrowserIndexTimestamp,
-      value,
-      onChange,
-      osInfo,
-      placeholder,
-    },
-    ref
-  ) => {
-    const editorRef = useRef(null);
-    const isBoxReady = useWatchBoxHeight(editorRef);
-    const [editorInstance, setEditorInstance] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
-    // メモ化された値を使ってプロップスの変更を検知
-    const memoizedValue = useMemo(() => value, [value]);
+export const MonacoEditor = ({
+  darkMode,
+  language,
+  fontSize,
+  browserWidth,
+  browserHeight,
+  sendButtonRef,
+  copyButtonRef,
+  clearButtonRef,
+  saveButtonRef,
+  newerLogButtonRef,
+  olderLogButtonRef,
+  setBrowserIndexTimestamp,
+  value,
+  onChange,
+  osInfo,
+  placeholder,
+  ref,
+}: MonacoEditorProps) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const isBoxReady = useWatchBoxHeight({ targetRef: editorRef });
+  const [editorInstance, setEditorInstance] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const initialValue = useRef(value);
+  const memoizedValue = useMemo(() => value, [value]);
 
-    useImperativeHandle(ref, () => editorInstance!, [editorInstance]);
+  // refを通じてエディターインスタンスを親コンポーネントに渡す
+  useEffect(() => {
+    if (ref && typeof ref === 'function') {
+      ref(editorInstance);
+    } else if (ref && 'current' in ref) {
+      ref.current = editorInstance;
+    }
+  }, [ref, editorInstance]);
 
-    useEffect(() => {
-      if (editorRef.current && isBoxReady) {
-        const editor = monaco.editor.create(editorRef.current, {
-          value: memoizedValue, // メモ化された値を初期値として設定
-          language: language,
-          theme: darkMode ? 'vs-dark' : 'light',
-          minimap: { enabled: false },
-          renderWhitespace: 'all',
-          fontFamily: '"Migu 1M", Consolas, "Courier New", monospace',
-          renderValidationDecorations: 'off',
-          showUnused: false,
-          scrollBeyondLastLine: false,
-          renderLineHighlightOnlyWhenFocus: true,
-          unicodeHighlight: { allowedLocales: { _os: true, _vscode: true }, ambiguousCharacters: false },
-          wordWrap: 'on',
-          occurrencesHighlight: 'off',
-          placeholder: placeholder,
-        });
+  useEffect(() => {
+    if (editorRef.current && isBoxReady) {
+      const editor = monaco.editor.create(editorRef.current, {
+        value: initialValue.current,
+        language: language,
+        theme: darkMode ? 'vs-dark' : 'light',
+        minimap: { enabled: false },
+        renderWhitespace: 'all',
+        fontFamily: '"Migu 1M", Consolas, "Courier New", monospace',
+        renderValidationDecorations: 'off',
+        showUnused: false,
+        scrollBeyondLastLine: false,
+        renderLineHighlightOnlyWhenFocus: true,
+        unicodeHighlight: { allowedLocales: { _os: true, _vscode: true }, ambiguousCharacters: false },
+        wordWrap: 'on',
+        occurrencesHighlight: 'off',
+        placeholder: placeholder,
+      });
 
-        monaco.editor.remeasureFonts();
+      monaco.editor.remeasureFonts();
 
-        // キーバインディングの設定
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-          sendButtonRef.current?.focus();
-          setTimeout(() => {
-            sendButtonRef.current?.click();
-          }, 100);
-          setTimeout(() => {
-            sendButtonRef.current?.blur();
-          }, 500);
-        });
+      setEditorInstance(editor);
 
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-          saveButtonRef.current?.focus();
-          saveButtonRef.current?.click();
-          setTimeout(() => {
-            saveButtonRef.current?.blur();
-          }, 500);
-        });
+      return () => {
+        editor.dispose();
+      };
+    }
+    return () => {};
+  }, [darkMode, language, isBoxReady, placeholder]);
 
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC, () => {
-          copyButtonRef.current?.focus();
-          copyButtonRef.current?.click();
-          setTimeout(() => {
-            copyButtonRef.current?.blur();
-          }, 500);
-        });
+  // モデル変更のハンドラーを別のuseEffectで管理
+  useEffect(() => {
+    if (!editorInstance) return;
 
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
-          clearButtonRef.current?.focus();
-          clearButtonRef.current?.click();
-          setTimeout(() => {
-            clearButtonRef.current?.blur();
-          }, 500);
-        });
+    const disposable = editorInstance.onDidChangeModelContent(() => {
+      const newValue = editorInstance.getValue();
+      if (onChange) {
+        onChange(newValue);
+      }
+    });
 
-        if (osInfo === 'darwin') {
-          editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.Tab, () => {
-            setBrowserIndexTimestamp(new Date().getTime());
-          });
-        } else {
-          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab, () => {
-            setBrowserIndexTimestamp(new Date().getTime());
-          });
+    return () => {
+      disposable.dispose();
+    };
+  }, [editorInstance, onChange]);
+
+  // 外部からの値の変更を反映（初期値以外）
+  useEffect(() => {
+    if (editorInstance && memoizedValue !== undefined && memoizedValue !== editorInstance.getValue()) {
+      const position = editorInstance.getPosition();
+      const selection = editorInstance.getSelection();
+      editorInstance.setValue(memoizedValue);
+      if (position) {
+        editorInstance.setPosition(position);
+      }
+      if (selection) {
+        editorInstance.setSelection(selection);
+      }
+    }
+  }, [editorInstance, memoizedValue]);
+
+  // コマンドの登録を別のuseEffectで行う
+  useEffect(() => {
+    if (!editorInstance) return;
+
+    // キーバインディングの設定
+    const disposables: monaco.IDisposable[] = [];
+
+    const addCommand = (keybinding: number, handler: () => void) => {
+      const command = editorInstance.addCommand(keybinding, handler);
+      if (command && typeof command === 'object' && 'dispose' in command) {
+        disposables.push(command as monaco.IDisposable);
+      }
+    };
+
+    // Send command
+    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      sendButtonRef.current?.focus();
+      setTimeout(() => {
+        sendButtonRef.current?.click();
+      }, 100);
+      setTimeout(() => {
+        sendButtonRef.current?.blur();
+      }, 500);
+    });
+
+    // Save command
+    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      saveButtonRef.current?.focus();
+      saveButtonRef.current?.click();
+      setTimeout(() => {
+        saveButtonRef.current?.blur();
+      }, 500);
+    });
+
+    // Copy command
+    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC, () => {
+      copyButtonRef.current?.focus();
+      copyButtonRef.current?.click();
+      setTimeout(() => {
+        copyButtonRef.current?.blur();
+      }, 500);
+    });
+
+    // Clear command
+    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
+      clearButtonRef.current?.focus();
+      clearButtonRef.current?.click();
+      setTimeout(() => {
+        clearButtonRef.current?.blur();
+      }, 500);
+    });
+
+    // Tab switch command
+    addCommand(
+      osInfo === 'darwin' ? monaco.KeyMod.WinCtrl | monaco.KeyCode.Tab : monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab,
+      () => {
+        setBrowserIndexTimestamp(new Date().getTime());
+      }
+    );
+
+    // Log navigation commands
+    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
+      newerLogButtonRef.current?.click();
+    });
+
+    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
+      olderLogButtonRef.current?.click();
+    });
+
+    return () => {
+      for (const disposable of disposables) {
+        if (disposable && typeof disposable === 'object' && 'dispose' in disposable) {
+          disposable.dispose();
         }
-
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
-          newerLogButtonRef.current?.click();
-        });
-
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
-          olderLogButtonRef.current?.click();
-        });
-
-        // エディターの値が変更されたときのハンドラ
-        editor.onDidChangeModelContent(() => {
-          const newValue = editor.getValue();
-          if (onChange) {
-            onChange(newValue);
-          }
-        });
-
-        setEditorInstance(editor); // エディターのインスタンスを保持
-
-        // コンポーネントがアンマウントされる際にエディターを破棄
-        return () => {
-          editor.dispose();
-        };
       }
-      return () => {};
-    }, [darkMode, language, editorIndex, isBoxReady]);
+    };
+  }, [editorInstance, osInfo, sendButtonRef, saveButtonRef, copyButtonRef, clearButtonRef, newerLogButtonRef, olderLogButtonRef, setBrowserIndexTimestamp]);
 
-    // プロップスが変更された時のみエディターの値を更新する
-    useEffect(() => {
-      if (editorInstance && memoizedValue !== undefined && memoizedValue !== editorInstance.getValue()) {
-        editorInstance.setValue(memoizedValue);
-      }
-    }, [editorInstance, memoizedValue]);
+  // ウィンドウのリサイズ時にエディターのレイアウトを更新
+  useEffect(() => {
+    if (editorRef.current && isBoxReady && editorInstance && browserWidth && browserHeight) {
+      editorInstance.updateOptions({ fontSize: fontSize });
+      editorInstance.layout();
+    }
+  }, [isBoxReady, editorInstance, browserWidth, browserHeight, fontSize]);
 
-    // ウィンドウのリサイズ時にエディターのレイアウトを更新
-    useEffect(() => {
-      if (editorRef.current && isBoxReady && editorInstance && browserWidth && browserHeight) {
-        editorInstance.updateOptions({ fontSize: fontSize });
-        editorInstance.layout();
-      }
-    }, [editorRef, isBoxReady, editorInstance, browserWidth, browserHeight, fontSize]);
-
-    return <div ref={editorRef} style={{ width: '100%', height: '100%' }} />;
-  }
-);
+  return <div ref={editorRef} style={{ width: '100%', height: '100%' }} />;
+};

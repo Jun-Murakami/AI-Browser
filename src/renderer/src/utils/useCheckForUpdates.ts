@@ -1,7 +1,9 @@
+import { useCallback } from 'react';
+
 const repoUrl = 'https://api.github.com/repos/Jun-Murakami/AI-Browser/releases/latest';
 
 export const useCheckForUpdates = () => {
-  const checkForUpdates = async (currentVersion: string | null) => {
+  const checkForUpdates = useCallback(async (currentVersion: string | null) => {
     try {
       if (!currentVersion) {
         console.error('バージョン情報が見つかりません');
@@ -17,15 +19,16 @@ export const useCheckForUpdates = () => {
       if (latestVersion > currentVersion) {
         const releasePageUrl = data.html_url; // リリースページのURLを取得
         return { latestVersion, releasePageUrl };
-      } else {
-        console.log('最新バージョンです');
-        return null;
       }
+      console.log('最新バージョンです');
+      return null;
     } catch (error) {
       console.error('更新のチェック中にエラーが発生しました:', error);
-      return null;
-    }
-  };
+        return null;
+      }
+    },
+    []
+  );
 
   return checkForUpdates;
 };
