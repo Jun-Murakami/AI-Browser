@@ -9,7 +9,7 @@ export interface AppState {
   browserTabIndex: number;
   language: string;
   fontSize: number;
-  enabledBrowsers: boolean[];
+  enabledBrowsers: Record<string, boolean>;
 }
 
 export interface Log {
@@ -26,4 +26,13 @@ export interface UrlPattern {
   index: number;
   pattern: string | string[];
   url: string;
+}
+
+export interface Browser {
+  id: string;
+  label: string;
+  index: number;
+  url: string;
+  urlPattern: string | string[];
+  script: string;
 }

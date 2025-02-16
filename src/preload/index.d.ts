@@ -20,6 +20,13 @@ interface ExtendedElectronAPI extends ElectronAPI {
   sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) => void;
 }
 
+interface Browser {
+  id: string;
+  label: string;
+  index: number;
+  url: string;
+}
+
 interface InitialSettings {
   currentVersion: string;
   isDarkMode: boolean;
@@ -29,7 +36,8 @@ interface InitialSettings {
   language: string;
   fontSize: number;
   osInfo: string;
-  enabledBrowsers: boolean[];
+  enabledBrowsers: Record<string, boolean>;
+  browsers: Browser[];
 }
 
 declare global {

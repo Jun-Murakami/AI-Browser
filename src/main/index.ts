@@ -5,8 +5,12 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import contextMenu from 'electron-context-menu';
 import icon from '../../resources/icon.png?asset';
 import type{ AppState, Log, TabManager } from './types/interfaces';
-import { EXPECTED_BROWSER_COUNT, BROWSER_URLS, URL_PATTERNS } from './constants/browsers';
-import { BROWSER_SCRIPTS } from './scripts/browserScripts';
+import { URL_PATTERNS, BROWSERS } from './constants/browsers';
+
+// 初期のenabledBrowsersを生成
+const initialEnabledBrowsers = Object.fromEntries(
+  BROWSERS.map(browser => [browser.id, true])
+);
 
 let appState: AppState = {
   bounds: { x: 0, y: 0, width: 1100, height: 800 },
@@ -17,7 +21,7 @@ let appState: AppState = {
   browserTabIndex: 0,
   language: 'text',
   fontSize: 16,
-  enabledBrowsers: [true, true, true, true, true, true, true, true, true, true, true],
+  enabledBrowsers: initialEnabledBrowsers,
 };
 
 let logs: Log[] = [];
@@ -189,11 +193,20 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       fontSize: appState.fontSize,
       osInfo: process.platform,
       enabledBrowsers: appState.enabledBrowsers,
+      browsers: BROWSERS.map(browser => ({
+        id: browser.id,
+        label: browser.label,
+        index: browser.index,
+        url: browser.url
+      }))
     };
   });
 
   ipcMain.on('update-enabled-browsers', (_, enabledBrowsers: boolean[]) => {
-    appState.enabledBrowsers = enabledBrowsers;
+    // boolean[]をRecord<string, boolean>に変換
+    appState.enabledBrowsers = Object.fromEntries(
+      BROWSERS.map((browser, index) => [browser.id, enabledBrowsers[index]])
+    );
   });
 
   ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
@@ -202,32 +215,24 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     }
 
     tabManager.views.forEach((view, index) => {
-      if (!appState.enabledBrowsers?.[index]) {
+      const browser = BROWSERS[index];
+      if (!browser || !appState.enabledBrowsers[browser.id]) {
         return;
       }
-
-      const urlPattern = URL_PATTERNS.find((pattern) => pattern.index === index);
-      if (!urlPattern) return;
 
       const currentUrl = view.webContents.getURL();
       const shouldSend =
         sendToAll ||
         (tabManager.currentIndex === index &&
-          (Array.isArray(urlPattern.pattern)
-            ? urlPattern.pattern.some((p) => currentUrl.includes(p))
-            : currentUrl.includes(urlPattern.pattern)));
+          (Array.isArray(browser.urlPattern)
+            ? browser.urlPattern.some((p) => currentUrl.includes(p))
+            : currentUrl.includes(browser.urlPattern)));
 
       if (shouldSend) {
-        // スクリプトを取得し、テキストを置換
-        const scriptKey = Object.keys(BROWSER_URLS).find(
-          (key) => BROWSER_URLS[key as keyof typeof BROWSER_URLS] === urlPattern.url
-        );
-        if (scriptKey) {
-          const script = BROWSER_SCRIPTS[scriptKey as keyof typeof BROWSER_SCRIPTS].replace('TEXT_TO_SEND', JSON.stringify(text));
-          view.webContents.executeJavaScript(script).catch((error) => {
-            console.error('Script execution failed:', error);
-          });
-        }
+        const script = browser.script.replace('TEXT_TO_SEND', JSON.stringify(text));
+        view.webContents.executeJavaScript(script).catch((error) => {
+          console.error('Script execution failed:', error);
+        });
       }
     });
   });
@@ -283,15 +288,46 @@ function createMainWindow(): BrowserWindow {
   const appStatePath = path.join(userDataPath, 'appState.json');
   if (fs.existsSync(appStatePath)) {
     try {
-      appState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
+      const savedState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
+      
+      // enabledBrowsersの検証とガード処理
+      const isValidEnabledBrowsers = (
+        savedState.enabledBrowsers &&
+        typeof savedState.enabledBrowsers === 'object' &&
+        !Array.isArray(savedState.enabledBrowsers) &&
+        Object.keys(savedState.enabledBrowsers).every(key => 
+          BROWSERS.some(browser => browser.id === key) && 
+          typeof savedState.enabledBrowsers[key] === 'boolean'
+        )
+      );
+
+      // 不正な場合は初期値を使用
+      if (!isValidEnabledBrowsers) {
+        savedState.enabledBrowsers = Object.fromEntries(
+          BROWSERS.map(browser => [browser.id, true])
+        );
+      } else {
+        // 古い設定から新しい設定への移行
+        const newEnabledBrowsers = Object.fromEntries(
+          BROWSERS.map(browser => [
+            browser.id,
+            savedState.enabledBrowsers[browser.id] ?? true
+          ])
+        );
+        savedState.enabledBrowsers = newEnabledBrowsers;
+      }
+
+      appState = savedState;
     } catch (error) {
       console.error('ウィンドウの状態の読み込みに失敗しました:', error);
     }
   }
 
-  // 有効ブラウザの数が期待値と一致しない場合、全てのブラウザを有効にする
-  if (!appState.enabledBrowsers || appState.enabledBrowsers.length !== EXPECTED_BROWSER_COUNT) {
-    appState.enabledBrowsers = Array(EXPECTED_BROWSER_COUNT).fill(true);
+  // 有効ブラウザの初期化処理を更新
+  if (!appState.enabledBrowsers || typeof appState.enabledBrowsers !== 'object') {
+    appState.enabledBrowsers = Object.fromEntries(
+      BROWSERS.map(browser => [browser.id, true])
+    );
   }
 
   const logsPath = path.join(userDataPath, 'logs.json');
@@ -377,10 +413,15 @@ function createMainWindow(): BrowserWindow {
 
       // JSON形式で保存するデータ
       appState = {
-        ...appState,
         bounds: bounds,
         isMaximized: isMaximized,
-        enabledBrowsers: appState.enabledBrowsers,
+        isDarkMode: appState.isDarkMode,
+        editorMode: appState.editorMode,
+        browserWidth: appState.browserWidth,
+        browserTabIndex: appState.browserTabIndex,
+        language: appState.language,
+        fontSize: appState.fontSize,
+        enabledBrowsers: appState.enabledBrowsers
       };
 
       // ファイルに保存（fsモジュールを使用）

@@ -31,7 +31,6 @@ import BrowserTab from './BrowserTab';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
 
-
 interface HomePageProps {
   darkMode: boolean;
   setDarkMode: (darkMode: boolean) => void;
@@ -51,34 +50,12 @@ const truncateText = (text: string, maxLength = 100) => {
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
-  const [browserIndex, setBrowserIndex] = useState(10);
+  const [browserTabs, setBrowserTabs] = useState<Array<{ label: string; id: string; index: number }>>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [browserIndex, setBrowserIndex] = useState(0);
   const [browserUrls, setBrowserUrls] = useState<string[]>([]);
-  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-  ]);
-  const [enabledBrowsers, setEnabledBrowsers] = useState<boolean[]>([
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-  ]);
+  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([]);
+  const [enabledBrowsers, setEnabledBrowsers] = useState<Record<string, boolean>>({});
   const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('plaintext');
@@ -133,31 +110,48 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
   useEffect(() => {
-    if (!enabledBrowsers || !browserIndexTimestamp) {
+    if (!enabledBrowsers || !browserIndexTimestamp || !browserTabs.length) {
       return;
     }
     setBrowserIndex((prev) => {
-      let newBrowserIndex = prev + 1;
-      while (!enabledBrowsers[newBrowserIndex]) {
-        newBrowserIndex = newBrowserIndex + 1;
-        if (newBrowserIndex > enabledBrowsers.filter((enabled) => enabled).length + 1) {
-          newBrowserIndex = 0;
-        }
+      const enabledIndices = browserTabs
+        .filter(tab => enabledBrowsers[tab.id])
+        .map(tab => tab.index);
+      
+      if (!enabledIndices.length) {
+        return prev;
       }
+      
+      const currentIndex = enabledIndices.indexOf(prev);
+      const nextIndex = (currentIndex + 1) % enabledIndices.length;
+      const newBrowserIndex = enabledIndices[nextIndex] ?? 0;
+      
       window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
       return newBrowserIndex;
     });
-  }, [browserIndexTimestamp, enabledBrowsers]);
+  }, [browserIndexTimestamp, enabledBrowsers, browserTabs]);
 
   // 初期設定を取得
   useEffect(() => {
+    // ローディング状態を監視
+    window.electron.onUpdateLoadingStatus((status) => {
+      setBrowserLoadings((prev) => {
+        const newLoadings = [...prev];
+        newLoadings[status.index] = status.isLoading;
+        return newLoadings;
+      });
+    });
+
     window.electron
       .getInitialSettings()
       .then(async (settings) => {
-        setDarkMode(settings.isDarkMode);
+        setBrowserTabs(settings.browsers);
         setEnabledBrowsers(settings.enabledBrowsers);
+        setBrowserIndex(settings.browsers.length > 0 ? settings.browsers.length - 1 : 0);
+        setDarkMode(settings.isDarkMode);
         setEditorIndex(settings.editorMode);
         setPreferredSize(settings.browserWidth);
+        setIsInitialized(true);
         setTimeout(() => {
           editorSplitRef.current?.reset();
         }, 100);
@@ -192,15 +186,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     // ブラウザのURLを監視
     window.electron.onUpdateUrls((newUrls) => {
       setBrowserUrls(newUrls);
-    });
-
-    // ローディング状態を監視
-    window.electron.onUpdateLoadingStatus((status) => {
-      setBrowserLoadings((prev) => {
-        const newLoadings = [...prev];
-        newLoadings[status.index] = status.isLoading;
-        return newLoadings;
-      });
     });
 
     // クリーンアップ
@@ -381,20 +366,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     toast('Copied to clipboard.');
   };
 
-  const browserTabs = [
-    { label: 'ChatGPT', index: 0 },
-    { label: 'Gemini', index: 1 },
-    { label: 'AIStudio', index: 2 },
-    { label: 'Claude', index: 3 },
-    { label: 'DeepSeek', index: 4 },
-    { label: 'Phind', index: 5 },
-    { label: 'Perplexity', index: 6 },
-    { label: 'Genspark', index: 7 },
-    { label: 'Felo', index: 8 },
-    { label: 'JENOVA', index: 9 },
-    { label: 'Cody', index: 10 },
-  ];
-
   const fontSizeOptions = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
   // グローバルショートカットの設定
@@ -416,25 +387,31 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
           <Box sx={{ height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Tooltip title='(Ctrl + Tab) to switch AI' placement='right' arrow>
-                <Tabs
-                  value={browserIndex}
-                  onChange={handleBrowserTabChange}
-                  sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
-                  key='browser-tabs'
-                >
-                  {browserTabs.map(({ label, index }) => (
-                    <BrowserTab
-                      key={index}
-                      isEditingBrowserShow={isEditingBrowserShow}
-                      enabled={enabledBrowsers[index]}
-                      setEnabledBrowsers={setEnabledBrowsers}
-                      index={index}
-                      label={label}
-                      loading={browserLoadings[index]}
-                      onClick={handleBrowserTabChange}
-                    />
-                  ))}
-                </Tabs>
+                {isInitialized && browserTabs.length > 0 ? (
+                  <Tabs
+                    value={browserIndex}
+                    onChange={handleBrowserTabChange}
+                    sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
+                    key='browser-tabs'
+                  >
+                    {browserTabs.map(({ label, id, index }) => (
+                      <BrowserTab
+                        key={index}
+                        isEditingBrowserShow={isEditingBrowserShow}
+                        enabled={enabledBrowsers[id]}
+                        setEnabledBrowsers={setEnabledBrowsers}
+                        index={index}
+                        label={label}
+                        loading={browserLoadings[index]}
+                        onClick={handleBrowserTabChange}
+                      />
+                    ))}
+                  </Tabs>
+                ) : (
+                  <Box sx={{ borderBottom: 1, borderColor: theme.palette.divider, width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                )}
               </Tooltip>
               <Box>
                 <Tooltip title='Edit tabs' placement='right' arrow>
@@ -714,27 +691,51 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     <ContentPaste />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title={`Send to ${browserTabs[browserIndex].label} (${commandKey} + Enter)`} arrow>
-                  <Button
-                    ref={sendButtonRef}
-                    variant='contained'
-                    sx={{ width: 100, mr: 1 }}
-                    startIcon={<Send sx={{ mr: -0.5 }} />}
-                    onClick={() => handleSendButtonClick(false)}
-                  >
-                    {browserTabs[browserIndex].label}
-                  </Button>
-                </Tooltip>
-                <Tooltip title='Send to all tabs' arrow>
-                  <Button
-                    variant='contained'
-                    sx={{ width: 40, mr: 1 }}
-                    startIcon={<Send sx={{ mr: -0.5 }} />}
-                    onClick={() => handleSendButtonClick(true)}
-                  >
-                    All
-                  </Button>
-                </Tooltip>
+                {isInitialized && browserTabs.length > 0 && browserTabs[browserIndex] ? (
+                  <>
+                    <Tooltip title={`Send to ${browserTabs[browserIndex].label} (${commandKey} + Enter)`} arrow>
+                      <Button
+                        ref={sendButtonRef}
+                        variant='contained'
+                        sx={{ width: 100, mr: 1 }}
+                        startIcon={<Send sx={{ mr: -0.5 }} />}
+                        onClick={() => handleSendButtonClick(false)}
+                      >
+                        {browserTabs[browserIndex].label}
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title='Send to all tabs' arrow>
+                      <Button
+                        variant='contained'
+                        sx={{ width: 40, mr: 1 }}
+                        startIcon={<Send sx={{ mr: -0.5 }} />}
+                        onClick={() => handleSendButtonClick(true)}
+                      >
+                        All
+                      </Button>
+                    </Tooltip>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      ref={sendButtonRef}
+                      variant='contained'
+                      sx={{ width: 100, mr: 1 }}
+                      startIcon={<Send sx={{ mr: -0.5 }} />}
+                      disabled
+                    >
+                      Send
+                    </Button>
+                    <Button
+                      variant='contained'
+                      sx={{ width: 40, mr: 1 }}
+                      startIcon={<Send sx={{ mr: -0.5 }} />}
+                      disabled
+                    >
+                      All
+                    </Button>
+                  </>
+                )}
               </Box>
             </Box>
           </Box>

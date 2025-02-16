@@ -4,7 +4,7 @@ import { ChatGPTIcon, GeminiIcon, ClaudeIcon, DeepSeekIcon, AIStudioIcon } from 
 interface BrowserTabProps {
   isEditingBrowserShow: boolean;
   enabled: boolean;
-  setEnabledBrowsers: React.Dispatch<React.SetStateAction<boolean[]>>;
+  setEnabledBrowsers: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   index: number;
   label: string;
   loading: boolean;
@@ -22,12 +22,18 @@ export const BrowserTab = ({
 }: BrowserTabProps) => {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEnabledBrowsers((prev) => {
-      const newEnabledBrowsers = [...prev];
-      newEnabledBrowsers[index] = e.target.checked;
-      if (newEnabledBrowsers.every((enabled) => enabled === false)) {
-        newEnabledBrowsers[index] = true;
+      const newEnabledBrowsers = { ...prev };
+      newEnabledBrowsers[label.toUpperCase()] = e.target.checked;
+      
+      // 全てのブラウザが無効になることを防ぐ
+      if (Object.values(newEnabledBrowsers).every((enabled) => !enabled)) {
+        newEnabledBrowsers[label.toUpperCase()] = true;
       }
-      window.electron.sendEnabledBrowsersToMain(newEnabledBrowsers);
+      
+      // boolean[]に変換してメインプロセスに送信
+      const enabledArray = Object.values(newEnabledBrowsers);
+      window.electron.sendEnabledBrowsersToMain(enabledArray);
+      
       return newEnabledBrowsers;
     });
   };

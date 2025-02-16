@@ -1,31 +1,105 @@
-import type { UrlPattern } from '../types/interfaces';
+import type { Browser } from '../types/interfaces';
+import { BROWSER_SCRIPTS } from '../scripts/browserScripts';
 
-export const EXPECTED_BROWSER_COUNT = 11;
-
-export const BROWSER_URLS = {
-  CHATGPT: 'https://chatgpt.com/',
-  GEMINI: 'https://gemini.google.com/',
-  CLAUDE: 'https://claude.ai/',
-  DEEPSEEK: 'https://chat.deepseek.com/',
-  PHIND: 'https://www.phind.com/',
-  PERPLEXITY: 'https://www.perplexity.ai/',
-  GENSPARK: 'https://www.genspark.ai/',
-  AISTUDIO: 'https://aistudio.google.com/',
-  FELO: 'https://felo.ai/',
-  JENOVA: 'https://app.jenova.ai/',
-  CODY: 'https://sourcegraph.com/cody/chat',
-} as const;
-
-export const URL_PATTERNS: UrlPattern[] = [
-  { index: 0, pattern: 'chatgpt.com', url: BROWSER_URLS.CHATGPT },
-  { index: 1, pattern: 'gemini.google.com', url: BROWSER_URLS.GEMINI },
-  { index: 2, pattern: ['aistudio.google.com', 'ai.google.dev'], url: BROWSER_URLS.AISTUDIO },
-  { index: 3, pattern: 'claude.ai', url: BROWSER_URLS.CLAUDE },
-  { index: 4, pattern: 'deepseek.com', url: BROWSER_URLS.DEEPSEEK },
-  { index: 5, pattern: 'phind.com', url: BROWSER_URLS.PHIND },
-  { index: 6, pattern: 'perplexity.ai', url: BROWSER_URLS.PERPLEXITY },
-  { index: 7, pattern: 'genspark.ai', url: BROWSER_URLS.GENSPARK },
-  { index: 8, pattern: 'felo.ai', url: BROWSER_URLS.FELO },
-  { index: 9, pattern: 'jenova.ai', url: BROWSER_URLS.JENOVA },
-  { index: 10, pattern: 'sourcegraph.com', url: BROWSER_URLS.CODY },
+export const BROWSERS: Browser[] = [
+  {
+    id: 'CHATGPT',
+    label: 'ChatGPT',
+    index: 0,
+    url: 'https://chatgpt.com/',
+    urlPattern: 'chatgpt.com',
+    script: BROWSER_SCRIPTS.CHATGPT
+  },
+  {
+    id: 'GEMINI',
+    label: 'Gemini',
+    index: 1,
+    url: 'https://gemini.google.com/',
+    urlPattern: 'gemini.google.com',
+    script: BROWSER_SCRIPTS.GEMINI
+  },
+  {
+    id: 'AISTUDIO',
+    label: 'AIStudio',
+    index: 2,
+    url: 'https://aistudio.google.com/',
+    urlPattern: ['aistudio.google.com', 'ai.google.dev'],
+    script: BROWSER_SCRIPTS.AISTUDIO
+  },
+  {
+    id: 'CLAUDE',
+    label: 'Claude',
+    index: 3,
+    url: 'https://claude.ai/',
+    urlPattern: 'claude.ai',
+    script: BROWSER_SCRIPTS.CLAUDE
+  },
+  {
+    id: 'DEEPSEEK',
+    label: 'DeepSeek',
+    index: 4,
+    url: 'https://chat.deepseek.com/',
+    urlPattern: 'deepseek.com',
+    script: BROWSER_SCRIPTS.DEEPSEEK
+  },
+  {
+    id: 'PHIND',
+    label: 'Phind',
+    index: 5,
+    url: 'https://www.phind.com/',
+    urlPattern: 'phind.com',
+    script: BROWSER_SCRIPTS.PHIND
+  },
+  {
+    id: 'PERPLEXITY',
+    label: 'Perplexity',
+    index: 6,
+    url: 'https://www.perplexity.ai/',
+    urlPattern: 'perplexity.ai',
+    script: BROWSER_SCRIPTS.PERPLEXITY
+  },
+  {
+    id: 'GENSPARK',
+    label: 'Genspark',
+    index: 7,
+    url: 'https://www.genspark.ai/',
+    urlPattern: 'genspark.ai',
+    script: BROWSER_SCRIPTS.GENSPARK
+  },
+  {
+    id: 'FELO',
+    label: 'Felo',
+    index: 8,
+    url: 'https://felo.ai/',
+    urlPattern: 'felo.ai',
+    script: BROWSER_SCRIPTS.FELO
+  },
+  {
+    id: 'JENOVA',
+    label: 'JENOVA',
+    index: 9,
+    url: 'https://app.jenova.ai/',
+    urlPattern: 'jenova.ai',
+    script: BROWSER_SCRIPTS.JENOVA
+  },
+  {
+    id: 'CODY',
+    label: 'Cody',
+    index: 10,
+    url: 'https://sourcegraph.com/cody/chat',
+    urlPattern: 'sourcegraph.com',
+    script: BROWSER_SCRIPTS.CODY
+  }
 ];
+
+export const EXPECTED_BROWSER_COUNT = BROWSERS.length;
+
+export const BROWSER_URLS = Object.fromEntries(
+  BROWSERS.map(browser => [browser.id, browser.url])
+) as Record<string, string>;
+
+export const URL_PATTERNS = BROWSERS.map(browser => ({
+  index: browser.index,
+  pattern: browser.urlPattern,
+  url: browser.url
+}));
