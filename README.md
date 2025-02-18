@@ -2,6 +2,9 @@
 
 Client app for ChatGPT, Gemini, Claude, DeepSeek, Grok, Felo, Cody, JENOVA, Phind, Perplexity, Genspark and Google AI Studio with Monaco Editor integration.
 
+
+![aib](https://github.com/user-attachments/assets/dd609be0-7aa4-4976-b174-8b4e0cbbe761)
+
 https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-ba53-a6c2c03bfad8
 
 <img width="924" alt="スクリーンショット 2024-03-20 00 19 11" src="https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c0fc5156-9c70-4290-ba5d-51b110431048">
