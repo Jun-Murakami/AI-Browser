@@ -23,7 +23,7 @@ import {
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 import { useTheme } from '@mui/system';
 import * as monaco from 'monaco-editor';
-import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings, Save, Clear } from '@mui/icons-material';
+import { KeyboardArrowUp, KeyboardArrowDown, Send, ContentPaste, ReplayOutlined, Settings, Save, Clear, InfoOutlined } from '@mui/icons-material';
 import { getSupportedLanguages } from './MonacoEditor';
 import { MonacoEditors } from './MonacoEditors';
 import { MaterialUISwitch } from './DarkModeSwitch';
@@ -31,6 +31,7 @@ import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import BrowserTab from './BrowserTab';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
+import { LicenseDialog } from './LicenseDialog';
 
 interface HomePageProps {
   darkMode: boolean;
@@ -73,6 +74,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [commandKey, setCommandKey] = useState('Ctrl');
   const [osInfo, setOsInfo] = useState('');
   const [isChipVisible, setIsChipVisible] = useState(false);
+  const [isLicenseDialogOpen, setIsLicenseDialogOpen] = useState(false);
 
   const checkForUpdates = useCheckForUpdates();
 
@@ -96,6 +98,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const olderLogButtonTouchRippleRef = useRef<TouchRippleActions>(null);
 
   const editorSplitRef = useRef<AllotmentHandle | null>(null);
+  const editorPaneRef = useRef<HTMLDivElement>(null);
 
   // ブラウザのサイズが変更されたらメインプロセスに通知
   useEffect(() => {
@@ -126,15 +129,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       const enabledIndices = browserTabs
         .filter(tab => enabledBrowsers[tab.id])
         .map(tab => tab.index);
-      
+
       if (!enabledIndices.length) {
         return prev;
       }
-      
+
       const currentIndex = enabledIndices.indexOf(prev);
       const nextIndex = (currentIndex + 1) % enabledIndices.length;
       const newBrowserIndex = enabledIndices[nextIndex] ?? 0;
-      
+
       window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
       return newBrowserIndex;
     });
@@ -255,11 +258,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       setSelectedLog(null);
       return [newLog, ...newLogs];
     }
-    
+
     setLogs([newLog, ...logs]);
-      setSelectedLog(null);
-      return [newLog, ...logs];
-    },
+    setSelectedLog(null);
+    return [newLog, ...logs];
+  },
     [logs]
   );
 
@@ -299,7 +302,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     if (selected) {
       setSelectedLog(selected);
       const parts = selected.text.split('\n----\n');
-      
+
       // すべてのエディターの値をリセット
       const setters = [setEditor1Value, setEditor2Value, setEditor3Value, setEditor4Value, setEditor5Value];
       for (const setter of setters) {
@@ -404,7 +407,18 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
           <Box sx={{ height: '100%' }}>
             <Box aria-label='Browser tabs container' sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
-              <Tooltip title='(Ctrl + Tab) to switch AI' placement='right' arrow>
+              <Tooltip title='(Ctrl + Tab) to switch AI' placement='right' arrow slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, 40],
+                      },
+                    },
+                  ],
+                },
+              }}>
                 {isInitialized && browserTabs.length > 0 ? (
                   <Box sx={{ position: 'relative', width: 'calc(100% - 48px)' }}>
                     <Tabs
@@ -493,7 +507,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
           </Box>
         </Allotment.Pane>
         <Allotment.Pane minSize={500}>
-          <Box sx={{ height: '100%' }}>
+          <Box sx={{ height: '100%' }} ref={editorPaneRef}>
             {isChipVisible && (
               <Chip
                 label={`Update? v${latestVersion}`}
@@ -507,32 +521,43 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                 sx={{ position: 'absolute', top: 0, right: 0, m: 1, zIndex: 1000 }}
               />
             )}
-            <Tabs
-              value={editorIndex}
-              onChange={handleEditorTabChange}
-              sx={{ borderBottom: 1, borderColor: theme.palette.divider }}
-            >
-              <Tab
-                value={0}
-                icon={<Split1Icon sx={{ fontSize: 22, color: editorIndex !== 0 ? theme.palette.action.disabled : undefined }} />}
-              />
-              <Tab
-                value={1}
-                icon={<Split2Icon sx={{ fontSize: 22, color: editorIndex !== 1 ? theme.palette.action.disabled : undefined }} />}
-              />
-              <Tab
-                value={2}
-                icon={<Split3Icon sx={{ fontSize: 22, color: editorIndex !== 2 ? theme.palette.action.disabled : undefined }} />}
-              />
-              <Tab
-                value={3}
-                icon={<Split4Icon sx={{ fontSize: 22, color: editorIndex !== 3 ? theme.palette.action.disabled : undefined }} />}
-              />
-              <Tab
-                value={4}
-                icon={<Split5Icon sx={{ fontSize: 22, color: editorIndex !== 4 ? theme.palette.action.disabled : undefined }} />}
-              />
-            </Tabs>
+            <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: theme.palette.divider }}>
+              <Tabs
+                value={editorIndex}
+                onChange={handleEditorTabChange}
+                sx={{ flex: 1 }}
+              >
+                <Tab
+                  value={0}
+                  icon={<Split1Icon sx={{ fontSize: 22, color: editorIndex !== 0 ? theme.palette.action.disabled : undefined }} />}
+                />
+                <Tab
+                  value={1}
+                  icon={<Split2Icon sx={{ fontSize: 22, color: editorIndex !== 1 ? theme.palette.action.disabled : undefined }} />}
+                />
+                <Tab
+                  value={2}
+                  icon={<Split3Icon sx={{ fontSize: 22, color: editorIndex !== 2 ? theme.palette.action.disabled : undefined }} />}
+                />
+                <Tab
+                  value={3}
+                  icon={<Split4Icon sx={{ fontSize: 22, color: editorIndex !== 3 ? theme.palette.action.disabled : undefined }} />}
+                />
+                <Tab
+                  value={4}
+                  icon={<Split5Icon sx={{ fontSize: 22, color: editorIndex !== 4 ? theme.palette.action.disabled : undefined }} />}
+                />
+              </Tabs>
+              <Tooltip title="License Information" placement="left" arrow>
+                <IconButton
+                  onClick={() => setIsLicenseDialogOpen(true)}
+                  size="small"
+                  sx={{ mr: 1, color: theme.palette.text.secondary }}
+                >
+                  <InfoOutlined />
+                </IconButton>
+              </Tooltip>
+            </Box>
             <Box sx={{ w: '100%', p: 1 }}>
               <FormControl sx={{ width: 'calc(100% - 202px)' }}>
                 <InputLabel size='small' sx={{ fontSize: 14 }}>
@@ -803,6 +828,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               </Box>
             </Box>
           </Box>
+          <LicenseDialog
+            open={isLicenseDialogOpen}
+            onClose={() => setIsLicenseDialogOpen(false)}
+          />
         </Allotment.Pane>
       </Allotment>
     </Box>

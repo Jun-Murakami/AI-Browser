@@ -1,9 +1,10 @@
 {
   "name": "ai-browser",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "AI Browser",
   "type": "module",
   "main": "./out/main/index.js",
+  "license": "MIT",
   "author": "JunMurakami",
   "homepage": "https://github.com/Jun-Murakami/AI-Browser",
   "scripts": {
@@ -35,7 +36,6 @@
     "@types/react-rnd": "^8.0.0",
     "allotment": "^1.20.3",
     "electron-context-menu": "^4.0.5",
-    "electron-updater": "^6.3.9",
     "monaco-editor": "^0.52.2",
     "sonner": "^1.7.4"
   },

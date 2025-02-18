@@ -156,7 +156,7 @@ export const AIStudioIcon = (props: SvgIconProps) => (
 
 export const GrokIcon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
-    <svg id='Layer' data-name='Layer' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 19 21' strokeWidth={2} stroke='currentColor'>
+    <svg id='Layer' data-name='Layer' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 19 21' strokeWidth={2} stroke='currentColor' fill='none'>
       <title>Grok</title>
       <path d='M0,7.42l9.54,13.58h4.24L4.25,7.42H0h0ZM4.24,14.96L0,21h4.24l2.12-3.02-2.12-3.02h0ZM14.76,0l-7.33,10.44,2.12,3.02L19,0h-4.24ZM15.52,6.46v14.54h3.48V1.51s-3.48,4.95-3.48,4.95Z' />
     </svg>
