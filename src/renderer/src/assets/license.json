@@ -242,21 +242,21 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@juggle\\resize-observer",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@juggle\\resize-observer\\LICENSE"
   },
-  "@mui/core-downloads-tracker@6.4.4": {
+  "@mui/core-downloads-tracker@6.4.5": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker\\LICENSE"
   },
-  "@mui/icons-material@6.4.4": {
+  "@mui/icons-material@6.4.5": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material\\LICENSE"
   },
-  "@mui/material@6.4.4": {
+  "@mui/material@6.4.5": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
@@ -346,7 +346,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node\\LICENSE"
   },
-  "@types/node@22.13.4": {
+  "@types/node@22.13.5": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node",
@@ -376,7 +376,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group\\LICENSE"
   },
-  "@types/react@19.0.8": {
+  "@types/react@19.0.10": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react",
@@ -394,7 +394,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\yauzl",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\yauzl\\LICENSE"
   },
-  "ai-browser@1.4.6": {
+  "ai-browser@1.4.8": {
     "licenses": "MIT",
     "publisher": "JunMurakami",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser",
@@ -1366,7 +1366,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\slice-ansi",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\slice-ansi\\license"
   },
-  "sonner@1.7.4": {
+  "sonner@2.0.1": {
     "licenses": "MIT",
     "repository": "https://github.com/emilkowalski/sonner",
     "publisher": "Emil Kowalski",

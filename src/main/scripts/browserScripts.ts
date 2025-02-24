@@ -94,7 +94,8 @@ export const BROWSER_SCRIPTS = {
 
       setTimeout(() => {
         var buttons = Array.from(document.querySelectorAll('button[aria-label*="Grok"]'))
-          .filter(button => button.getAttribute('aria-label') !== 'Grok 3 (beta)');
+          .filter(button => button.getAttribute('aria-label') !== 'Grok 3 (beta)')
+          .filter(button => button.getAttribute('aria-label') !== 'Grok 3');
         var sendButton = buttons.length > 0 ? buttons[buttons.length - 1] : null;
         if (sendButton) {
           sendButton.click();

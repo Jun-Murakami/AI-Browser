@@ -1,6 +1,6 @@
 {
   "name": "ai-browser",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "AI Browser",
   "type": "module",
   "main": "./out/main/index.js",
@@ -31,27 +31,27 @@
     "@emotion/styled": "^11.14.0",
     "@fontsource/lato": "^5.1.1",
     "@fontsource/m-plus-1p": "^5.1.1",
-    "@mui/icons-material": "^6.4.4",
-    "@mui/material": "^6.4.4",
+    "@mui/icons-material": "^6.4.5",
+    "@mui/material": "^6.4.5",
     "@types/react-rnd": "^8.0.0",
     "allotment": "^1.20.3",
     "electron-context-menu": "^4.0.5",
     "monaco-editor": "^0.52.2",
-    "sonner": "^1.7.4"
+    "sonner": "^2.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@electron-toolkit/tsconfig": "^1.0.1",
-    "@types/node": "^22.13.4",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
+    "@types/node": "^22.13.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^34",
     "electron-builder": "^25.1.8",
-    "electron-vite": "^3.0.0-beta.0",
+    "electron-vite": "^3.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.7.3",
-    "vite": "^6.1.0"
+    "vite": "^6.1.1"
   }
 }
