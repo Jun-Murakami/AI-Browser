@@ -58,13 +58,15 @@ export const BROWSER_SCRIPTS = {
     textareaTag.focus();
     textareaTag.dispatchEvent(pasteEvent);
     setTimeout(() => {
-      var sendButton = document.querySelector('div[data-value="new chat"] button');
-      if (!sendButton) {
-        sendButton = document.querySelector('button[aria-label="Send Message"]');
+      var closedDivs = document.querySelectorAll('div[data-state="closed"]');
+      if (closedDivs.length > 0) {
+        var sendButtons = closedDivs[closedDivs.length - 1].querySelectorAll('button');
+        var sendButton = sendButtons[sendButtons.length - 1];
+        if (sendButton) {
+          sendButton.click();
+        }
       }
-      if (sendButton) {
-        sendButton.click();
-      }
+      console.log('closedDiv', closedDiv);
     }, 700);
   `,
   DEEPSEEK: `
