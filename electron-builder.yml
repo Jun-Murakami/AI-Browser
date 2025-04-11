@@ -25,7 +25,8 @@ mac:
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: { teamId: 'AQDS3A93CQ' }
+  hardenedRuntime: true
+  notarize: true
   target:
     - target: dmg
       arch: universal

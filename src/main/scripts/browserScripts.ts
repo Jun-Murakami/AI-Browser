@@ -172,7 +172,7 @@ export const BROWSER_SCRIPTS = {
     }, 700);
   `,
   AISTUDIO: `
-    var textareaTag = document.querySelector('textarea[aria-label="Type something"]');
+    var textareaTag = document.querySelector('textarea');
     textareaTag.value = TEXT_TO_SEND;
     textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
     setTimeout(() => {

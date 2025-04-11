@@ -1,6 +1,6 @@
 {
   "name": "ai-browser",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "description": "AI Browser",
   "type": "module",
   "main": "./out/main/index.js",
@@ -46,7 +46,7 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^35",
+    "electron": "35.1.4",
     "electron-builder": "^26.0.12",
     "electron-vite": "^3.1.0",
     "react": "^19.1.0",
