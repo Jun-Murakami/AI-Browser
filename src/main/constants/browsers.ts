@@ -46,7 +46,7 @@ export const BROWSERS: Browser[] = [
     id: 'GROK',
     label: 'Grok',
     index: 5,
-    url: 'https://grok.x.com/',
+    url: 'https://grok.com/',
     urlPattern: ['x.com', 'grok'],
     script: BROWSER_SCRIPTS.GROK
   },

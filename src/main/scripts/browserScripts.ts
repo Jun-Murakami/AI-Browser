@@ -95,9 +95,7 @@ export const BROWSER_SCRIPTS = {
       textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
 
       setTimeout(() => {
-        var buttons = Array.from(document.querySelectorAll('button[aria-label*="Grok"]'))
-          .filter(button => button.getAttribute('aria-label') !== 'Grok 3 (beta)')
-          .filter(button => button.getAttribute('aria-label') !== 'Grok 3');
+        var buttons = Array.from(document.querySelectorAll('button[type="submit"]'));
         var sendButton = buttons.length > 0 ? buttons[buttons.length - 1] : null;
         if (sendButton) {
           sendButton.click();
@@ -145,12 +143,31 @@ export const BROWSER_SCRIPTS = {
     }, 1000);
   `,
   PERPLEXITY: `
-    var textareaTags = document.querySelectorAll('main textarea');
+    var dataTransfer = new DataTransfer();
+    var text = TEXT_TO_SEND;
+    dataTransfer.setData('text', text);
+    var pasteEvent = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+
+    var textareaTag = null;
+    var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
+    if (textareaTags.length == 0) {
+      textareaTags = document.querySelectorAll('textarea[id="ask-input"]');
+      var textareaTag = textareaTags[textareaTags.length - 1];
+      if (textareaTag) {
+        textareaTag.value = text;
+        textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+    console.log(textareaTags);
     var textareaTag = textareaTags[textareaTags.length - 1];
     if (textareaTag) {
-      const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-      nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
-      textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+      textareaTag.focus();
+      textareaTag.dispatchEvent(pasteEvent);
+
       setTimeout(() => {
         var buttons = document.querySelectorAll('main button[aria-label="Submit"]');
         var sendButton = buttons[buttons.length - 1];
@@ -158,6 +175,8 @@ export const BROWSER_SCRIPTS = {
           sendButton.click();
         }
       }, 300);
+    } else {
+      console.log('No textarea tag found');
     }
   `,
   GENSPARK: `
