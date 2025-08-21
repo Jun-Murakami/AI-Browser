@@ -34,7 +34,6 @@ export const useGlobalShortcuts = ({
   setBrowserIndexTimestamp,
   osInfo,
 }: UseGlobalShortcutsProps) => {
-  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // MonacoEditorにフォーカスがある場合は処理をスキップ
@@ -136,4 +135,4 @@ export const useGlobalShortcuts = ({
     setBrowserIndexTimestamp,
     osInfo,
   ]);
-}; 
+};

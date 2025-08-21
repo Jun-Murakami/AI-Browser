@@ -8,7 +8,7 @@ export const BROWSERS: Browser[] = [
     index: 0,
     url: 'https://chatgpt.com/',
     urlPattern: 'chatgpt.com',
-    script: BROWSER_SCRIPTS.CHATGPT
+    script: BROWSER_SCRIPTS.CHATGPT,
   },
   {
     id: 'GEMINI',
@@ -16,7 +16,7 @@ export const BROWSERS: Browser[] = [
     index: 1,
     url: 'https://gemini.google.com/',
     urlPattern: 'gemini.google.com',
-    script: BROWSER_SCRIPTS.GEMINI
+    script: BROWSER_SCRIPTS.GEMINI,
   },
   {
     id: 'AISTUDIO',
@@ -24,7 +24,7 @@ export const BROWSERS: Browser[] = [
     index: 2,
     url: 'https://aistudio.google.com/',
     urlPattern: ['aistudio.google.com', 'ai.google.dev'],
-    script: BROWSER_SCRIPTS.AISTUDIO
+    script: BROWSER_SCRIPTS.AISTUDIO,
   },
   {
     id: 'CLAUDE',
@@ -32,7 +32,7 @@ export const BROWSERS: Browser[] = [
     index: 3,
     url: 'https://claude.ai/',
     urlPattern: 'claude.ai',
-    script: BROWSER_SCRIPTS.CLAUDE
+    script: BROWSER_SCRIPTS.CLAUDE,
   },
   {
     id: 'DEEPSEEK',
@@ -40,7 +40,7 @@ export const BROWSERS: Browser[] = [
     index: 4,
     url: 'https://chat.deepseek.com/',
     urlPattern: 'deepseek.com',
-    script: BROWSER_SCRIPTS.DEEPSEEK
+    script: BROWSER_SCRIPTS.DEEPSEEK,
   },
   {
     id: 'GROK',
@@ -48,7 +48,7 @@ export const BROWSERS: Browser[] = [
     index: 5,
     url: 'https://grok.com/',
     urlPattern: ['x.com', 'grok'],
-    script: BROWSER_SCRIPTS.GROK
+    script: BROWSER_SCRIPTS.GROK,
   },
   {
     id: 'PHIND',
@@ -56,7 +56,7 @@ export const BROWSERS: Browser[] = [
     index: 6,
     url: 'https://www.phind.com/',
     urlPattern: 'phind.com',
-    script: BROWSER_SCRIPTS.PHIND
+    script: BROWSER_SCRIPTS.PHIND,
   },
   {
     id: 'PERPLEXITY',
@@ -64,7 +64,7 @@ export const BROWSERS: Browser[] = [
     index: 7,
     url: 'https://www.perplexity.ai/',
     urlPattern: 'perplexity.ai',
-    script: BROWSER_SCRIPTS.PERPLEXITY
+    script: BROWSER_SCRIPTS.PERPLEXITY,
   },
   {
     id: 'GENSPARK',
@@ -72,7 +72,7 @@ export const BROWSERS: Browser[] = [
     index: 8,
     url: 'https://www.genspark.ai/',
     urlPattern: 'genspark.ai',
-    script: BROWSER_SCRIPTS.GENSPARK
+    script: BROWSER_SCRIPTS.GENSPARK,
   },
   {
     id: 'FELO',
@@ -80,7 +80,7 @@ export const BROWSERS: Browser[] = [
     index: 9,
     url: 'https://felo.ai/',
     urlPattern: 'felo.ai',
-    script: BROWSER_SCRIPTS.FELO
+    script: BROWSER_SCRIPTS.FELO,
   },
   {
     id: 'JENOVA',
@@ -88,7 +88,7 @@ export const BROWSERS: Browser[] = [
     index: 10,
     url: 'https://app.jenova.ai/',
     urlPattern: 'jenova.ai',
-    script: BROWSER_SCRIPTS.JENOVA
+    script: BROWSER_SCRIPTS.JENOVA,
   },
   {
     id: 'CODY',
@@ -96,18 +96,18 @@ export const BROWSERS: Browser[] = [
     index: 11,
     url: 'https://sourcegraph.com/cody/chat',
     urlPattern: 'sourcegraph.com',
-    script: BROWSER_SCRIPTS.CODY
-  }
+    script: BROWSER_SCRIPTS.CODY,
+  },
 ];
 
 export const EXPECTED_BROWSER_COUNT = BROWSERS.length;
 
 export const BROWSER_URLS = Object.fromEntries(
-  BROWSERS.map(browser => [browser.id, browser.url])
+  BROWSERS.map((browser) => [browser.id, browser.url]),
 ) as Record<string, string>;
 
-export const URL_PATTERNS = BROWSERS.map(browser => ({
+export const URL_PATTERNS = BROWSERS.map((browser) => ({
   index: browser.index,
   pattern: browser.urlPattern,
-  url: browser.url
+  url: browser.url,
 }));

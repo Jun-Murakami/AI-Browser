@@ -1,4 +1,4 @@
-import type{ WebContentsView } from 'electron';
+import type { WebContentsView } from 'electron';
 
 export interface AppState {
   bounds: Electron.Rectangle;
@@ -35,4 +35,18 @@ export interface Browser {
   url: string;
   urlPattern: string | string[];
   script: string;
+}
+
+export interface Terminal {
+  id: string;
+  label: string;
+  index: number;
+  type: 'terminal';
+}
+
+export interface TerminalSession {
+  id: string;
+  ptyProcess?: any; // Will be replaced with proper type when node-pty is installed
+  shell?: string;
+  cwd?: string;
 }

@@ -60,7 +60,8 @@ export const MonacoEditor = ({
 }: MonacoEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const isBoxReady = useWatchBoxHeight({ targetRef: editorRef });
-  const [editorInstance, setEditorInstance] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const [editorInstance, setEditorInstance] =
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const initialValue = useRef(value);
   const memoizedValue = useMemo(() => value, [value]);
 
@@ -86,7 +87,10 @@ export const MonacoEditor = ({
         showUnused: false,
         scrollBeyondLastLine: false,
         renderLineHighlightOnlyWhenFocus: true,
-        unicodeHighlight: { allowedLocales: { _os: true, _vscode: true }, ambiguousCharacters: false },
+        unicodeHighlight: {
+          allowedLocales: { _os: true, _vscode: true },
+          ambiguousCharacters: false,
+        },
         wordWrap: 'on',
         occurrencesHighlight: 'off',
         placeholder: placeholder,
@@ -121,7 +125,11 @@ export const MonacoEditor = ({
 
   // 外部からの値の変更を反映（初期値以外）
   useEffect(() => {
-    if (editorInstance && memoizedValue !== undefined && memoizedValue !== editorInstance.getValue()) {
+    if (
+      editorInstance &&
+      memoizedValue !== undefined &&
+      memoizedValue !== editorInstance.getValue()
+    ) {
       const position = editorInstance.getPosition();
       const selection = editorInstance.getSelection();
       editorInstance.setValue(memoizedValue);
@@ -159,9 +167,12 @@ export const MonacoEditor = ({
     });
 
     // Copy command
-    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC, () => {
-      copyButtonRef.current?.click();
-    });
+    addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC,
+      () => {
+        copyButtonRef.current?.click();
+      },
+    );
 
     // Clear command
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
@@ -170,10 +181,12 @@ export const MonacoEditor = ({
 
     // Tab switch command
     addCommand(
-      osInfo === 'darwin' ? monaco.KeyMod.WinCtrl | monaco.KeyCode.Tab : monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab,
+      osInfo === 'darwin'
+        ? monaco.KeyMod.WinCtrl | monaco.KeyCode.Tab
+        : monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab,
       () => {
         setBrowserIndexTimestamp(new Date().getTime());
-      }
+      },
     );
 
     // Log navigation commands
@@ -187,16 +200,36 @@ export const MonacoEditor = ({
 
     return () => {
       for (const disposable of disposables) {
-        if (disposable && typeof disposable === 'object' && 'dispose' in disposable) {
+        if (
+          disposable &&
+          typeof disposable === 'object' &&
+          'dispose' in disposable
+        ) {
           disposable.dispose();
         }
       }
     };
-  }, [editorInstance, osInfo, sendButtonRef, saveButtonRef, copyButtonRef, clearButtonRef, newerLogButtonRef, olderLogButtonRef, setBrowserIndexTimestamp]);
+  }, [
+    editorInstance,
+    osInfo,
+    sendButtonRef,
+    saveButtonRef,
+    copyButtonRef,
+    clearButtonRef,
+    newerLogButtonRef,
+    olderLogButtonRef,
+    setBrowserIndexTimestamp,
+  ]);
 
   // ウィンドウのリサイズ時にエディターのレイアウトを更新
   useEffect(() => {
-    if (editorRef.current && isBoxReady && editorInstance && browserWidth && browserHeight) {
+    if (
+      editorRef.current &&
+      isBoxReady &&
+      editorInstance &&
+      browserWidth &&
+      browserHeight
+    ) {
       editorInstance.updateOptions({ fontSize: fontSize });
       editorInstance.layout();
     }

@@ -1,15 +1,24 @@
-import { app, shell, BrowserWindow, ipcMain, nativeTheme, WebContentsView } from 'electron';
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  nativeTheme,
+  WebContentsView,
+} from 'electron';
 import fs from 'node:fs';
 import path, { join } from 'node:path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import contextMenu from 'electron-context-menu';
 import icon from '../../resources/icon.png?asset';
-import type{ AppState, Log, TabManager } from './types/interfaces';
+import type { AppState, Log, TabManager } from './types/interfaces';
 import { URL_PATTERNS, BROWSERS } from './constants/browsers';
+import { TERMINALS } from './constants/terminals';
+import { terminalManager } from './terminal/terminalManager';
 
 // 初期のenabledBrowsersを生成
 const initialEnabledBrowsers = Object.fromEntries(
-  BROWSERS.map(browser => [browser.id, true])
+  BROWSERS.map((browser) => [browser.id, true]),
 );
 
 let appState: AppState = {
@@ -39,7 +48,10 @@ function switchTab(mainWindow: BrowserWindow, newIndex: number) {
   if (newIndex < 0 || newIndex >= tabManager.views.length) return;
 
   // 現在のビューを非表示
-  if (tabManager.currentIndex >= 0 && tabManager.currentIndex < tabManager.views.length) {
+  if (
+    tabManager.currentIndex >= 0 &&
+    tabManager.currentIndex < tabManager.views.length
+  ) {
     const currentView = tabManager.views[tabManager.currentIndex];
     mainWindow.contentView.removeChildView(currentView); // removeBrowserView を removeChildView に変更
   }
@@ -61,7 +73,12 @@ function switchTab(mainWindow: BrowserWindow, newIndex: number) {
 /**
  * 新しい WebContentsView を生成し、イベントリスナーを付与
  */
-function setupView(mainWindow: BrowserWindow, url: string, index: number, urls: string[]) {
+function setupView(
+  mainWindow: BrowserWindow,
+  url: string,
+  index: number,
+  urls: string[],
+) {
   // BrowserWindow を BaseWindow に変更
   const view = new WebContentsView({
     // BrowserView を WebContentsView に変更
@@ -121,12 +138,29 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     // 現在表示中のビューのサイズのみを更新
     const currentView = tabManager.views[tabManager.currentIndex];
     if (currentView) {
-      currentView.setBounds({ x: 0, y: 108, width: width - 2, height: height - 8 });
+      currentView.setBounds({
+        x: 0,
+        y: 108,
+        width: width - 2,
+        height: height - 8,
+      });
     }
     appState.browserWidth = width;
   });
 
   ipcMain.on('browser-tab-index', (_, index) => {
+    if (index === -1) {
+      // ターミナルが選択された場合、現在のブラウザビューを非表示にする
+      if (
+        tabManager.currentIndex >= 0 &&
+        tabManager.currentIndex < tabManager.views.length
+      ) {
+        const currentView = tabManager.views[tabManager.currentIndex];
+        mainWindow.contentView.removeChildView(currentView);
+      }
+      return;
+    }
+    
     if (tabManager.views.length === 0) {
       return;
     }
@@ -143,7 +177,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     const urlPattern = URL_PATTERNS.find(
       (pattern) =>
         tabManager.currentIndex === pattern.index &&
-        (Array.isArray(pattern.pattern) ? pattern.pattern.some((p) => url.includes(p)) : url.includes(pattern.pattern))
+        (Array.isArray(pattern.pattern)
+          ? pattern.pattern.some((p) => url.includes(p))
+          : url.includes(pattern.pattern)),
     );
 
     if (urlPattern) {
@@ -154,7 +190,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.on('reload-all-views', () => {
     // 全てのビューを初期URLにリセット
     tabManager.views.forEach((view, index) => {
-      const urlPattern = URL_PATTERNS.find((pattern) => pattern.index === index);
+      const urlPattern = URL_PATTERNS.find(
+        (pattern) => pattern.index === index,
+      );
       if (urlPattern) {
         view.webContents.loadURL(urlPattern.url);
       }
@@ -193,19 +231,25 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       fontSize: appState.fontSize,
       osInfo: process.platform,
       enabledBrowsers: appState.enabledBrowsers,
-      browsers: BROWSERS.map(browser => ({
+      browsers: BROWSERS.map((browser) => ({
         id: browser.id,
         label: browser.label,
         index: browser.index,
-        url: browser.url
-      }))
+        url: browser.url,
+      })),
+      terminals: TERMINALS.map((terminal) => ({
+        id: terminal.id,
+        label: terminal.label,
+        index: terminal.index,
+        type: terminal.type,
+      })),
     };
   });
 
   ipcMain.on('update-enabled-browsers', (_, enabledBrowsers: boolean[]) => {
     // boolean[]をRecord<string, boolean>に変換
     appState.enabledBrowsers = Object.fromEntries(
-      BROWSERS.map((browser, index) => [browser.id, enabledBrowsers[index]])
+      BROWSERS.map((browser, index) => [browser.id, enabledBrowsers[index]]),
     );
   });
 
@@ -230,22 +274,21 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
       if (shouldSend) {
         try {
-          const escapedText = JSON.stringify(text)
-            .replace(/`/g, '\\`')      // バッククォートのエスケープを強化
-          
+          const escapedText = JSON.stringify(text).replace(/`/g, '\\`'); // バッククォートのエスケープを強化
+
           const script = browser.script.replace('TEXT_TO_SEND', escapedText);
           view.webContents.executeJavaScript(script).catch((error) => {
             console.error('Script execution failed:', error);
             mainWindow.webContents.send('script-error', {
               browser: browser.label,
-              error: error.message
+              error: error.message,
             });
           });
         } catch (error) {
           console.error('Script preparation failed:', error);
           mainWindow.webContents.send('script-error', {
             browser: browser.label,
-            error: 'Failed to prepare script'
+            error: 'Failed to prepare script',
           });
         }
       }
@@ -303,26 +346,27 @@ function createMainWindow(): BrowserWindow {
   if (fs.existsSync(appStatePath)) {
     try {
       const savedState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
-      
+
       // enabledBrowsersの検証とガード処理
-      const isValidEnabledBrowsers = (
+      const isValidEnabledBrowsers =
         savedState.enabledBrowsers &&
         typeof savedState.enabledBrowsers === 'object' &&
-        !Array.isArray(savedState.enabledBrowsers)
-      );
+        !Array.isArray(savedState.enabledBrowsers);
 
       // 保存された設定のブラウザIDと現在のブラウザIDを比較
-      const savedBrowserIds = isValidEnabledBrowsers ? Object.keys(savedState.enabledBrowsers) : [];
-      const currentBrowserIds = BROWSERS.map(browser => browser.id);
-      
+      const savedBrowserIds = isValidEnabledBrowsers
+        ? Object.keys(savedState.enabledBrowsers)
+        : [];
+      const currentBrowserIds = BROWSERS.map((browser) => browser.id);
+
       // ブラウザの構成が変更された場合は設定をリセット
       if (
         !isValidEnabledBrowsers ||
         savedBrowserIds.length !== currentBrowserIds.length ||
-        !currentBrowserIds.every(id => savedBrowserIds.includes(id))
+        !currentBrowserIds.every((id) => savedBrowserIds.includes(id))
       ) {
         savedState.enabledBrowsers = Object.fromEntries(
-          BROWSERS.map(browser => [browser.id, true])
+          BROWSERS.map((browser) => [browser.id, true]),
         );
       }
 
@@ -331,15 +375,18 @@ function createMainWindow(): BrowserWindow {
       console.error('ウィンドウの状態の読み込みに失敗しました:', error);
       // エラーが発生した場合も全てのブラウザを有効にする
       appState.enabledBrowsers = Object.fromEntries(
-        BROWSERS.map(browser => [browser.id, true])
+        BROWSERS.map((browser) => [browser.id, true]),
       );
     }
   }
 
   // 有効ブラウザの初期化処理を更新
-  if (!appState.enabledBrowsers || typeof appState.enabledBrowsers !== 'object') {
+  if (
+    !appState.enabledBrowsers ||
+    typeof appState.enabledBrowsers !== 'object'
+  ) {
     appState.enabledBrowsers = Object.fromEntries(
-      BROWSERS.map(browser => [browser.id, true])
+      BROWSERS.map((browser) => [browser.id, true]),
     );
   }
 
@@ -434,7 +481,7 @@ function createMainWindow(): BrowserWindow {
         browserTabIndex: appState.browserTabIndex,
         language: appState.language,
         fontSize: appState.fontSize,
-        enabledBrowsers: appState.enabledBrowsers
+        enabledBrowsers: appState.enabledBrowsers,
       };
 
       // ファイルに保存（fsモジュールを使用）
@@ -442,9 +489,15 @@ function createMainWindow(): BrowserWindow {
       if (!fs.existsSync(userDataPath)) {
         fs.mkdirSync(userDataPath, { recursive: true });
       }
-      fs.writeFileSync(path.join(userDataPath, 'appState.json'), JSON.stringify(appState));
+      fs.writeFileSync(
+        path.join(userDataPath, 'appState.json'),
+        JSON.stringify(appState),
+      );
       //人間に読みやすいようにログを整形して保存
-      fs.writeFileSync(path.join(userDataPath, 'logs.json'), JSON.stringify(logs, null, 2));
+      fs.writeFileSync(
+        path.join(userDataPath, 'logs.json'),
+        JSON.stringify(logs, null, 2),
+      );
     }
     removeIpcHandlers();
     mainWindow.destroy();
@@ -488,6 +541,8 @@ app.on('window-all-closed', () => {
 app.on('will-quit', () => {
   // アプリケーション終了直前にレンダラープロセスのリスナーを削除
   removeIpcHandlers();
+  // ターミナルセッションをクリーンアップ
+  terminalManager.destroyAllSessions();
 });
 
 // In this file you can include the rest of your app"s specific main process

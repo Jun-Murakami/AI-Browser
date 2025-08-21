@@ -13,11 +13,14 @@ export const App = () => {
       <HomePage darkMode={darkMode} setDarkMode={setDarkMode} />
       <Box sx={{ '& li': { right: '-60px !important' } }}>
         <Toaster
-          position='bottom-right'
+          position="bottom-right"
           theme={darkMode ? 'dark' : 'light'}
           offset={90}
           toastOptions={{
-            style: { background: darkMode ? '#191919' : '#e9e9e9', width: '300px' },
+            style: {
+              background: darkMode ? '#191919' : '#e9e9e9',
+              width: '300px',
+            },
           }}
           closeButton
         />
