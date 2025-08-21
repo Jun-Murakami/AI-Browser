@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./out/main/index.js",
   "license": "MIT",
-  "author": "JunMurakami",
+  "author": "Jun Murakami",
   "homepage": "https://github.com/Jun-Murakami/AI-Browser",
   "scripts": {
     "format": "biome format --write .",
@@ -19,7 +19,7 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
+    "build:win": "license-checker --production --json --out src/renderer/src/assets/license.json && npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
     "build-appx": "electron-builder -w appx"
@@ -34,6 +34,7 @@
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
     "@types/react-rnd": "^8.0.0",
+    "@xterm/xterm": "^5.5.0",
     "allotment": "^1.20.4",
     "electron-context-menu": "^4.1.0",
     "monaco-editor": "^0.52.2",

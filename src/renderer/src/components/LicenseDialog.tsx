@@ -1,8 +1,21 @@
-import { Box, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Link } from '@mui/material';
 import { Close, Launch } from '@mui/icons-material';
+import {
+  Box,
+  IconButton,
+  Link,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
 import licenseData from '../assets/license.json';
 
 interface LicenseDialogProps {
+  currentVersion: string | null;
   open: boolean;
   onClose: () => void;
 }
@@ -17,7 +30,11 @@ interface LicenseInfo {
   licenseFile: string;
 }
 
-export const LicenseDialog = ({ open, onClose }: LicenseDialogProps) => {
+export const LicenseDialog = ({
+  currentVersion,
+  open,
+  onClose,
+}: LicenseDialogProps) => {
   const licenses = Object.entries(licenseData) as [string, LicenseInfo][];
 
   if (!open) return null;
@@ -51,7 +68,16 @@ export const LicenseDialog = ({ open, onClose }: LicenseDialogProps) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+        <Box
+          sx={{
+            p: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderBottom: 1,
+            borderColor: 'divider',
+          }}
+        >
           <Typography variant="h6">Licenses</Typography>
           <IconButton
             aria-label="close"
@@ -64,18 +90,30 @@ export const LicenseDialog = ({ open, onClose }: LicenseDialogProps) => {
           </IconButton>
         </Box>
         <Box sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Typography variant="h6">
-              AI-Browser
+              AI-Browser {currentVersion ? `v${currentVersion}` : ''}
             </Typography>
             <Typography variant="caption">
-              Developed by Jun Murakami <IconButton href="https://jun-murakami.web.app/" target="_blank" rel="noopener noreferrer">
+              Developed by Jun Murakami{' '}
+              <IconButton
+                href="https://jun-murakami.web.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Launch />
               </IconButton>
             </Typography>
           </Box>
           <Typography variant="body1">
-            This software (MIT License) is licensed under the following licenses:
+            This software (MIT License) is licensed under the following
+            licenses:
           </Typography>
         </Box>
         <TableContainer sx={{ height: 'calc(100% - 64px)', overflow: 'auto' }}>
@@ -91,14 +129,42 @@ export const LicenseDialog = ({ open, onClose }: LicenseDialogProps) => {
             <TableBody>
               {licenses.map(([name, info]) => (
                 <TableRow key={name}>
-                  <TableCell component="th" scope="row" sx={{ fontSize: '0.875rem' }}>
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{ fontSize: '0.875rem' }}
+                  >
                     {name}
                   </TableCell>
-                  <TableCell sx={{ fontSize: '0.875rem' }}>{info.licenses}</TableCell>
+                  <TableCell sx={{ fontSize: '0.875rem' }}>
+                    {info.licenses}
+                  </TableCell>
                   <TableCell sx={{ fontSize: '0.875rem' }}>
                     {info.publisher}
-                    {info.email && <Box component="span" sx={{ display: 'block', fontSize: '0.75em', color: 'text.secondary' }}>{info.email}</Box>}
-                    {info.url && <Box component="span" sx={{ display: 'block', fontSize: '0.75em', color: 'text.secondary' }}>{info.url}</Box>}
+                    {info.email && (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: 'block',
+                          fontSize: '0.75em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        {info.email}
+                      </Box>
+                    )}
+                    {info.url && (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: 'block',
+                          fontSize: '0.75em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        {info.url}
+                      </Box>
+                    )}
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.875rem' }}>
                     {info.repository ? (
@@ -108,12 +174,16 @@ export const LicenseDialog = ({ open, onClose }: LicenseDialogProps) => {
                         rel="noopener noreferrer"
                         onClick={(e) => {
                           e.preventDefault();
-                          window.electron.openExternalLink(info.repository as string);
+                          window.electron.openExternalLink(
+                            info.repository as string,
+                          );
                         }}
                       >
                         {info.repository}
                       </Link>
-                    ) : '-'}
+                    ) : (
+                      '-'
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -123,4 +193,4 @@ export const LicenseDialog = ({ open, onClose }: LicenseDialogProps) => {
       </Paper>
     </Box>
   );
-}; 
+};
