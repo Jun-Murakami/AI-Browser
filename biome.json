@@ -6,17 +6,17 @@
     "useIgnoreFile": false
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": ["src/**/*"]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "includes": ["!dist/**", "!out/**", "src/**/*"],
     "indentWidth": 2
   },
   "linter": {
     "enabled": true,
-    "includes": ["!dist/**", "!out/**", "src/**/*"],
+    "includes": ["src/**/*"],
     "rules": {
       "recommended": true
     }

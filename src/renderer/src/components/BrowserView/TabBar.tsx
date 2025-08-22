@@ -153,8 +153,8 @@ export function TabBar({
                       loading={
                         tab.type === 'browser'
                           ? browserLoadings[
-                          BROWSERS.findIndex((b) => b.id === tab.id)
-                          ]
+                              BROWSERS.findIndex((b) => b.id === tab.id)
+                            ]
                           : false
                       }
                       onClick={onTabChange}
