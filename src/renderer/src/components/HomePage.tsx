@@ -280,6 +280,36 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
   };
 
+  // 次のログに移動
+  const handleNextLog = () => {
+    getNextLog();
+    // 新しく選択されたログを取得してエディターに反映
+    if (selectedLog) {
+      const index = logs.indexOf(selectedLog);
+      if (index > 0) {
+        const nextLog = logs[index - 1];
+        setValuesFromLog(nextLog.text, editorIndex);
+      }
+    } else if (logs.length > 0) {
+      setValuesFromLog(logs[0].text, editorIndex);
+    }
+  };
+
+  // 前のログに移動
+  const handlePreviousLog = () => {
+    getPreviousLog();
+    // 新しく選択されたログを取得してエディターに反映
+    if (selectedLog) {
+      const index = logs.indexOf(selectedLog);
+      if (index < logs.length - 1) {
+        const prevLog = logs[index + 1];
+        setValuesFromLog(prevLog.text, editorIndex);
+      }
+    } else if (logs.length > 0) {
+      setValuesFromLog(logs[0].text, editorIndex);
+    }
+  };
+
   // クリアボタンがクリックされたらエディターをクリア
   const handleClearButtonClick = () => {
     clearAllValues();
@@ -397,8 +427,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             onLicenseClick={() => setIsLicenseDialogOpen(true)}
             onSelectLog={handleSelectedLogChange}
             onDeleteLog={handleDeleteLog}
-            onNextLog={getNextLog}
-            onPreviousLog={getPreviousLog}
+            onNextLog={handleNextLog}
+            onPreviousLog={handlePreviousLog}
             onLanguageChange={handleLanguageChange}
             onFontSizeChange={handleFontSizeChange}
             onDarkModeToggle={handleDarkModeToggle}

@@ -13,12 +13,19 @@ interface TerminalInstance {
     data: string,
   ) => void;
   isSessionCreated: boolean;
+  // 高頻度の出力を集約するためのバッファとフラグ
+  writeBuffer: string;
+  isFlushScheduled: boolean;
 }
 
 class TerminalService {
   private instances = new Map<string, TerminalInstance>();
   private currentTheme: 'dark' | 'light' = 'dark';
 
+  /**
+   * ターミナルインスタンスを取得（なければ作成）。
+   * 作成時に、描画負荷を抑えるための設定と出力バッファリングを初期化します。
+   */
   getOrCreateInstance(terminalId: string): TerminalInstance {
     let instance = this.instances.get(terminalId);
 
@@ -26,9 +33,13 @@ class TerminalService {
       console.log('Creating new terminal instance for', terminalId);
       // ターミナルインスタンスを作成
       const terminal = new Terminal({
-        fontFamily: '"Migu 1M", "Consolas", "Courier New", monospace',
+        // Windows での描画と入力の互換性を高める
+        windowsMode: true,
+        // VSCode に近い等幅フォントとチューニング
+        fontFamily: '"Consolas", "Courier New", monospace',
         fontSize: 14,
-        lineHeight: 1.2,
+        lineHeight: 1,
+        letterSpacing: 0,
         theme: TERMINAL_THEMES[this.currentTheme],
         allowProposedApi: true,
         cursorBlink: true,
@@ -40,6 +51,7 @@ class TerminalService {
         macOptionIsMeta: true,
         macOptionClickForcesSelection: true,
         minimumContrastRatio: 4.5,
+        screenReaderMode: false,
       });
 
       // アドオンを追加
@@ -49,19 +61,41 @@ class TerminalService {
       terminal.loadAddon(fitAddon);
       terminal.loadAddon(webLinksAddon);
 
+      // 出力集約用の一時バッファ
+      let writeBufferLocal = '';
+      let isFlushScheduledLocal = false;
+
+      /**
+       * requestAnimationFrame 単位でバッファをまとめて描画。
+       * 頻繁な小さな write 呼び出しを削減し、入力体感の遅さを緩和します。
+       */
+      const scheduleFlush = () => {
+        if (isFlushScheduledLocal) return;
+        isFlushScheduledLocal = true;
+        requestAnimationFrame(() => {
+          isFlushScheduledLocal = false;
+          if (writeBufferLocal) {
+            const toWrite = writeBufferLocal;
+            writeBufferLocal = '';
+            terminal.write(toWrite);
+          }
+        });
+      };
+
       // 入力ハンドラー
       terminal.onData((data) => {
         window.api.sendTerminalInput(terminalId, data);
       });
 
-      // 出力ハンドラー
+      // 出力ハンドラー（集約あり）
       const outputHandler = (
         _event: Electron.IpcRendererEvent,
         id: string,
         data: string,
       ) => {
         if (id === terminalId) {
-          terminal.write(data);
+          writeBufferLocal += data;
+          scheduleFlush();
         }
       };
 
@@ -71,6 +105,8 @@ class TerminalService {
         fitAddon,
         outputHandler,
         isSessionCreated: false,
+        writeBuffer: writeBufferLocal,
+        isFlushScheduled: isFlushScheduledLocal,
       };
 
       this.instances.set(terminalId, instance);

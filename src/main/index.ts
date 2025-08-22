@@ -494,6 +494,7 @@ function createMainWindow(): BrowserWindow {
         language: appState.language,
         fontSize: appState.fontSize,
         enabledBrowsers: appState.enabledBrowsers,
+        tabOrders: appState.tabOrders,
       };
 
       // ファイルに保存（fsモジュールを使用）

@@ -4,6 +4,7 @@ export const TERMINAL_THEMES = {
   dark: {
     background: '#1e1e1e',
     foreground: '#d4d4d4',
+    lineHeight: 1,
     cursor: '#ffffff',
     cursorAccent: '#000000',
     selectionBackground: '#264f78',
@@ -28,6 +29,7 @@ export const TERMINAL_THEMES = {
   light: {
     background: '#ffffff',
     foreground: '#383a42',
+    lineHeight: 1,
     cursor: '#383a42',
     cursorAccent: '#ffffff',
     selectionBackground: '#add6ff',

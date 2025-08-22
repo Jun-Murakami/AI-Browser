@@ -110,9 +110,9 @@ export function TerminalView({
         sx={{
           width: '100%',
           height: '100%',
+          // xterm 内部のスタイルに干渉しない
           '& .xterm': {
-            padding: '8px',
-            textAlign: 'left',
+            padding: 1,
           },
           '& .xterm-viewport': {
             textAlign: 'left',

@@ -10,6 +10,9 @@ import type { TerminalSession } from '../types/interfaces';
 class TerminalManager {
   private sessions: Map<string, TerminalSession> = new Map();
   private ptyProcesses: Map<string, IPty> = new Map();
+  // ターミナルごとの出力バッファとフラッシュ状態
+  private outputBuffers: Map<string, string> = new Map();
+  private isFlushScheduled: Map<string, boolean> = new Map();
 
   constructor() {
     this.registerIpcHandlers();
@@ -79,6 +82,7 @@ class TerminalManager {
   }
 
   private getShellEnvironment(): NodeJS.ProcessEnv {
+    // システムの環境変数をより確実に取得
     const env = { ...process.env };
 
     // Windows環境での日本語文字化け対策
@@ -118,6 +122,21 @@ class TerminalManager {
     );
   }
 
+  private scheduleFlush(terminalId: string) {
+    if (this.isFlushScheduled.get(terminalId)) return;
+    this.isFlushScheduled.set(terminalId, true);
+
+    // メインプロセスには rAF が無いので、16ms タイマーで近似
+    setTimeout(() => {
+      this.isFlushScheduled.set(terminalId, false);
+      const data = this.outputBuffers.get(terminalId);
+      if (data && data.length > 0) {
+        this.outputBuffers.set(terminalId, '');
+        this.sendOutput(terminalId, data);
+      }
+    }, 16);
+  }
+
   createSession(terminalId: string): void {
     if (this.sessions.has(terminalId)) {
       console.log(
@@ -147,13 +166,25 @@ class TerminalManager {
         useConpty: platform() === 'win32', // Windows用のConPTY設定
       });
 
-      // データハンドラー
+      // 出力バッファを初期化
+      this.outputBuffers.set(terminalId, '');
+      this.isFlushScheduled.set(terminalId, false);
+
+      // データハンドラー（集約）
       ptyProcess.onData((data) => {
-        this.sendOutput(terminalId, data);
+        const current = this.outputBuffers.get(terminalId) || '';
+        this.outputBuffers.set(terminalId, current + data);
+        this.scheduleFlush(terminalId);
       });
 
       // 終了ハンドラー
       ptyProcess.onExit(({ exitCode, signal }) => {
+        // 残りのバッファをフラッシュ
+        const remaining = this.outputBuffers.get(terminalId);
+        if (remaining && remaining.length > 0) {
+          this.sendOutput(terminalId, remaining);
+          this.outputBuffers.set(terminalId, '');
+        }
         const message = signal
           ? `\r\nProcess terminated with signal ${signal}\r\n`
           : `\r\nProcess exited with code ${exitCode}\r\n`;
@@ -198,6 +229,9 @@ class TerminalManager {
       }
       this.ptyProcesses.delete(terminalId);
     }
+    // バッファも掃除
+    this.outputBuffers.delete(terminalId);
+    this.isFlushScheduled.delete(terminalId);
     this.sessions.delete(terminalId);
   }
 
