@@ -124,6 +124,26 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     [actions],
   );
 
+  // Ctrl+Tabでタブを切り替える
+  const handleTabSwitch = useCallback((direction: 'next' | 'prev') => {
+    const currentIndex = visibleTabs.findIndex((tab) => tab.id === activeTabId);
+    if (currentIndex === -1) return;
+
+    let nextIndex: number;
+    if (direction === 'next') {
+      // 次のタブのインデックス（最後のタブの場合は最初に戻る）
+      nextIndex = (currentIndex + 1) % visibleTabs.length;
+    } else {
+      // 前のタブのインデックス（最初のタブの場合は最後に行く）
+      nextIndex = currentIndex === 0 ? visibleTabs.length - 1 : currentIndex - 1;
+    }
+    
+    const nextTab = visibleTabs[nextIndex];
+    if (nextTab) {
+      actions.selectTab(nextTab.id);
+    }
+  }, [visibleTabs, activeTabId, actions]);
+
   // エディタのタブが切り替わったらメインプロセスに通知
   const handleEditorTabChange = useCallback(
     (_: React.SyntheticEvent, index: number) => {
@@ -313,6 +333,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     newerLogButtonTouchRippleRef,
     olderLogButtonTouchRippleRef,
     osInfo,
+    onTabSwitch: handleTabSwitch,
   });
 
   return (

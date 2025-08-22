@@ -16,6 +16,7 @@ interface UseGlobalShortcutsProps {
   newerLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
   olderLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
   osInfo: string;
+  onTabSwitch?: (direction: 'next' | 'prev') => void;
 }
 
 export const useGlobalShortcuts = ({
@@ -32,6 +33,7 @@ export const useGlobalShortcuts = ({
   newerLogButtonTouchRippleRef,
   olderLogButtonTouchRippleRef,
   osInfo,
+  onTabSwitch,
 }: UseGlobalShortcutsProps) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -53,6 +55,16 @@ export const useGlobalShortcuts = ({
         setTimeout(() => {
           sendButtonTouchRippleRef.current?.stop();
         }, 200);
+      }
+
+      // Tab switch command (Cmd/Ctrl + Tab)
+      if (cmdKey && e.key === 'Tab') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          onTabSwitch?.('prev');
+        } else {
+          onTabSwitch?.('next');
+        }
       }
 
       // Save command (Cmd/Ctrl + S)
@@ -126,5 +138,6 @@ export const useGlobalShortcuts = ({
     newerLogButtonTouchRippleRef,
     olderLogButtonTouchRippleRef,
     osInfo,
+    onTabSwitch,
   ]);
 };
