@@ -6,9 +6,7 @@ import type { ComponentType } from 'react';
 interface BrowserTabProps {
   isEditingBrowserShow: boolean;
   enabled: boolean;
-  setEnabledBrowsers: React.Dispatch<
-    React.SetStateAction<Record<string, boolean>>
-  >;
+  setEnabledBrowsers: () => void;
   index: number;
   label: string;
   loading: boolean;
@@ -27,25 +25,11 @@ export const BrowserTab = ({
   loading,
   onClick,
   icon: IconComponent,
-  tabId,
   isTerminal,
 }: BrowserTabProps) => {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEnabledBrowsers((prev) => {
-      const newEnabledBrowsers = { ...prev };
-      newEnabledBrowsers[tabId || label.toUpperCase()] = e.target.checked;
-
-      // 全てのブラウザが無効になることを防ぐ
-      if (Object.values(newEnabledBrowsers).every((enabled) => !enabled)) {
-        newEnabledBrowsers[tabId || label.toUpperCase()] = true;
-      }
-
-      // boolean[]に変換してメインプロセスに送信
-      const enabledArray = Object.values(newEnabledBrowsers);
-      window.electron.sendEnabledBrowsersToMain(enabledArray);
-
-      return newEnabledBrowsers;
-    });
+    e.stopPropagation();
+    setEnabledBrowsers();
   };
 
   const hasIcon = IconComponent !== null && IconComponent !== undefined;

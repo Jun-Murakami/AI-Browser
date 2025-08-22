@@ -1,5 +1,5 @@
-import type { WebContentsView } from 'electron';
 import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch';
+import type { WebContentsView } from 'electron';
 
 export interface AppState {
   bounds: Electron.Rectangle;
@@ -11,6 +11,7 @@ export interface AppState {
   language: string;
   fontSize: number;
   enabledBrowsers: Record<string, boolean>;
+  tabOrders: Record<string, number>;
 }
 
 export interface Log {

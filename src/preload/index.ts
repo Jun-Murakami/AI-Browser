@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
+import { contextBridge, ipcRenderer } from 'electron';
 
 // Custom APIs for renderer
 const api = {
@@ -11,10 +11,18 @@ const api = {
   sendTerminalInput: (terminalId: string, data: string) =>
     ipcRenderer.send('terminal:input', terminalId, data),
   onTerminalOutput: (
-    callback: (event: any, terminalId: string, data: string) => void,
+    callback: (
+      event: Electron.IpcRendererEvent,
+      terminalId: string,
+      data: string,
+    ) => void,
   ) => ipcRenderer.on('terminal:output', callback),
   removeTerminalOutputListener: (
-    callback: (event: any, terminalId: string, data: string) => void,
+    callback: (
+      event: Electron.IpcRendererEvent,
+      terminalId: string,
+      data: string,
+    ) => void,
   ) => ipcRenderer.removeListener('terminal:output', callback),
   resizeTerminal: (terminalId: string, cols: number, rows: number) =>
     ipcRenderer.send('terminal:resize', terminalId, cols, rows),
@@ -69,6 +77,8 @@ if (process.contextIsolated) {
         ipcRenderer.removeAllListeners('loading-status'),
       sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) =>
         ipcRenderer.send('update-enabled-browsers', enabledBrowsers),
+      saveTabOrders: (tabOrders: Record<string, number>) =>
+        ipcRenderer.send('save-tab-orders', tabOrders),
       onScriptError: (
         callback: (error: { browser: string; error: string }) => void,
       ) =>
@@ -85,8 +95,8 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
-  // @ts-ignore (define in dts)
+  // @ts-expect-error (define in dts)
   window.electron = electronAPI;
-  // @ts-ignore (define in dts)
+  // @ts-expect-error (define in dts)
   window.api = api;
 }

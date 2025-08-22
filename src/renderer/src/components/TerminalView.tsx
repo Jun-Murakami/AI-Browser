@@ -7,14 +7,21 @@ import { terminalService } from '../services/terminalService';
 interface TerminalViewProps {
   terminalId: string;
   isVisible?: boolean;
+  isDarkMode?: boolean;
 }
 
 export function TerminalView({
   terminalId,
   isVisible = false,
+  isDarkMode = true,
 }: TerminalViewProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ダークモードが変更されたときにテーマを更新
+  useEffect(() => {
+    terminalService.setTheme(isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   // ターミナルのアタッチ/デタッチ
   useEffect(() => {
@@ -90,7 +97,10 @@ export function TerminalView({
       sx={{
         width: '100%',
         height: '100%',
-        backgroundColor: '#1e1e1e',
+        backgroundColor: 'background.default',
+        color: 'text.primary',
+        borderTop: '1px solid',
+        borderColor: 'divider',
         overflow: 'hidden',
         textAlign: 'left',
       }}

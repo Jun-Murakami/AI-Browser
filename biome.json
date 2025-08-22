@@ -11,10 +11,12 @@
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
+    "includes": ["!dist/**", "!out/**", "src/**/*"],
     "indentWidth": 2
   },
   "linter": {
     "enabled": true,
+    "includes": ["!dist/**", "!out/**", "src/**/*"],
     "rules": {
       "recommended": true
     }

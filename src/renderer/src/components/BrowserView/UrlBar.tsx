@@ -11,9 +11,10 @@ import { useTheme } from '@mui/system';
 
 interface UrlBarProps {
   browserUrl: string;
+  isTerminalActive: boolean;
 }
 
-export function UrlBar({ browserUrl }: UrlBarProps) {
+export function UrlBar({ browserUrl, isTerminalActive }: UrlBarProps) {
   const theme = useTheme();
 
   return (
@@ -28,28 +29,49 @@ export function UrlBar({ browserUrl }: UrlBarProps) {
         }}
       >
         <Tooltip title="Reload" placement="top" arrow>
-          <IconButton onClick={() => window.electron.reloadCurrentView()}>
-            <ReplayOutlined
-              sx={{
-                transform: 'scaleX(-1)',
-                color: theme.palette.text.secondary,
-              }}
-            />
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={() => window.electron.reloadCurrentView()}
+              disabled={isTerminalActive}
+            >
+              <ReplayOutlined
+                sx={{
+                  transform: 'scaleX(-1)',
+                  color: isTerminalActive
+                    ? theme.palette.action.disabled
+                    : theme.palette.text.secondary,
+                }}
+              />
+            </IconButton>
+          </span>
         </Tooltip>
         <Tooltip title="Reload all tabs" placement="top" arrow>
-          <IconButton
-            onClick={() => window.electron.reloadAllViews()}
-            sx={{ mr: 1 }}
-          >
-            <ReplayOutlined
-              sx={{
-                transform: 'scaleX(-1)',
-                color: theme.palette.text.secondary,
-              }}
-            />
-            <Typography variant="subtitle2">all</Typography>
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={() => window.electron.reloadAllViews()}
+              sx={{ mr: 1 }}
+              disabled={isTerminalActive}
+            >
+              <ReplayOutlined
+                sx={{
+                  transform: 'scaleX(-1)',
+                  color: isTerminalActive
+                    ? theme.palette.action.disabled
+                    : theme.palette.text.secondary,
+                }}
+              />
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: isTerminalActive
+                    ? theme.palette.action.disabled
+                    : 'inherit',
+                }}
+              >
+                all
+              </Typography>
+            </IconButton>
+          </span>
         </Tooltip>
         <TextField
           value={browserUrl}

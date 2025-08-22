@@ -9,10 +9,11 @@ interface ContentAreaProps {
   isTerminalActive: boolean;
   activeTabId: string | null;
   tabs: Tab[];
+  isDarkMode?: boolean;
 }
 
 export const ContentArea = forwardRef<HTMLDivElement, ContentAreaProps>(
-  ({ isTerminalActive, activeTabId, tabs }, ref) => {
+  ({ isTerminalActive, activeTabId, tabs, isDarkMode = true }, ref) => {
     return (
       <Box
         sx={{
@@ -52,6 +53,7 @@ export const ContentArea = forwardRef<HTMLDivElement, ContentAreaProps>(
               <TerminalView
                 terminalId={terminal.id}
                 isVisible={isTerminalActive && activeTabId === terminal.id}
+                isDarkMode={isDarkMode}
               />
             </Box>
           ))}

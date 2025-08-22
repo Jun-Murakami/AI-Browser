@@ -22,36 +22,42 @@ class TerminalManager {
         // 1. PowerShell Core (推奨) - where.exeで検索
         // 2. Windows PowerShell - where.exeで検索
         // 3. Command Prompt (cmd.exe) - 環境変数から
-        
+
         const { execSync } = require('node:child_process');
-        
+
         // PowerShell Coreを検索
         try {
-          const pwshPath = execSync('where.exe pwsh.exe', { encoding: 'utf8' }).trim().split('\n')[0];
+          const pwshPath = execSync('where.exe pwsh.exe', { encoding: 'utf8' })
+            .trim()
+            .split('\n')[0];
           if (pwshPath && existsSync(pwshPath)) {
             return pwshPath;
           }
         } catch {
           // pwsh.exeが見つからない場合は次へ
         }
-        
+
         // Windows PowerShellを検索
         try {
-          const powershellPath = execSync('where.exe powershell.exe', { encoding: 'utf8' }).trim().split('\n')[0];
+          const powershellPath = execSync('where.exe powershell.exe', {
+            encoding: 'utf8',
+          })
+            .trim()
+            .split('\n')[0];
           if (powershellPath && existsSync(powershellPath)) {
             return powershellPath;
           }
         } catch {
           // powershell.exeが見つからない場合は次へ
         }
-        
+
         // 既知のインストールパスをチェック（フォールバック）
         const knownPaths = [
           'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
           'C:\\Program Files (x86)\\PowerShell\\7\\pwsh.exe',
           'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
         ];
-        
+
         for (const path of knownPaths) {
           try {
             if (existsSync(path)) {
@@ -61,7 +67,7 @@ class TerminalManager {
             // Continue to next path
           }
         }
-        
+
         // 最後の手段としてcmd.exeを使用
         return process.env.COMSPEC || 'C:\\Windows\\System32\\cmd.exe';
       }

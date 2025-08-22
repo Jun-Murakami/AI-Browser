@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 
+import { BROWSERS } from '../../constants/browsers';
 import { ContentArea } from './ContentArea';
 import { TabBar } from './TabBar';
 import { UrlBar } from './UrlBar';
@@ -15,6 +16,8 @@ interface BrowserViewProps {
   isInitialized: boolean;
   onTabChange: (tabId: string) => void;
   onToggleTabEnabled: (tabId: string) => void;
+  onTabReorder: (tabId: string, newOrder: number) => void;
+  isDarkMode?: boolean;
 }
 
 export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
@@ -27,6 +30,8 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
       isInitialized,
       onTabChange,
       onToggleTabEnabled,
+      onTabReorder,
+      isDarkMode = true,
     },
     ref,
   ) => {
@@ -34,10 +39,19 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
     const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([]);
     const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
 
-    // 現在のブラウザURL
+    // 現在のブラウザURLまたはターミナル名
     const currentBrowserUrl = useMemo(() => {
-      const index = visibleTabs.findIndex((tab) => tab.id === activeTabId);
-      return browserUrls[index] || '';
+      const activeTab = visibleTabs.find((tab) => tab.id === activeTabId);
+      if (!activeTab) return '';
+
+      // ターミナルタブの場合はターミナル名を表示
+      if (activeTab.type === 'terminal') {
+        return activeTab.label;
+      }
+
+      // ブラウザタブの場合はURLを表示
+      const browserIndex = BROWSERS.findIndex((b) => b.id === activeTab.id);
+      return browserUrls[browserIndex] || '';
     }, [browserUrls, visibleTabs, activeTabId]);
 
     // タブが切り替わったときの処理
@@ -83,22 +97,31 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
       <Box sx={{ height: '100%' }}>
         <TabBar
           isInitialized={isInitialized}
-          visibleTabs={visibleTabs}
+          visibleTabs={
+            isEditingBrowserShow
+              ? [...tabs].sort((a, b) => a.order - b.order)
+              : visibleTabs
+          }
           activeTabId={activeTabId}
           isEditingBrowserShow={isEditingBrowserShow}
           browserLoadings={browserLoadings}
           onTabChange={handleBrowserTabChange}
           onToggleEditMode={handleToggleEditMode}
           onToggleTabEnabled={onToggleTabEnabled}
+          onTabReorder={onTabReorder}
         />
 
-        <UrlBar browserUrl={currentBrowserUrl} />
+        <UrlBar
+          browserUrl={currentBrowserUrl}
+          isTerminalActive={isTerminalActive}
+        />
 
         <ContentArea
           ref={ref}
           isTerminalActive={isTerminalActive}
           activeTabId={activeTabId}
           tabs={tabs}
+          isDarkMode={isDarkMode}
         />
       </Box>
     );

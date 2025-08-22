@@ -35,6 +35,7 @@ let appState: AppState = {
   language: 'text',
   fontSize: 16,
   enabledBrowsers: initialEnabledBrowsers,
+  tabOrders: {},
 };
 
 let logs: Log[] = [];
@@ -247,6 +248,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         index: terminal.index,
         type: terminal.type,
       })),
+      tabOrders: appState.tabOrders,
     };
   });
 
@@ -255,6 +257,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     appState.enabledBrowsers = Object.fromEntries(
       BROWSERS.map((browser, index) => [browser.id, enabledBrowsers[index]]),
     );
+  });
+
+  ipcMain.on('save-tab-orders', (_, tabOrders: Record<string, number>) => {
+    appState.tabOrders = tabOrders;
   });
 
   ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
@@ -317,6 +323,7 @@ function removeIpcHandlers() {
   ipcMain.removeAllListeners('logs');
   ipcMain.removeAllListeners('get-initial-settings');
   ipcMain.removeAllListeners('text');
+  ipcMain.removeAllListeners('save-tab-orders');
 }
 
 /**

@@ -2,15 +2,22 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Terminal } from '@xterm/xterm';
 
+import { TERMINAL_THEMES } from '../constants/terminalThemes';
+
 interface TerminalInstance {
   terminal: Terminal;
   fitAddon: FitAddon;
-  outputHandler: (event: Electron.IpcRendererEvent, id: string, data: string) => void;
+  outputHandler: (
+    event: Electron.IpcRendererEvent,
+    id: string,
+    data: string,
+  ) => void;
   isSessionCreated: boolean;
 }
 
 class TerminalService {
   private instances = new Map<string, TerminalInstance>();
+  private currentTheme: 'dark' | 'light' = 'dark';
 
   getOrCreateInstance(terminalId: string): TerminalInstance {
     let instance = this.instances.get(terminalId);
@@ -19,34 +26,10 @@ class TerminalService {
       console.log('Creating new terminal instance for', terminalId);
       // ターミナルインスタンスを作成
       const terminal = new Terminal({
-        fontFamily:
-          '"Cascadia Code", "M PLUS 1p", "Consolas", "Courier New", monospace',
+        fontFamily: '"Migu 1M", "Consolas", "Courier New", monospace',
         fontSize: 14,
         lineHeight: 1.2,
-        theme: {
-          background: '#1e1e1e',
-          foreground: '#d4d4d4',
-          cursor: '#ffffff',
-          cursorAccent: '#000000',
-          selectionBackground: '#264f78',
-          selectionForeground: '#ffffff',
-          black: '#000000',
-          red: '#cd3131',
-          green: '#0dbc79',
-          yellow: '#e5e510',
-          blue: '#2472c8',
-          magenta: '#bc3fbc',
-          cyan: '#11a8cd',
-          white: '#e5e5e5',
-          brightBlack: '#666666',
-          brightRed: '#f14c4c',
-          brightGreen: '#23d18b',
-          brightYellow: '#f5f543',
-          brightBlue: '#3b8eea',
-          brightMagenta: '#d670d6',
-          brightCyan: '#29b8db',
-          brightWhite: '#e5e5e5',
-        },
+        theme: TERMINAL_THEMES[this.currentTheme],
         allowProposedApi: true,
         cursorBlink: true,
         cursorStyle: 'block',
@@ -72,7 +55,11 @@ class TerminalService {
       });
 
       // 出力ハンドラー
-      const outputHandler = (_event: Electron.IpcRendererEvent, id: string, data: string) => {
+      const outputHandler = (
+        _event: Electron.IpcRendererEvent,
+        id: string,
+        data: string,
+      ) => {
         if (id === terminalId) {
           terminal.write(data);
         }
@@ -206,6 +193,18 @@ class TerminalService {
       instance.terminal.dispose();
       this.instances.delete(terminalId);
     }
+  }
+
+  setTheme(theme: 'dark' | 'light'): void {
+    this.currentTheme = theme;
+    // すべての既存のターミナルインスタンスのテーマを更新
+    this.instances.forEach((instance) => {
+      instance.terminal.options.theme = TERMINAL_THEMES[theme];
+    });
+  }
+
+  getCurrentTheme(): 'dark' | 'light' {
+    return this.currentTheme;
   }
 }
 

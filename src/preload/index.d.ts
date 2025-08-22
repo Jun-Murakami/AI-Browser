@@ -20,6 +20,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   ) => void;
   removeUpdateLoadingStatusListener: () => void;
   sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) => void;
+  saveTabOrders: (tabOrders: Record<string, number>) => void;
   onScriptError: (
     callback: (error: { browser: string; error: string }) => void,
   ) => void;
@@ -52,6 +53,7 @@ interface InitialSettings {
   enabledBrowsers: Record<string, boolean>;
   browsers: Browser[];
   terminals: Terminal[];
+  tabOrders?: Record<string, number>;
 }
 
 interface TerminalAPI {
@@ -59,10 +61,18 @@ interface TerminalAPI {
   destroyTerminalSession: (terminalId: string) => Promise<void>;
   sendTerminalInput: (terminalId: string, data: string) => void;
   onTerminalOutput: (
-    callback: (event: Electron.IpcRendererEvent, terminalId: string, data: string) => void,
+    callback: (
+      event: Electron.IpcRendererEvent,
+      terminalId: string,
+      data: string,
+    ) => void,
   ) => void;
   removeTerminalOutputListener: (
-    callback: (event: Electron.IpcRendererEvent, terminalId: string, data: string) => void,
+    callback: (
+      event: Electron.IpcRendererEvent,
+      terminalId: string,
+      data: string,
+    ) => void,
   ) => void;
   resizeTerminal: (terminalId: string, cols: number, rows: number) => void;
 }
