@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { theme, darkTheme } from '../theme/mui_theme';
-import { CssBaseline, ThemeProvider, Box } from '@mui/material';
-import { HomePage } from './HomePage';
+import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { Toaster } from 'sonner';
+
+import { darkTheme, theme } from '../theme/mui_theme';
+import { HomePage } from './HomePage';
 
 export const App = () => {
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -13,11 +14,14 @@ export const App = () => {
       <HomePage darkMode={darkMode} setDarkMode={setDarkMode} />
       <Box sx={{ '& li': { right: '-60px !important' } }}>
         <Toaster
-          position='bottom-right'
+          position="bottom-right"
           theme={darkMode ? 'dark' : 'light'}
           offset={90}
           toastOptions={{
-            style: { background: darkMode ? '#191919' : '#e9e9e9', width: '300px' },
+            style: {
+              background: darkMode ? '#191919' : '#e9e9e9',
+              width: '300px',
+            },
           }}
           closeButton
         />

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 
 interface UseGlobalShortcutsProps {
@@ -14,8 +15,8 @@ interface UseGlobalShortcutsProps {
   saveButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
   newerLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
   olderLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
-  setBrowserIndexTimestamp: (timestamp: number) => void;
   osInfo: string;
+  onTabSwitch?: (direction: 'next' | 'prev') => void;
 }
 
 export const useGlobalShortcuts = ({
@@ -31,10 +32,9 @@ export const useGlobalShortcuts = ({
   saveButtonTouchRippleRef,
   newerLogButtonTouchRippleRef,
   olderLogButtonTouchRippleRef,
-  setBrowserIndexTimestamp,
   osInfo,
+  onTabSwitch,
 }: UseGlobalShortcutsProps) => {
-  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // MonacoEditorにフォーカスがある場合は処理をスキップ
@@ -55,6 +55,16 @@ export const useGlobalShortcuts = ({
         setTimeout(() => {
           sendButtonTouchRippleRef.current?.stop();
         }, 200);
+      }
+
+      // Tab switch command (Cmd/Ctrl + Tab)
+      if (cmdKey && e.key === 'Tab') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          onTabSwitch?.('prev');
+        } else {
+          onTabSwitch?.('next');
+        }
       }
 
       // Save command (Cmd/Ctrl + S)
@@ -88,12 +98,6 @@ export const useGlobalShortcuts = ({
           clearButtonRef.current?.click();
           clearButtonTouchRippleRef.current?.stop();
         }, 200);
-      }
-
-      // Tab switch command (Cmd/Ctrl + Tab or WinCtrl + Tab for Mac)
-      if ((isMac ? e.ctrlKey : cmdKey) && e.key === 'Tab') {
-        e.preventDefault();
-        setBrowserIndexTimestamp(new Date().getTime());
       }
 
       // Log navigation commands (Cmd/Ctrl + Up/Down)
@@ -133,7 +137,7 @@ export const useGlobalShortcuts = ({
     saveButtonTouchRippleRef,
     newerLogButtonTouchRippleRef,
     olderLogButtonTouchRippleRef,
-    setBrowserIndexTimestamp,
     osInfo,
+    onTabSwitch,
   ]);
-}; 
+};

@@ -15,10 +15,15 @@ interface ExtendedElectronAPI extends ElectronAPI {
   reloadAllViews: () => void;
   onUpdateUrls: (callback: (urls: string[]) => void) => void;
   removeUpdateUrlsListener: () => void;
-  onUpdateLoadingStatus: (callback: (status: { index: number; isLoading: boolean }) => void) => void;
+  onUpdateLoadingStatus: (
+    callback: (status: { index: number; isLoading: boolean }) => void,
+  ) => void;
   removeUpdateLoadingStatusListener: () => void;
   sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) => void;
-  onScriptError: (callback: (error: { browser: string; error: string }) => void) => void;
+  saveTabOrders: (tabOrders: Record<string, number>) => void;
+  onScriptError: (
+    callback: (error: { browser: string; error: string }) => void,
+  ) => void;
   removeScriptErrorListener: () => void;
 }
 
@@ -27,6 +32,13 @@ interface Browser {
   label: string;
   index: number;
   url: string;
+}
+
+interface Terminal {
+  id: string;
+  label: string;
+  index: number;
+  type: string;
 }
 
 interface InitialSettings {
@@ -40,11 +52,34 @@ interface InitialSettings {
   osInfo: string;
   enabledBrowsers: Record<string, boolean>;
   browsers: Browser[];
+  terminals: Terminal[];
+  tabOrders?: Record<string, number>;
+}
+
+interface TerminalAPI {
+  createTerminalSession: (terminalId: string) => Promise<void>;
+  destroyTerminalSession: (terminalId: string) => Promise<void>;
+  sendTerminalInput: (terminalId: string, data: string) => void;
+  onTerminalOutput: (
+    callback: (
+      event: Electron.IpcRendererEvent,
+      terminalId: string,
+      data: string,
+    ) => void,
+  ) => void;
+  removeTerminalOutputListener: (
+    callback: (
+      event: Electron.IpcRendererEvent,
+      terminalId: string,
+      data: string,
+    ) => void,
+  ) => void;
+  resizeTerminal: (terminalId: string, cols: number, rows: number) => void;
 }
 
 declare global {
   interface Window {
     electron: ExtendedElectronAPI;
-    api: unknown;
+    api: TerminalAPI;
   }
 }

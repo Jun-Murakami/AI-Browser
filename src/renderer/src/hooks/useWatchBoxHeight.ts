@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 
 type UseWatchBoxHeightProps = {
   targetRef: RefObject<HTMLElement | null>;

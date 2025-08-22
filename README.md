@@ -22,6 +22,14 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
   - JENOVA
   - Cody
 
+- **Integrated Terminal Support**: Use CLI-based AI agents alongside chat interfaces:
+  - Built-in terminal emulator with up to 3 instances
+  - Seamlessly integrate CLI tools like Claude Code, Gemini CLI, Codex CLI
+  - Terminal tabs appear alongside chat service tabs
+  - Full support for dark/light theme switching
+  - Drag and drop tab reordering for both chat and terminal tabs
+  - Toggle terminal visibility just like chat services
+
 - **Advanced Editor Integration**:
   - Powered by Monaco Editor (VS Code's editor)
   - Up to 5-way vertical split editing
@@ -69,11 +77,12 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
    - Use the syntax highlighting dropdown to select appropriate language
 
 2. **AI Service Interaction**:
-   - Select the desired AI service tab
+   - Select the desired AI service tab or terminal tab
    - Type or paste your prompt in the editor
    - Click "Send" to send to the current service
-   - Use the "All" button to broadcast your prompt to all active services simultaneously
-   - Enable/disable specific services using the settings icon in the tab bar
+   - Use the "All" button to broadcast your prompt to all active services simultaneously (chat services only)
+   - Enable/disable specific services or terminals using the settings icon in the tab bar
+   - For terminal tabs, input is sent directly to the terminal emulator
 
 3. **History Management**:
    - Access previous prompts from the history dropdown
@@ -93,7 +102,7 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
 - `Ctrl/Cmd + Shift + C`: Copy to clipboard
 - `Ctrl/Cmd + Backspace`: Clear editor
 - `Ctrl/Cmd + ↑/↓`: Navigate history
-- `Ctrl + Tab`: Switch between AI services
+- `Ctrl + Tab`: Switch between AI services and terminals
 
 ## Development
 

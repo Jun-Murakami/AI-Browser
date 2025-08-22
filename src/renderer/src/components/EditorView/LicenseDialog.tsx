@@ -12,7 +12,8 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import licenseData from '../assets/license.json';
+
+import licenseData from '../../assets/license.json';
 
 interface LicenseDialogProps {
   currentVersion: string | null;

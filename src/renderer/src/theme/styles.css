@@ -38,10 +38,10 @@ body {
 }
 
 @font-face {
-  font-family: 'Migu 1M';
+  font-family: "Migu 1M";
   src:
-    local('Migu 1M'),
-    url('../assets/migu-1m-regular.ttf') format('truetype');
+    local("Migu 1M"),
+    url("../assets/migu-1m-regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }

@@ -77,7 +77,10 @@ export const theme = createTheme({
       styleOverrides: {
         // ユーザーエージェントにWinを含むか、プラットフォームがWinから始まる場合にスクロールバーのスタイルを適用
         body:
-          navigator.userAgent?.indexOf('Win') > 0 || navigator.platform.startsWith('Win') ? windowsScrollbarStyles : {},
+          navigator.userAgent?.indexOf('Win') > 0 ||
+          navigator.platform.startsWith('Win')
+            ? windowsScrollbarStyles
+            : {},
       },
     },
     MuiTab: {
@@ -122,7 +125,8 @@ export const darkTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body:
-          navigator.userAgent?.indexOf('Win') > 0 || navigator.platform.startsWith('Win')
+          navigator.userAgent?.indexOf('Win') > 0 ||
+          navigator.platform.startsWith('Win')
             ? windowsScrollbarStylesDark
             : {},
       },

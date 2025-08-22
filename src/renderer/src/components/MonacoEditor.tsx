@@ -1,5 +1,6 @@
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor';
+
 import { useWatchBoxHeight } from '../hooks/useWatchBoxHeight';
 
 export interface LanguageInfo {
@@ -31,10 +32,8 @@ export interface MonacoEditorProps {
   saveButtonRef: React.RefObject<HTMLButtonElement | null>;
   newerLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement | null>;
-  setBrowserIndexTimestamp: (timestamp: number) => void;
   value?: string;
   onChange?: (value: string) => void;
-  osInfo: string;
   placeholder?: string;
   ref?: React.Ref<monaco.editor.IStandaloneCodeEditor>;
 }
@@ -51,16 +50,15 @@ export const MonacoEditor = ({
   saveButtonRef,
   newerLogButtonRef,
   olderLogButtonRef,
-  setBrowserIndexTimestamp,
   value,
   onChange,
-  osInfo,
   placeholder,
   ref,
 }: MonacoEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const isBoxReady = useWatchBoxHeight({ targetRef: editorRef });
-  const [editorInstance, setEditorInstance] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const [editorInstance, setEditorInstance] =
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const initialValue = useRef(value);
   const memoizedValue = useMemo(() => value, [value]);
 
@@ -86,7 +84,10 @@ export const MonacoEditor = ({
         showUnused: false,
         scrollBeyondLastLine: false,
         renderLineHighlightOnlyWhenFocus: true,
-        unicodeHighlight: { allowedLocales: { _os: true, _vscode: true }, ambiguousCharacters: false },
+        unicodeHighlight: {
+          allowedLocales: { _os: true, _vscode: true },
+          ambiguousCharacters: false,
+        },
         wordWrap: 'on',
         occurrencesHighlight: 'off',
         placeholder: placeholder,
@@ -121,7 +122,11 @@ export const MonacoEditor = ({
 
   // 外部からの値の変更を反映（初期値以外）
   useEffect(() => {
-    if (editorInstance && memoizedValue !== undefined && memoizedValue !== editorInstance.getValue()) {
+    if (
+      editorInstance &&
+      memoizedValue !== undefined &&
+      memoizedValue !== editorInstance.getValue()
+    ) {
       const position = editorInstance.getPosition();
       const selection = editorInstance.getSelection();
       editorInstance.setValue(memoizedValue);
@@ -159,22 +164,17 @@ export const MonacoEditor = ({
     });
 
     // Copy command
-    addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC, () => {
-      copyButtonRef.current?.click();
-    });
+    addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC,
+      () => {
+        copyButtonRef.current?.click();
+      },
+    );
 
     // Clear command
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
       clearButtonRef.current?.click();
     });
-
-    // Tab switch command
-    addCommand(
-      osInfo === 'darwin' ? monaco.KeyMod.WinCtrl | monaco.KeyCode.Tab : monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab,
-      () => {
-        setBrowserIndexTimestamp(new Date().getTime());
-      }
-    );
 
     // Log navigation commands
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
@@ -187,16 +187,34 @@ export const MonacoEditor = ({
 
     return () => {
       for (const disposable of disposables) {
-        if (disposable && typeof disposable === 'object' && 'dispose' in disposable) {
+        if (
+          disposable &&
+          typeof disposable === 'object' &&
+          'dispose' in disposable
+        ) {
           disposable.dispose();
         }
       }
     };
-  }, [editorInstance, osInfo, sendButtonRef, saveButtonRef, copyButtonRef, clearButtonRef, newerLogButtonRef, olderLogButtonRef, setBrowserIndexTimestamp]);
+  }, [
+    editorInstance,
+    sendButtonRef,
+    saveButtonRef,
+    copyButtonRef,
+    clearButtonRef,
+    newerLogButtonRef,
+    olderLogButtonRef,
+  ]);
 
   // ウィンドウのリサイズ時にエディターのレイアウトを更新
   useEffect(() => {
-    if (editorRef.current && isBoxReady && editorInstance && browserWidth && browserHeight) {
+    if (
+      editorRef.current &&
+      isBoxReady &&
+      editorInstance &&
+      browserWidth &&
+      browserHeight
+    ) {
       editorInstance.updateOptions({ fontSize: fontSize });
       editorInstance.layout();
     }
