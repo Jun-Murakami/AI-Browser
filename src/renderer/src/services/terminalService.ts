@@ -242,6 +242,69 @@ class TerminalService {
   getCurrentTheme(): 'dark' | 'light' {
     return this.currentTheme;
   }
+
+  /**
+   * Monaco からのテキスト送信を「貼り付け」としてターミナルへ渡し、
+   * 既定で Enter を 1 回送って入力確定まで行います。
+   *
+   * 優先:
+   * - xterm の paste API を使用（bracketed paste 有効時は自動でラップ）
+   * フォールバック:
+   * - 手動で bracketed paste のシーケンスでラップして PTY へ直送
+   *
+   * autoSubmit: true のときは、貼り付け完了後に通常の Enter("\r") を
+   *             1 回だけ別送信します（bracketed paste の外で確定させる）。
+   */
+  pasteToTerminal(
+    terminalId: string,
+    text: string,
+    options?: {
+      autoSubmit?: boolean;
+      submitDelayMs?: number;
+      submitKey?: 'cr' | 'lf' | 'crlf';
+    },
+  ): void {
+    const instance = this.getOrCreateInstance(terminalId);
+    const { terminal } = instance;
+    const autoSubmit = options?.autoSubmit !== false; // 既定で確定まで送る
+    const delayMs = options?.submitDelayMs ?? 80; // 貼り付け終了を待つ小さな遅延
+    const submitKey = options?.submitKey ?? 'cr';
+
+    const sendEnter = () => {
+      const seq =
+        submitKey === 'lf' ? '\n' : submitKey === 'crlf' ? '\r\n' : '\r';
+      window.api.sendTerminalInput(terminalId, seq);
+    };
+
+    // 1) xterm の paste を最優先で使用
+    try {
+      if (
+        typeof (terminal as unknown as { paste?: (data: string) => void })
+          .paste === 'function'
+      ) {
+        // 改行はそのまま渡す（CLI 側の入力欄に蓄積させる意図）
+        (terminal as unknown as { paste: (data: string) => void }).paste(text);
+        // 貼り付け後に通常の Enter を別送信して確定
+        if (autoSubmit) setTimeout(sendEnter, delayMs);
+        return;
+      }
+    } catch (error) {
+      console.error(
+        'xterm paste() failed; falling back to bracketed paste:',
+        error,
+      );
+    }
+
+    // 2) フォールバック: bracketed paste シーケンスでラップして送信
+    const BRACKETED_PASTE_START = '\x1b[200~';
+    const BRACKETED_PASTE_END = '\x1b[201~';
+    const payload = `${BRACKETED_PASTE_START}${text}${BRACKETED_PASTE_END}`;
+
+    // 直接 PTY に送る（IPC 経由）
+    window.api.sendTerminalInput(terminalId, payload);
+    // 通常の Enter を別送信して確定（bracketed paste の外側）
+    if (autoSubmit) setTimeout(sendEnter, delayMs);
+  }
 }
 
 // シングルトンインスタンス

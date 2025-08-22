@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { BROWSERS } from '../constants/browsers';
 import { TERMINALS } from '../constants/terminals';
+import { terminalService } from '../services/terminalService';
 
 import type {
   BrowserTab,
@@ -140,8 +141,8 @@ export function useTabManager(): UseTabManagerReturn {
       if (!tab) return;
 
       if (tab.type === 'terminal') {
-        // ターミナルにメッセージを送信
-        window.api.sendTerminalInput(tabId, `${message}\r\n`);
+        // ターミナルに貼り付けとして送信（bracketed paste対応）
+        terminalService.pasteToTerminal(tabId, message);
       } else {
         // ブラウザにメッセージを送信
         window.electron.sendTextToMain(message, false);
