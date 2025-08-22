@@ -1,20 +1,21 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { join } from 'node:path';
+import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import {
   app,
-  shell,
   BrowserWindow,
   ipcMain,
   nativeTheme,
+  shell,
   WebContentsView,
 } from 'electron';
-import fs from 'node:fs';
-import path, { join } from 'node:path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import contextMenu from 'electron-context-menu';
 import icon from '../../resources/icon.png?asset';
-import type { AppState, Log, TabManager } from './types/interfaces';
-import { URL_PATTERNS, BROWSERS } from './constants/browsers';
+import { BROWSERS, URL_PATTERNS } from './constants/browsers';
 import { TERMINALS } from './constants/terminals';
 import { terminalManager } from './terminal/terminalManager';
+import type { AppState, Log, TabManager } from './types/interfaces';
 
 // 初期のenabledBrowsersを生成
 const initialEnabledBrowsers = Object.fromEntries(
@@ -160,7 +161,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       }
       return;
     }
-    
+
     if (tabManager.views.length === 0) {
       return;
     }
@@ -421,9 +422,10 @@ function createMainWindow(): BrowserWindow {
 
   // 各ブラウザのURLリスト
   const urls = URL_PATTERNS.map((pattern) => pattern.url);
-
   // WebContentsViewを生成
-  urls.forEach((url, index) => setupView(mainWindow, url, index, urls));
+  urls.forEach((url, index) => {
+    setupView(mainWindow, url, index, urls);
+  });
 
   if (appState.isDarkMode) {
     nativeTheme.themeSource = 'dark';

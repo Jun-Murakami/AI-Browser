@@ -5,29 +5,43 @@ import { terminalService } from '../services/terminalService';
 
 interface TerminalViewProps {
   terminalId: string;
+  isVisible?: boolean;
 }
 
-export function TerminalView({ terminalId }: TerminalViewProps) {
+export function TerminalView({ terminalId, isVisible = false }: TerminalViewProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ターミナルのアタッチ/デタッチ
   useEffect(() => {
-    console.log(`TerminalView useEffect called for ${terminalId}`);
+    console.log(`TerminalView useEffect called for ${terminalId}, isVisible: ${isVisible}`);
+    
+    // 表示されていない場合は何もしない
+    if (!isVisible) {
+      return;
+    }
+    
     if (!terminalRef.current) {
       console.log(`terminalRef.current is null for ${terminalId}`);
       return;
     }
+    
+    console.log('TerminalView element dimensions:', terminalRef.current.offsetWidth, 'x', terminalRef.current.offsetHeight);
 
-    // DOMにアタッチ
-    terminalService.attachToDOM(terminalId, terminalRef.current);
+    // DOMにアタッチ（遅延させて要素が完全にレンダリングされるのを待つ）
+    const timeoutId = setTimeout(() => {
+      if (terminalRef.current) {
+        terminalService.attachToDOM(terminalId, terminalRef.current);
+      }
+    }, 100);
 
     // クリーンアップ時はDOMからデタッチのみ（インスタンスは保持）
     return () => {
+      clearTimeout(timeoutId);
       console.log(`TerminalView cleanup called for ${terminalId}`);
       terminalService.detachFromDOM(terminalId);
     };
-  }, [terminalId]);
+  }, [terminalId, isVisible]);
 
   // リサイズハンドラー
   const handleResize = useCallback(() => {

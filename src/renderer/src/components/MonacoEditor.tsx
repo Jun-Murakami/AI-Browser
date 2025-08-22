@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState, useMemo } from 'react';
 import * as monaco from 'monaco-editor';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWatchBoxHeight } from '../hooks/useWatchBoxHeight';
 
 export interface LanguageInfo {
@@ -31,10 +31,8 @@ export interface MonacoEditorProps {
   saveButtonRef: React.RefObject<HTMLButtonElement | null>;
   newerLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement | null>;
-  setBrowserIndexTimestamp: (timestamp: number) => void;
   value?: string;
   onChange?: (value: string) => void;
-  osInfo: string;
   placeholder?: string;
   ref?: React.Ref<monaco.editor.IStandaloneCodeEditor>;
 }
@@ -51,10 +49,8 @@ export const MonacoEditor = ({
   saveButtonRef,
   newerLogButtonRef,
   olderLogButtonRef,
-  setBrowserIndexTimestamp,
   value,
   onChange,
-  osInfo,
   placeholder,
   ref,
 }: MonacoEditorProps) => {
@@ -104,7 +100,7 @@ export const MonacoEditor = ({
         editor.dispose();
       };
     }
-    return () => {};
+    return () => { };
   }, [darkMode, language, isBoxReady, placeholder]);
 
   // モデル変更のハンドラーを別のuseEffectで管理
@@ -179,15 +175,6 @@ export const MonacoEditor = ({
       clearButtonRef.current?.click();
     });
 
-    // Tab switch command
-    addCommand(
-      osInfo === 'darwin'
-        ? monaco.KeyMod.WinCtrl | monaco.KeyCode.Tab
-        : monaco.KeyMod.CtrlCmd | monaco.KeyCode.Tab,
-      () => {
-        setBrowserIndexTimestamp(new Date().getTime());
-      },
-    );
 
     // Log navigation commands
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
@@ -211,14 +198,12 @@ export const MonacoEditor = ({
     };
   }, [
     editorInstance,
-    osInfo,
     sendButtonRef,
     saveButtonRef,
     copyButtonRef,
     clearButtonRef,
     newerLogButtonRef,
     olderLogButtonRef,
-    setBrowserIndexTimestamp,
   ]);
 
   // ウィンドウのリサイズ時にエディターのレイアウトを更新

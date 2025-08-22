@@ -1,10 +1,11 @@
-import { useRef } from 'react';
-import type * as monaco from 'monaco-editor';
 import { Allotment } from 'allotment';
+import type * as monaco from 'monaco-editor';
+import { useRef } from 'react';
 import 'allotment/dist/style.css';
-import { MonacoEditor, type MonacoEditorProps } from './MonacoEditor';
-import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { MonacoEditor, type MonacoEditorProps } from './MonacoEditor';
+
 interface MonacoEditorsProps {
   darkMode: boolean;
   language: string;
@@ -28,7 +29,6 @@ interface MonacoEditorsProps {
   setEditor3Value: (value: string) => void;
   setEditor4Value: (value: string) => void;
   setEditor5Value: (value: string) => void;
-  setBrowserIndexTimestamp: (timestamp: number) => void;
   osInfo: string;
 }
 
@@ -55,8 +55,6 @@ export const MonacoEditors = ({
   setEditor3Value,
   setEditor4Value,
   setEditor5Value,
-  setBrowserIndexTimestamp,
-  osInfo,
 }: MonacoEditorsProps) => {
   const handleEditor1Change = (value: string | undefined) => {
     setEditor1Value(value ?? '');
@@ -98,8 +96,6 @@ export const MonacoEditors = ({
     saveButtonRef,
     newerLogButtonRef,
     olderLogButtonRef,
-    setBrowserIndexTimestamp,
-    osInfo,
   };
 
   const placeholderText = 'Type your prompt for the AI assistant...';

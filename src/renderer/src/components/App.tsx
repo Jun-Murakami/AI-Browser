@@ -1,8 +1,8 @@
+import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { useState } from 'react';
-import { theme, darkTheme } from '../theme/mui_theme';
-import { CssBaseline, ThemeProvider, Box } from '@mui/material';
-import { HomePage } from './HomePage';
 import { Toaster } from 'sonner';
+import { darkTheme, theme } from '../theme/mui_theme';
+import { HomePage } from './HomePage';
 
 export const App = () => {
   const [darkMode, setDarkMode] = useState<boolean>(false);

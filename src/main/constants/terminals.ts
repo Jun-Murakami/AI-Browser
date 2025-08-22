@@ -1,24 +1,10 @@
+import { TERMINAL_DEFINITIONS } from '../../shared/constants/terminals';
 import type { Terminal } from '../types/interfaces';
 
-export const TERMINALS: Terminal[] = [
-  {
-    id: 'TERMINAL_1',
-    label: 'Terminal 1',
-    index: 12,
-    type: 'terminal',
-  },
-  {
-    id: 'TERMINAL_2',
-    label: 'Terminal 2',
-    index: 13,
-    type: 'terminal',
-  },
-  {
-    id: 'TERMINAL_3',
-    label: 'Terminal 3',
-    index: 14,
-    type: 'terminal',
-  },
-];
+// 共通定義にtype追加してTerminal型に変換
+export const TERMINALS: Terminal[] = TERMINAL_DEFINITIONS.map((def) => ({
+  ...def,
+  type: 'terminal' as const,
+}));
 
 export const TERMINAL_COUNT = TERMINALS.length;

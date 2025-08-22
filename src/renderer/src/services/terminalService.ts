@@ -16,6 +16,7 @@ class TerminalService {
     let instance = this.instances.get(terminalId);
     
     if (!instance) {
+      console.log('Creating new terminal instance for', terminalId);
       // ターミナルインスタンスを作成
       const terminal = new Terminal({
         fontFamily:
@@ -111,15 +112,28 @@ class TerminalService {
     console.log(`Attaching terminal ${terminalId} to DOM`);
     const instance = this.getOrCreateInstance(terminalId);
     
-    // 既にDOMに接続されている場合は、一度削除
-    if (instance.terminal.element?.parentElement) {
-      console.log(`Terminal ${terminalId} already attached, detaching first`);
-      instance.terminal.element.parentElement.removeChild(instance.terminal.element);
+    // 既にDOMに接続されている場合
+    if (instance.terminal.element && instance.terminal.element.parentElement) {
+      console.log(`Terminal ${terminalId} already has parent, moving to new parent`);
+      // 既存の要素を新しい親に移動
+      element.appendChild(instance.terminal.element);
+      // 表示を確実にする
+      (instance.terminal.element as HTMLElement).style.display = 'block';
+    } else if (instance.terminal.element) {
+      console.log(`Terminal ${terminalId} element exists but no parent`);
+      // 要素はあるが親がない場合
+      element.appendChild(instance.terminal.element);
+      (instance.terminal.element as HTMLElement).style.display = 'block';
+    } else {
+      console.log(`Terminal ${terminalId} opening for first time`);
+      // 初回のみopen()を呼ぶ
+      instance.terminal.open(element);
     }
     
-    // DOMに接続
-    instance.terminal.open(element);
-    console.log(`Terminal ${terminalId} opened in DOM`);
+    console.log(`Terminal ${terminalId} attached to DOM`);
+    console.log('Terminal element:', instance.terminal.element);
+    console.log('Parent element:', element);
+    console.log('Element dimensions:', element.offsetWidth, 'x', element.offsetHeight);
     
     // フィット
     setTimeout(() => {
@@ -129,13 +143,17 @@ class TerminalService {
       } catch (error) {
         console.error('Initial fit error:', error);
       }
-    }, 0);
+    }, 50);
   }
 
   detachFromDOM(terminalId: string): void {
+    console.log(`Detaching terminal ${terminalId} from DOM`);
     const instance = this.instances.get(terminalId);
-    if (instance?.terminal.element?.parentElement) {
-      instance.terminal.element.parentElement.removeChild(instance.terminal.element);
+    if (instance?.terminal.element) {
+      // 要素をDOMから削除するが、インスタンスは保持
+      if (instance.terminal.element.parentElement) {
+        instance.terminal.element.parentElement.removeChild(instance.terminal.element);
+      }
     }
   }
 

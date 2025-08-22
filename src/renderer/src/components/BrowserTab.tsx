@@ -1,12 +1,6 @@
-import { Box, Tab, Checkbox, CircularProgress } from '@mui/material';
-import {
-  ChatGPTIcon,
-  GeminiIcon,
-  ClaudeIcon,
-  DeepSeekIcon,
-  AIStudioIcon,
-  GrokIcon,
-} from './Icons';
+import type { SvgIconProps } from '@mui/material';
+import { Box, Checkbox, CircularProgress, Tab } from '@mui/material';
+import type { ComponentType } from 'react';
 
 interface BrowserTabProps {
   isEditingBrowserShow: boolean;
@@ -18,6 +12,9 @@ interface BrowserTabProps {
   label: string;
   loading: boolean;
   onClick: (event: React.MouseEvent, index: number) => void;
+  icon?: ComponentType<SvgIconProps> | null;
+  tabId?: string;
+  isTerminal?: boolean;
 }
 
 export const BrowserTab = ({
@@ -28,15 +25,18 @@ export const BrowserTab = ({
   label,
   loading,
   onClick,
+  icon: IconComponent,
+  tabId,
+  isTerminal,
 }: BrowserTabProps) => {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEnabledBrowsers((prev) => {
       const newEnabledBrowsers = { ...prev };
-      newEnabledBrowsers[label.toUpperCase()] = e.target.checked;
+      newEnabledBrowsers[tabId || label.toUpperCase()] = e.target.checked;
 
       // 全てのブラウザが無効になることを防ぐ
       if (Object.values(newEnabledBrowsers).every((enabled) => !enabled)) {
-        newEnabledBrowsers[label.toUpperCase()] = true;
+        newEnabledBrowsers[tabId || label.toUpperCase()] = true;
       }
 
       // boolean[]に変換してメインプロセスに送信
@@ -47,14 +47,10 @@ export const BrowserTab = ({
     });
   };
 
-  const isIconOnly = [
-    'ChatGPT',
-    'Gemini',
-    'AIStudio',
-    'Claude',
-    'DeepSeek',
-    'Grok',
-  ].includes(label);
+  const hasIcon = IconComponent !== null && IconComponent !== undefined;
+
+  // ターミナルの番号を抽出（例: "Terminal1" → "1"）
+  const terminalNumber = isTerminal ? label.replace(/[^0-9]/g, '') : '';
 
   const renderTabContent = () => {
     if (isEditingBrowserShow) {
@@ -68,46 +64,39 @@ export const BrowserTab = ({
               e.stopPropagation();
             }}
           />
-          {label === 'ChatGPT' ? (
-            <ChatGPTIcon sx={{ fontSize: 18 }} />
-          ) : label === 'Gemini' ? (
-            <GeminiIcon sx={{ fontSize: 18 }} />
-          ) : label === 'AIStudio' ? (
-            <AIStudioIcon sx={{ fontSize: 18 }} />
-          ) : label === 'Claude' ? (
-            <ClaudeIcon sx={{ fontSize: 18 }} />
-          ) : label === 'DeepSeek' ? (
-            <DeepSeekIcon sx={{ fontSize: 20 }} />
-          ) : label === 'Grok' ? (
-            <GrokIcon sx={{ fontSize: 16 }} />
+          {hasIcon && IconComponent ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+              <IconComponent sx={{ fontSize: 18 }} />
+              {isTerminal && terminalNumber && (
+                <Box sx={{ ml: 0.5, fontSize: '14px', fontWeight: 600 }}>
+                  {terminalNumber}
+                </Box>
+              )}
+            </Box>
           ) : (
-            label
+            <Box sx={{ ml: 1 }}>{label}</Box>
           )}
         </>
       );
     }
 
-    // アイコンのみ表示するタブの場合
-    if (label === 'ChatGPT') {
-      return <ChatGPTIcon sx={{ fontSize: 18 }} />;
-    }
-    if (label === 'Gemini') {
-      return <GeminiIcon sx={{ fontSize: 18 }} />;
-    }
-    if (label === 'AIStudio') {
-      return <AIStudioIcon sx={{ fontSize: 18 }} />;
-    }
-    if (label === 'Claude') {
-      return <ClaudeIcon sx={{ fontSize: 18 }} />;
-    }
-    if (label === 'DeepSeek') {
-      return <DeepSeekIcon sx={{ fontSize: 20 }} />;
-    }
-    if (label === 'Grok') {
-      return <GrokIcon sx={{ fontSize: 16 }} />;
+    // 通常表示時
+    if (hasIcon && IconComponent) {
+      if (isTerminal && terminalNumber) {
+        // ターミナルの場合: アイコン + 番号
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconComponent sx={{ fontSize: 18 }} />
+            <Box sx={{ ml: 0.5, fontSize: '14px', fontWeight: 600 }}>
+              {terminalNumber}
+            </Box>
+          </Box>
+        );
+      }
+      // ブラウザの場合: アイコンのみ
+      return <IconComponent sx={{ fontSize: 18 }} />;
     }
 
-    // その他のタブは通常通りラベルを表示
     return label;
   };
 
@@ -128,8 +117,8 @@ export const BrowserTab = ({
       sx={{
         p: 0,
         display: enabled || isEditingBrowserShow ? 'flex' : 'none',
-        minWidth: isIconOnly ? '64px !important' : undefined,
-        width: isIconOnly ? '64px !important' : undefined,
+        minWidth: hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
+        width: hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
       }}
     />
   );

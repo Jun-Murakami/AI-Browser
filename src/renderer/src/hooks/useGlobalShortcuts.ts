@@ -14,7 +14,6 @@ interface UseGlobalShortcutsProps {
   saveButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
   newerLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
   olderLogButtonTouchRippleRef: React.RefObject<TouchRippleActions | null>;
-  setBrowserIndexTimestamp: (timestamp: number) => void;
   osInfo: string;
 }
 
@@ -31,7 +30,6 @@ export const useGlobalShortcuts = ({
   saveButtonTouchRippleRef,
   newerLogButtonTouchRippleRef,
   olderLogButtonTouchRippleRef,
-  setBrowserIndexTimestamp,
   osInfo,
 }: UseGlobalShortcutsProps) => {
   useEffect(() => {
@@ -89,11 +87,6 @@ export const useGlobalShortcuts = ({
         }, 200);
       }
 
-      // Tab switch command (Cmd/Ctrl + Tab or WinCtrl + Tab for Mac)
-      if ((isMac ? e.ctrlKey : cmdKey) && e.key === 'Tab') {
-        e.preventDefault();
-        setBrowserIndexTimestamp(new Date().getTime());
-      }
 
       // Log navigation commands (Cmd/Ctrl + Up/Down)
       if (cmdKey && e.key === 'ArrowUp') {
@@ -132,7 +125,6 @@ export const useGlobalShortcuts = ({
     saveButtonTouchRippleRef,
     newerLogButtonTouchRippleRef,
     olderLogButtonTouchRippleRef,
-    setBrowserIndexTimestamp,
     osInfo,
   ]);
 };

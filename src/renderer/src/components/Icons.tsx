@@ -1,4 +1,5 @@
 import { SvgIcon, type SvgIconProps } from '@mui/material';
+import { useId } from 'react';
 
 export const EraseIcon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
@@ -133,29 +134,32 @@ export const ChatGPTIcon = (props: SvgIconProps) => (
   </SvgIcon>
 );
 
-export const GeminiIcon = (props: SvgIconProps) => (
-  <SvgIcon {...props} viewBox="0 0 24 24">
-    <title>Gemini</title>
-    <defs>
-      <linearGradient
-        id="lobe-icons-gemini-fill"
-        x1="0%"
-        x2="68.73%"
-        y1="100%"
-        y2="30.395%"
-      >
-        <stop offset="0%" stopColor="#1C7DFF" />
-        <stop offset="52.021%" stopColor="#1C69FF" />
-        <stop offset="100%" stopColor="#F0DCD6" />
-      </linearGradient>
-    </defs>
-    <path
-      d="M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12"
-      fill="url(#lobe-icons-gemini-fill)"
-      fillRule="nonzero"
-    />
-  </SvgIcon>
-);
+export const GeminiIcon = (props: SvgIconProps) => {
+  // useId() で描画ごとに一意なIDを生成し、<defs> 内のグラデーションID衝突を回避する
+  // これにより同一コンポーネントの複数インスタンスでも DOM 上の重複 ID を防ぎ、
+  // 「静的文字列の id を使うな」というリンタールールにも適合します。
+  const reactId = useId();
+  const gradientId = `gemini-gradient-${reactId}`; // URL 参照用にプレフィックスを付与
+
+  return (
+    <SvgIcon {...props} viewBox="0 0 24 24">
+      <title>Gemini</title>
+      <defs>
+        <linearGradient id={gradientId} x1="0%" x2="68.73%" y1="100%" y2="30.395%">
+          <stop offset="0%" stopColor="#1C7DFF" />
+          <stop offset="52.021%" stopColor="#1C69FF" />
+          <stop offset="100%" stopColor="#F0DCD6" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12"
+        // fill 属性では url(#<id>) 形式で上で生成した一意 ID を参照する
+        fill={`url(#${gradientId})`}
+        fillRule="nonzero"
+      />
+    </SvgIcon>
+  );
+};
 
 export const ClaudeIcon = (props: SvgIconProps) => (
   <SvgIcon {...props} viewBox="0 0 24 24">
@@ -205,7 +209,6 @@ export const AIStudioIcon = (props: SvgIconProps) => (
 export const GrokIcon = (props: SvgIconProps) => (
   <SvgIcon {...props}>
     <svg
-      id="Layer"
       data-name="Layer"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 33.33 32"
@@ -216,5 +219,19 @@ export const GrokIcon = (props: SvgIconProps) => (
       <title>Grok</title>
       <path d="M23.96,12.35l-11.08,8.19,15.87-15.96h0s4.58-4.58,4.58-4.58c-.08.12-.16.23-.25.34-3.48,4.8-5.19,7.15-3.82,13.03h0c.94,3.99-.07,8.43-3.32,11.68-4.1,4.11-10.66,5.02-16.06,1.32l3.77-1.75c3.45,1.36,7.22.76,9.93-1.95,2.71-2.71,3.32-6.67,1.96-9.96-.26-.62-1.04-.78-1.58-.38ZM10.69,9.78c-3.31,3.31-3.98,9.05-.1,12.75h0S0,32,0,32c.66-.91,1.48-1.78,2.3-2.64h0l.03-.03h0c2.34-2.47,4.66-4.91,3.24-8.36-1.9-4.62-.79-10.04,2.72-13.56,3.66-3.66,9.05-4.58,13.54-2.73,1,.37,1.86.9,2.54,1.39l-3.76,1.74c-3.5-1.47-7.51-.47-9.95,1.98Z" />
     </svg>
+  </SvgIcon>
+);
+
+export const TerminalIcon = (props: SvgIconProps) => (
+  <SvgIcon {...props} viewBox="0 0 24 24">
+    <title>Terminal</title>
+    <path
+      d="M17 15H12M7 10L10 12.5L7 15M3 15.8002V8.2002C3 7.08009 3 6.51962 3.21799 6.0918C3.40973 5.71547 3.71547 5.40973 4.0918 5.21799C4.51962 5 5.08009 5 6.2002 5H17.8002C18.9203 5 19.4796 5 19.9074 5.21799C20.2837 5.40973 20.5905 5.71547 20.7822 6.0918C21 6.5192 21 7.07899 21 8.19691V15.8031C21 16.921 21 17.48 20.7822 17.9074C20.5905 18.2837 20.2837 18.5905 19.9074 18.7822C19.48 19 18.921 19 17.8031 19H6.19691C5.07899 19 4.5192 19 4.0918 18.7822C3.71547 18.5905 3.40973 18.2837 3.21799 17.9074C3 17.4796 3 16.9203 3 15.8002Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
   </SvgIcon>
 );

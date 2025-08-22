@@ -1,7 +1,44 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Allotment, type AllotmentHandle } from 'allotment';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import 'allotment/dist/style.css';
+import {
+  Clear,
+  ContentPaste,
+  InfoOutlined,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  ReplayOutlined,
+  Save,
+  Send,
+  Settings,
+} from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Tab,
+  Tabs,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
+import { useTheme } from '@mui/system';
+import * as monaco from 'monaco-editor';
 import { toast } from 'sonner';
+import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
+import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
+import { useResizeObserver } from '../hooks/useResizeObserver';
+import { useTabManager } from '../hooks/useTabManager';
+import BrowserTab from './BrowserTab';
+import { MaterialUISwitch } from './DarkModeSwitch';
 import {
   EraseIcon,
   Split1Icon,
@@ -10,46 +47,10 @@ import {
   Split4Icon,
   Split5Icon,
 } from './Icons';
-import {
-  Box,
-  Tab,
-  Tabs,
-  CircularProgress,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  IconButton,
-  Button,
-  Tooltip,
-  Typography,
-  Chip,
-  TextField,
-  Divider,
-} from '@mui/material';
-import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
-import { useTheme } from '@mui/system';
-import * as monaco from 'monaco-editor';
-import {
-  KeyboardArrowUp,
-  KeyboardArrowDown,
-  Send,
-  ContentPaste,
-  ReplayOutlined,
-  Settings,
-  Save,
-  Clear,
-  InfoOutlined,
-} from '@mui/icons-material';
+import { LicenseDialog } from './LicenseDialog';
 import { getSupportedLanguages } from './MonacoEditor';
 import { MonacoEditors } from './MonacoEditors';
-import { MaterialUISwitch } from './DarkModeSwitch';
-import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
-import BrowserTab from './BrowserTab';
-import { useResizeObserver } from '../hooks/useResizeObserver';
-import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
-import { LicenseDialog } from './LicenseDialog';
-import { TerminalView, cleanupAllTerminals } from './TerminalView';
+import { cleanupAllTerminals, TerminalView } from './TerminalView';
 
 interface HomePageProps {
   darkMode: boolean;
@@ -62,13 +63,7 @@ interface Log {
   displayText: string;
 }
 
-interface TabInfo {
-  label: string;
-  id: string;
-  index: number;
-  type: 'browser' | 'terminal';
-  url?: string;
-}
+// TabInfo interface removed - using Tab from useTabManager instead
 
 const truncateText = (text: string, maxLength = 100) => {
   if (text.length <= maxLength) return text;
@@ -76,21 +71,15 @@ const truncateText = (text: string, maxLength = 100) => {
 };
 
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
+  // 新しいタブ管理システム
+  const { tabs, activeTabId, activeTab, isTerminalActive, visibleTabs, actions } = useTabManager();
+
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
-  const [allTabs, setAllTabs] = useState<TabInfo[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [browserIndex, setBrowserIndex] = useState(0);
-  const [showTerminalView, setShowTerminalView] = useState(false);
-  const [selectedTerminalId, setSelectedTerminalId] = useState<string | null>(
-    null,
-  );
   const [browserUrls, setBrowserUrls] = useState<string[]>([]);
   const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([]);
-  const [enabledBrowsers, setEnabledBrowsers] = useState<
-    Record<string, boolean>
-  >({});
   const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('plaintext');
@@ -102,9 +91,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [editor3Value, setEditor3Value] = useState('');
   const [editor4Value, setEditor4Value] = useState('');
   const [editor5Value, setEditor5Value] = useState('');
-  const [browserIndexTimestamp, setBrowserIndexTimestamp] = useState(
-    new Date().getTime(),
-  );
   const [preferredSize, setPreferredSize] = useState(500);
   const [commandKey, setCommandKey] = useState('Ctrl');
   const [osInfo, setOsInfo] = useState('');
@@ -113,8 +99,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // ブラウザタブのみをフィルタリング（memo化）
   const browserTabs = useMemo(
-    () => allTabs.filter((tab) => tab.type === 'browser'),
-    [allTabs],
+    () => visibleTabs.filter((tab) => tab.type === 'browser'),
+    [visibleTabs],
   );
 
   const checkForUpdates = useCheckForUpdates();
@@ -159,32 +145,14 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // タブが切り替わったらメインプロセスに通知
   const handleBrowserTabChange = useCallback(
-    (_: React.SyntheticEvent, tabIndex: number) => {
-      // tabIndexはタブのindex属性の値なので、allTabsの中での実際のインデックスを探す
-      const actualIndex = allTabs.findIndex((tab) => tab.index === tabIndex);
-      if (actualIndex === -1) return;
-
-      setBrowserIndex(actualIndex);
-      const selectedTab = allTabs[actualIndex];
-
-      if (selectedTab?.type === 'terminal') {
-        setShowTerminalView(true);
-        setSelectedTerminalId(selectedTab.id);
-        // ターミナルが選択されたことをメインプロセスに通知（-1でブラウザビューを非表示）
-        window.electron.sendBrowserTabIndexToMain(-1);
-      } else {
-        setShowTerminalView(false);
-        setSelectedTerminalId(null);
-        // ブラウザタブの場合は、ブラウザタブ内でのインデックスを送信
-        const browserTabIndex = browserTabs.findIndex(
-          (tab) => tab.index === tabIndex,
-        );
-        if (browserTabIndex !== -1) {
-          window.electron.sendBrowserTabIndexToMain(browserTabIndex);
-        }
+    (_: React.SyntheticEvent, newValue: number) => {
+      // 新しいタブシステムを使用
+      const tab = visibleTabs[newValue];
+      if (tab) {
+        actions.selectTab(tab.id);
       }
     },
-    [allTabs, browserTabs],
+    [visibleTabs, actions],
   );
 
   // エディタのタブが切り替わったらメインプロセスに通知
@@ -196,28 +164,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     [],
   );
 
-  // ブラウザタブが切り替わったらメインプロセスに通知(Monaco Editorコマンド由来)
-  useEffect(() => {
-    if (!enabledBrowsers || !browserIndexTimestamp || !browserTabs.length) {
-      return;
-    }
-    setBrowserIndex((prev) => {
-      const enabledIndices = browserTabs
-        .filter((tab) => enabledBrowsers[tab.id])
-        .map((tab) => tab.index);
-
-      if (!enabledIndices.length) {
-        return prev;
-      }
-
-      const currentIndex = enabledIndices.indexOf(prev);
-      const nextIndex = (currentIndex + 1) % enabledIndices.length;
-      const newBrowserIndex = enabledIndices[nextIndex] ?? 0;
-
-      window.electron.sendBrowserTabIndexToMain(newBrowserIndex);
-      return newBrowserIndex;
-    });
-  }, [browserIndexTimestamp, enabledBrowsers, browserTabs]);
 
   // 初期設定を取得
   useEffect(() => {
@@ -247,21 +193,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       .getInitialSettings()
       .then(async (settings) => {
         setCurrentVersion(settings.currentVersion);
-        // ブラウザとターミナルを統合したタブリストを作成
-        const browserTabInfos: TabInfo[] = settings.browsers.map((b) => ({
-          ...b,
-          type: 'browser' as const,
-        }));
-        const terminalTabInfos: TabInfo[] = settings.terminals.map((t) => ({
-          ...t,
-          type: 'terminal' as const,
-        }));
-        const combinedTabs = [...browserTabInfos, ...terminalTabInfos];
-        setAllTabs(combinedTabs);
-        setEnabledBrowsers(settings.enabledBrowsers);
-        setBrowserIndex(
-          settings.browsers.length > 0 ? settings.browsers.length - 1 : 0,
-        );
+        // タブの初期化はuseTabManagerで処理される
         setDarkMode(settings.isDarkMode);
         setEditorIndex(settings.editorMode);
         setPreferredSize(settings.browserWidth);
@@ -396,7 +328,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       return;
     }
 
-    window.electron.sendTextToMain(combinedEditorValue, sendToAll);
+    if (sendToAll) {
+      actions.sendMessageToAll(combinedEditorValue);
+    } else if (activeTab) {
+      actions.sendMessage(activeTab.id, combinedEditorValue);
+    }
+
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
       window.electron.sendLogsToMain(newLogs);
@@ -528,7 +465,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     saveButtonTouchRippleRef,
     newerLogButtonTouchRippleRef,
     olderLogButtonTouchRippleRef,
-    setBrowserIndexTimestamp,
     osInfo,
   });
 
@@ -571,7 +507,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     sx={{ position: 'relative', width: 'calc(100% - 48px)' }}
                   >
                     <Tabs
-                      value={allTabs[browserIndex]?.index ?? 0}
+                      value={visibleTabs.findIndex(tab => tab.id === activeTabId)}
                       onChange={handleBrowserTabChange}
                       variant="scrollable"
                       scrollButtons="auto"
@@ -586,24 +522,26 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                       }}
                       key="browser-tabs"
                     >
-                      {allTabs.map((tab) => (
+                      {visibleTabs.map((tab, index) => (
                         <BrowserTab
-                          key={tab.index}
+                          key={tab.id}
                           isEditingBrowserShow={isEditingBrowserShow}
-                          enabled={
-                            tab.type === 'browser'
-                              ? enabledBrowsers[tab.id]
-                              : true
-                          }
-                          setEnabledBrowsers={setEnabledBrowsers}
-                          index={tab.index}
+                          enabled={tab.enabled !== false}
+                          setEnabledBrowsers={() => {
+                            // タブの有効/無効を切り替え
+                            actions.toggleTabEnabled(tab.id);
+                          }}
+                          index={index}
                           label={tab.label}
                           loading={
                             tab.type === 'browser'
-                              ? browserLoadings[tab.index]
+                              ? browserLoadings[index]
                               : false
                           }
                           onClick={handleBrowserTabChange}
+                          icon={'IconComponent' in tab ? tab.IconComponent : null}
+                          tabId={tab.id}
+                          isTerminal={tab.type === 'terminal'}
                         />
                       ))}
                     </Tabs>
@@ -679,7 +617,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                   </IconButton>
                 </Tooltip>
                 <TextField
-                  value={browserUrls[browserIndex] || ''}
+                  value={browserUrls[visibleTabs.findIndex(tab => tab.id === activeTabId)] || ''}
                   size="small"
                   fullWidth
                   sx={{
@@ -698,28 +636,36 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             </Box>
 
             <Box
-              sx={{ 
+              sx={{
                 height: 'calc(100% - 100px)',
-                textAlign: showTerminalView ? 'left' : 'center'
+                textAlign: isTerminalActive ? 'left' : 'center',
+                position: 'relative' // ターミナルの位置決めのため
               }}
               ref={browserRef}
             >
               {/* ターミナルビューを常にレンダリングし、表示/非表示をCSSで制御 */}
-              <Box sx={{ display: showTerminalView ? 'none' : 'block', height: '100%' }}>
+              <Box sx={{ display: isTerminalActive ? 'none' : 'block', height: '100%' }}>
                 <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
               </Box>
-              {allTabs
+              {tabs
                 .filter(tab => tab.type === 'terminal')
                 .map(terminal => (
                   <Box
                     key={terminal.id}
                     sx={{
-                      display: showTerminalView && selectedTerminalId === terminal.id ? 'block' : 'none',
+                      display: isTerminalActive && activeTabId === terminal.id ? 'flex' : 'none',
                       height: '100%',
-                      width: '100%'
+                      width: '100%',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      zIndex: isTerminalActive && activeTabId === terminal.id ? 1 : -1
                     }}
                   >
-                    <TerminalView terminalId={terminal.id} />
+                    <TerminalView
+                      terminalId={terminal.id}
+                      isVisible={isTerminalActive && activeTabId === terminal.id}
+                    />
                   </Box>
                 ))
               }
@@ -994,7 +940,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
               saveButtonRef={saveButtonRef}
               newerLogButtonRef={newerLogButtonRef}
               olderLogButtonRef={olderLogButtonRef}
-              setBrowserIndexTimestamp={setBrowserIndexTimestamp}
               browserWidth={browserWidth}
               browserHeight={browserHeight}
               osInfo={osInfo}
@@ -1088,12 +1033,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                     <ContentPaste />
                   </IconButton>
                 </Tooltip>
-                {isInitialized &&
-                browserTabs.length > 0 &&
-                browserTabs[browserIndex] ? (
+                {isInitialized && activeTab ? (
                   <>
                     <Tooltip
-                      title={`Send to ${browserTabs[browserIndex].label} (${commandKey} + Enter)`}
+                      title={`Send to ${activeTab.label} (${commandKey} + Enter)`}
                       arrow
                     >
                       <Button
@@ -1104,18 +1047,24 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
                         startIcon={<Send sx={{ mr: -0.5 }} />}
                         onClick={() => handleSendButtonClick(false)}
                       >
-                        {browserTabs[browserIndex].label}
+                        {activeTab.label}
                       </Button>
                     </Tooltip>
-                    <Tooltip title="Send to all tabs" arrow>
-                      <Button
-                        variant="contained"
-                        sx={{ width: 40, mr: 1 }}
-                        startIcon={<Send sx={{ mr: -0.5 }} />}
-                        onClick={() => handleSendButtonClick(true)}
-                      >
-                        All
-                      </Button>
+                    <Tooltip 
+                      title={isTerminalActive ? "All button is disabled for terminal tabs" : "Send to all browser tabs"} 
+                      arrow
+                    >
+                      <span>
+                        <Button
+                          variant="contained"
+                          sx={{ width: 40, mr: 1 }}
+                          startIcon={<Send sx={{ mr: -0.5 }} />}
+                          onClick={() => handleSendButtonClick(true)}
+                          disabled={isTerminalActive}
+                        >
+                          All
+                        </Button>
+                      </span>
                     </Tooltip>
                   </>
                 ) : (
