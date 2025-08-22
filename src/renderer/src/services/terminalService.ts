@@ -1,11 +1,11 @@
-import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
+import { Terminal } from '@xterm/xterm';
 
 interface TerminalInstance {
   terminal: Terminal;
   fitAddon: FitAddon;
-  outputHandler: (event: any, id: string, data: string) => void;
+  outputHandler: (event: Electron.IpcRendererEvent, id: string, data: string) => void;
   isSessionCreated: boolean;
 }
 
@@ -14,7 +14,7 @@ class TerminalService {
 
   getOrCreateInstance(terminalId: string): TerminalInstance {
     let instance = this.instances.get(terminalId);
-    
+
     if (!instance) {
       console.log('Creating new terminal instance for', terminalId);
       // ターミナルインスタンスを作成
@@ -62,7 +62,7 @@ class TerminalService {
       // アドオンを追加
       const fitAddon = new FitAddon();
       const webLinksAddon = new WebLinksAddon();
-      
+
       terminal.loadAddon(fitAddon);
       terminal.loadAddon(webLinksAddon);
 
@@ -72,7 +72,7 @@ class TerminalService {
       });
 
       // 出力ハンドラー
-      const outputHandler = (_event: any, id: string, data: string) => {
+      const outputHandler = (_event: Electron.IpcRendererEvent, id: string, data: string) => {
         if (id === terminalId) {
           terminal.write(data);
         }
@@ -83,9 +83,9 @@ class TerminalService {
         terminal,
         fitAddon,
         outputHandler,
-        isSessionCreated: false
+        isSessionCreated: false,
       };
-      
+
       this.instances.set(terminalId, instance);
 
       // IPCリスナーを登録
@@ -95,7 +95,8 @@ class TerminalService {
     // セッションを作成（一度だけ）
     if (!instance.isSessionCreated) {
       instance.isSessionCreated = true; // 即座にフラグを立てて重複を防ぐ
-      window.api.createTerminalSession(terminalId)
+      window.api
+        .createTerminalSession(terminalId)
         .then(() => {
           console.log(`Terminal session created: ${terminalId}`);
         })
@@ -111,10 +112,12 @@ class TerminalService {
   attachToDOM(terminalId: string, element: HTMLElement): void {
     console.log(`Attaching terminal ${terminalId} to DOM`);
     const instance = this.getOrCreateInstance(terminalId);
-    
+
     // 既にDOMに接続されている場合
-    if (instance.terminal.element && instance.terminal.element.parentElement) {
-      console.log(`Terminal ${terminalId} already has parent, moving to new parent`);
+    if (instance.terminal.element?.parentElement) {
+      console.log(
+        `Terminal ${terminalId} already has parent, moving to new parent`,
+      );
       // 既存の要素を新しい親に移動
       element.appendChild(instance.terminal.element);
       // 表示を確実にする
@@ -129,12 +132,17 @@ class TerminalService {
       // 初回のみopen()を呼ぶ
       instance.terminal.open(element);
     }
-    
+
     console.log(`Terminal ${terminalId} attached to DOM`);
     console.log('Terminal element:', instance.terminal.element);
     console.log('Parent element:', element);
-    console.log('Element dimensions:', element.offsetWidth, 'x', element.offsetHeight);
-    
+    console.log(
+      'Element dimensions:',
+      element.offsetWidth,
+      'x',
+      element.offsetHeight,
+    );
+
     // フィット
     setTimeout(() => {
       try {
@@ -152,7 +160,9 @@ class TerminalService {
     if (instance?.terminal.element) {
       // 要素をDOMから削除するが、インスタンスは保持
       if (instance.terminal.element.parentElement) {
-        instance.terminal.element.parentElement.removeChild(instance.terminal.element);
+        instance.terminal.element.parentElement.removeChild(
+          instance.terminal.element,
+        );
       }
     }
   }
@@ -164,14 +174,14 @@ class TerminalService {
     try {
       instance.fitAddon.fit();
       const dimensions = instance.fitAddon.proposeDimensions();
-      if (dimensions && dimensions.cols && dimensions.rows) {
+      if (dimensions?.cols && dimensions?.rows) {
         window.api.resizeTerminal(terminalId, dimensions.cols, dimensions.rows);
         return dimensions;
       }
     } catch (error) {
       console.error('Terminal resize error:', error);
     }
-    
+
     return null;
   }
 

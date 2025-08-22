@@ -1,5 +1,6 @@
-import type { SvgIconProps } from '@mui/material';
 import { Box, Checkbox, CircularProgress, Tab } from '@mui/material';
+
+import type { SvgIconProps } from '@mui/material';
 import type { ComponentType } from 'react';
 
 interface BrowserTabProps {
@@ -117,7 +118,8 @@ export const BrowserTab = ({
       sx={{
         p: 0,
         display: enabled || isEditingBrowserShow ? 'flex' : 'none',
-        minWidth: hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
+        minWidth:
+          hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
         width: hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
       }}
     />

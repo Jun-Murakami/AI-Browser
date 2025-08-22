@@ -1,9 +1,11 @@
-import { Allotment } from 'allotment';
-import type * as monaco from 'monaco-editor';
 import { useRef } from 'react';
+import { Allotment } from 'allotment';
+
+import type * as monaco from 'monaco-editor';
 import 'allotment/dist/style.css';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+
 import { MonacoEditor, type MonacoEditorProps } from './MonacoEditor';
 
 interface MonacoEditorsProps {

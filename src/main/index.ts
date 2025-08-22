@@ -1,6 +1,3 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { join } from 'node:path';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import {
   app,
@@ -11,10 +8,16 @@ import {
   WebContentsView,
 } from 'electron';
 import contextMenu from 'electron-context-menu';
+
 import icon from '../../resources/icon.png?asset';
 import { BROWSERS, URL_PATTERNS } from './constants/browsers';
 import { TERMINALS } from './constants/terminals';
 import { terminalManager } from './terminal/terminalManager';
+
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { join } from 'node:path';
+
 import type { AppState, Log, TabManager } from './types/interfaces';
 
 // 初期のenabledBrowsersを生成

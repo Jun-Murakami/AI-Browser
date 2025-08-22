@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+
 import { BROWSERS } from '../constants/browsers';
 import { TERMINALS } from '../constants/terminals';
+
 import type {
   BrowserTab,
   Tab,
@@ -97,7 +99,7 @@ export function useTabManager(): UseTabManagerReturn {
 
       if (tab.type === 'terminal') {
         // ターミナルにメッセージを送信
-        window.api.sendTerminalInput(tabId, message + '\r\n');
+        window.api.sendTerminalInput(tabId, `${message}\r\n`);
       } else {
         // ブラウザにメッセージを送信
         window.electron.sendTextToMain(message, false);
@@ -107,13 +109,10 @@ export function useTabManager(): UseTabManagerReturn {
   );
 
   // 全てのブラウザタブにメッセージを送信（ターミナルは除外）
-  const sendMessageToAll = useCallback(
-    (message: string) => {
-      // ブラウザタブにのみ送信（ターミナルは除外）
-      window.electron.sendTextToMain(message, true);
-    },
-    [],
-  );
+  const sendMessageToAll = useCallback((message: string) => {
+    // ブラウザタブにのみ送信（ターミナルは除外）
+    window.electron.sendTextToMain(message, true);
+  }, []);
 
   // タブの順序を変更
   const reorderTab = useCallback((tabId: string, newOrder: number) => {

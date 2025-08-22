@@ -1,5 +1,6 @@
-import * as monaco from 'monaco-editor';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import * as monaco from 'monaco-editor';
+
 import { useWatchBoxHeight } from '../hooks/useWatchBoxHeight';
 
 export interface LanguageInfo {
@@ -100,7 +101,7 @@ export const MonacoEditor = ({
         editor.dispose();
       };
     }
-    return () => { };
+    return () => {};
   }, [darkMode, language, isBoxReady, placeholder]);
 
   // モデル変更のハンドラーを別のuseEffectで管理
@@ -174,7 +175,6 @@ export const MonacoEditor = ({
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace, () => {
       clearButtonRef.current?.click();
     });
-
 
     // Log navigation commands
     addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {

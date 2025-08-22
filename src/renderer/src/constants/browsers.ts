@@ -1,5 +1,3 @@
-import type { SvgIconProps } from '@mui/material';
-import type { ComponentType } from 'react';
 import { BROWSER_DEFINITIONS } from '../../../shared/constants/browsers';
 import {
   AIStudioIcon,
@@ -9,6 +7,9 @@ import {
   GeminiIcon,
   GrokIcon,
 } from '../components/Icons';
+
+import type { SvgIconProps } from '@mui/material';
+import type { ComponentType } from 'react';
 
 // アイコンコンポーネントのマッピング
 const BROWSER_ICON_COMPONENTS: Record<string, ComponentType<SvgIconProps>> = {

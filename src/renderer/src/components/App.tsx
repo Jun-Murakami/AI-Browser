@@ -1,6 +1,7 @@
-import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { useState } from 'react';
+import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { Toaster } from 'sonner';
+
 import { darkTheme, theme } from '../theme/mui_theme';
 import { HomePage } from './HomePage';
 

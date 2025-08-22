@@ -1,107 +1,74 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Allotment, type AllotmentHandle } from 'allotment';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import 'allotment/dist/style.css';
-import {
-  Clear,
-  ContentPaste,
-  InfoOutlined,
-  KeyboardArrowDown,
-  KeyboardArrowUp,
-  ReplayOutlined,
-  Save,
-  Send,
-  Settings,
-} from '@mui/icons-material';
-import {
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Divider,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Tab,
-  Tabs,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
+import { Box } from '@mui/material';
 import { useTheme } from '@mui/system';
 import * as monaco from 'monaco-editor';
 import { toast } from 'sonner';
+
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
+import { useEditorValues } from '../hooks/useEditorValues';
 import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
+import { useLogManager } from '../hooks/useLogManager';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useTabManager } from '../hooks/useTabManager';
-import BrowserTab from './BrowserTab';
-import { MaterialUISwitch } from './DarkModeSwitch';
-import {
-  EraseIcon,
-  Split1Icon,
-  Split2Icon,
-  Split3Icon,
-  Split4Icon,
-  Split5Icon,
-} from './Icons';
-import { LicenseDialog } from './LicenseDialog';
-import { getSupportedLanguages } from './MonacoEditor';
-import { MonacoEditors } from './MonacoEditors';
-import { cleanupAllTerminals, TerminalView } from './TerminalView';
+import { BrowserView } from './BrowserView';
+import { EditorView } from './EditorView';
+import { LicenseDialog } from './EditorView/LicenseDialog';
+import { cleanupAllTerminals } from './TerminalView';
+
+import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 
 interface HomePageProps {
   darkMode: boolean;
   setDarkMode: (darkMode: boolean) => void;
 }
 
-interface Log {
-  id: number;
-  text: string;
-  displayText: string;
-}
-
-// TabInfo interface removed - using Tab from useTabManager instead
-
-const truncateText = (text: string, maxLength = 100) => {
-  if (text.length <= maxLength) return text;
-  return `${text.substring(0, maxLength)}...`;
-};
-
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
-  // 新しいタブ管理システム
-  const { tabs, activeTabId, activeTab, isTerminalActive, visibleTabs, actions } = useTabManager();
+  // タブ管理システム
+  const {
+    tabs,
+    activeTabId,
+    activeTab,
+    isTerminalActive,
+    visibleTabs,
+    actions,
+  } = useTabManager();
+
+  // ログ管理システム
+  const {
+    logs,
+    selectedLog,
+    addLog,
+    deleteLog,
+    selectLog,
+    clearSelection,
+    getNextLog,
+    getPreviousLog,
+    setLogs,
+  } = useLogManager();
+
+  // エディタ値管理システム
+  const {
+    setEditorValue,
+    getEditorValue,
+    getCombinedValue,
+    clearAllValues,
+    setValuesFromLog,
+  } = useEditorValues();
 
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [browserUrls, setBrowserUrls] = useState<string[]>([]);
-  const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([]);
-  const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('plaintext');
   const [fontSize, setFontSize] = useState(15);
-  const [logs, setLogs] = useState<Log[]>([]);
-  const [selectedLog, setSelectedLog] = useState<Log | null>(null);
-  const [editor1Value, setEditor1Value] = useState('');
-  const [editor2Value, setEditor2Value] = useState('');
-  const [editor3Value, setEditor3Value] = useState('');
-  const [editor4Value, setEditor4Value] = useState('');
-  const [editor5Value, setEditor5Value] = useState('');
   const [preferredSize, setPreferredSize] = useState(500);
   const [commandKey, setCommandKey] = useState('Ctrl');
   const [osInfo, setOsInfo] = useState('');
   const [isChipVisible, setIsChipVisible] = useState(false);
   const [isLicenseDialogOpen, setIsLicenseDialogOpen] = useState(false);
-
-  // ブラウザタブのみをフィルタリング（memo化）
-  const browserTabs = useMemo(
-    () => visibleTabs.filter((tab) => tab.type === 'browser'),
-    [visibleTabs],
-  );
 
   const checkForUpdates = useCheckForUpdates();
 
@@ -112,8 +79,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     width: browserWidth,
     height: browserHeight,
   } = useResizeObserver<HTMLDivElement>();
-  const { ref: promptHistoryRef, width: promptHistoryWidth } =
-    useResizeObserver<HTMLSelectElement>();
 
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const copyButtonRef = useRef<HTMLButtonElement>(null);
@@ -143,16 +108,20 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     });
   }, [browserWidth, browserHeight]);
 
-  // タブが切り替わったらメインプロセスに通知
-  const handleBrowserTabChange = useCallback(
-    (_: React.SyntheticEvent, newValue: number) => {
-      // 新しいタブシステムを使用
-      const tab = visibleTabs[newValue];
-      if (tab) {
-        actions.selectTab(tab.id);
-      }
+  // タブが切り替わったときの処理
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      actions.selectTab(tabId);
     },
-    [visibleTabs, actions],
+    [actions],
+  );
+
+  // タブの有効/無効を切り替え
+  const handleToggleTabEnabled = useCallback(
+    (tabId: string) => {
+      actions.toggleTabEnabled(tabId);
+    },
+    [actions],
   );
 
   // エディタのタブが切り替わったらメインプロセスに通知
@@ -164,7 +133,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     [],
   );
 
-
   // 初期設定を取得
   useEffect(() => {
     // クリーンアップ関数
@@ -174,15 +142,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
     // ウィンドウ終了時のクリーンアップ
     window.addEventListener('beforeunload', cleanup);
-
-    // ローディング状態を監視
-    window.electron.onUpdateLoadingStatus((status) => {
-      setBrowserLoadings((prev) => {
-        const newLoadings = [...prev];
-        newLoadings[status.index] = status.isLoading;
-        return newLoadings;
-      });
-    });
 
     // スクリプトエラーを監視
     window.electron.onScriptError((error) => {
@@ -201,13 +160,20 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         setTimeout(() => {
           editorSplitRef.current?.reset();
         }, 100);
-        const logsWithDisplay = settings.logs.map((log) => ({
-          ...log,
-          displayText: truncateText(log.text),
-        }));
-        setLogs(logsWithDisplay);
+        // settings.logs は { id, text }[] なので、Log 型に必要な displayText を生成してから保存する
+        setLogs(
+          settings.logs.map((log: { id: number; text: string }) => {
+            // UI 表示用に 1 行・最大 80 文字程度のプレビュー文字列を作成
+            const singleLine = log.text.replace(/\s+/g, ' ').trim();
+            const preview =
+              singleLine.length > 80
+                ? `${singleLine.slice(0, 80)}…`
+                : singleLine;
+            return { ...log, displayText: preview };
+          }),
+        );
         if (settings.logs.length === 0) {
-          setEditor1Value('Type your message here.');
+          setEditorValue(0, 'Type your message here.');
         }
         setLanguage(settings.language);
         setFontSize(settings.fontSize);
@@ -229,100 +195,16 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         console.error(error);
       });
 
-    // ブラウザのURLを監視
-    window.electron.onUpdateUrls((newUrls) => {
-      setBrowserUrls(newUrls);
-    });
-
     // クリーンアップ
     return () => {
       window.removeEventListener('beforeunload', cleanup);
-      window.electron.removeUpdateUrlsListener();
-      window.electron.removeUpdateLoadingStatusListener();
       window.electron.removeScriptErrorListener();
     };
-  }, [checkForUpdates, setDarkMode]);
-
-  // エディターテキストを結合して取得
-  const getCombinedEditorValue = useCallback(() => {
-    const divider = '\n----\n';
-    let combinedValue = '';
-    if (editorIndex === 0) {
-      combinedValue = editor1Value;
-    } else if (editorIndex === 1) {
-      combinedValue = editor1Value + divider + editor2Value;
-    } else if (editorIndex === 2) {
-      combinedValue =
-        editor1Value + divider + editor2Value + divider + editor3Value;
-    } else if (editorIndex === 3) {
-      combinedValue =
-        editor1Value +
-        divider +
-        editor2Value +
-        divider +
-        editor3Value +
-        divider +
-        editor4Value;
-    } else {
-      combinedValue =
-        editor1Value +
-        divider +
-        editor2Value +
-        divider +
-        editor3Value +
-        divider +
-        editor4Value +
-        divider +
-        editor5Value;
-    }
-    // 空白のある行があればディバイダ―ごと削除
-    combinedValue = combinedValue
-      .split(divider)
-      .filter((line) => line.trim() !== '')
-      .join(divider);
-    // 末尾のディバイダーを削除
-    combinedValue = combinedValue.replace(new RegExp(`${divider}$`), '');
-    return combinedValue;
-  }, [
-    editorIndex,
-    editor1Value,
-    editor2Value,
-    editor3Value,
-    editor4Value,
-    editor5Value,
-  ]);
-
-  // ログを追加
-  const addLog = useCallback(
-    (text: string) => {
-      const newLog: Log = {
-        id: logs.length > 0 ? logs[0].id + 1 : 1,
-        text,
-        displayText: truncateText(text),
-      };
-
-      if (logs.length > 0 && logs[0].text === text) {
-        toast('Failed to add log. (Same prompt already exists.)');
-        return;
-      }
-
-      if (logs.length >= 500) {
-        const newLogs = logs.slice(0, 499);
-        setLogs([newLog, ...newLogs]);
-        setSelectedLog(null);
-        return [newLog, ...newLogs];
-      }
-
-      setLogs([newLog, ...logs]);
-      setSelectedLog(null);
-      return [newLog, ...logs];
-    },
-    [logs],
-  );
+  }, [checkForUpdates, setDarkMode, setLogs, setEditorValue]);
 
   // テキストを送信
   const handleSendButtonClick = (sendToAll: boolean) => {
-    const combinedEditorValue = getCombinedEditorValue();
+    const combinedEditorValue = getCombinedValue(editorIndex);
     if (combinedEditorValue.trim() === '') {
       toast('Failed to send. (Prompt is empty)');
       return;
@@ -343,7 +225,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // ログを保存
   const handleSaveButtonClick = () => {
-    const combinedEditorValue = getCombinedEditorValue();
+    const combinedEditorValue = getCombinedValue(editorIndex);
     if (combinedEditorValue.trim() === '') {
       toast('Failed to save. (Prompt is empty)');
       return;
@@ -357,74 +239,23 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // 選択されたログが変更されたらエディターに反映
   const handleSelectedLogChange = (selectedId: number) => {
+    selectLog(selectedId);
     const selected = logs.find((log) => log.id === selectedId);
     if (selected) {
-      setSelectedLog(selected);
-      const parts = selected.text.split('\n----\n');
-
-      // すべてのエディターの値をリセット
-      const setters = [
-        setEditor1Value,
-        setEditor2Value,
-        setEditor3Value,
-        setEditor4Value,
-        setEditor5Value,
-      ];
-      for (const setter of setters) {
-        setter('');
-      }
-
-      // 選択されたエディター数に応じて値を設定
-      for (let i = 0; i <= editorIndex; i++) {
-        if (i === editorIndex) {
-          // 最後のエディターには残りのすべての部分を結合して設定
-          setters[i](parts.slice(i).join('\n----\n') || '');
-        } else {
-          // それ以外のエディターには対応する部分を設定
-          setters[i](parts[i] || '');
-        }
-      }
-    }
-  };
-
-  // 前のログを選択
-  const handlePrevLogButtonClick = () => {
-    if (selectedLog) {
-      const index = logs.indexOf(selectedLog);
-      if (index < logs.length - 1) {
-        handleSelectedLogChange(logs[index + 1].id);
-      }
-    } else if (logs.length > 0) {
-      handleSelectedLogChange(logs[0].id);
-    }
-  };
-
-  // 次のログを選択
-  const handleNextLogButtonClick = () => {
-    if (selectedLog) {
-      const index = logs.indexOf(selectedLog);
-      if (index > 0) {
-        handleSelectedLogChange(logs[index - 1].id);
-      }
-    } else if (logs.length > 0) {
-      handleSelectedLogChange(logs[0].id);
+      setValuesFromLog(selected.text, editorIndex);
     }
   };
 
   // クリアボタンがクリックされたらエディターをクリア
   const handleClearButtonClick = () => {
-    setEditor1Value('');
-    setEditor2Value('');
-    setEditor3Value('');
-    setEditor4Value('');
-    setEditor5Value('');
-    setSelectedLog(null);
+    clearAllValues();
+    clearSelection();
     toast('Editor cleared.');
   };
 
   // コピーボタンがクリックされたらエディターの内容をクリップボードにコピー
   const handleCopyButtonClick = () => {
-    const combinedEditorValue = getCombinedEditorValue();
+    const combinedEditorValue = getCombinedValue(editorIndex);
     if (combinedEditorValue.trim() === '') {
       toast('Failed to copy. (Prompt is empty)');
       return;
@@ -433,23 +264,39 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     toast('Copied to clipboard.');
   };
 
-  // ログを削除
+  // ログを削除（イベントハンドラー）
   const handleDeleteLog = (logId: number, event: React.MouseEvent) => {
     event.stopPropagation();
-    const newLogs = logs.filter((log) => log.id !== logId);
-    setLogs(newLogs);
+    deleteLog(logId);
     if (selectedLog?.id === logId) {
-      setSelectedLog(null);
       handleClearButtonClick();
     }
-    window.electron.sendLogsToMain(newLogs);
-    toast('Log deleted.');
   };
 
-  const fontSizeOptions = [
-    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-    25, 26, 27, 28, 29, 30,
-  ];
+  // チップがクリックされたときの処理
+  const handleChipClick = () => {
+    if (releasePageUrl) {
+      window.electron.openExternalLink(releasePageUrl);
+    }
+  };
+
+  // フォントサイズ変更の処理
+  const handleFontSizeChange = (size: number) => {
+    setFontSize(size);
+    window.electron.sendFontSizeToMain(size);
+  };
+
+  // ダークモード切り替えの処理
+  const handleDarkModeToggle = () => {
+    setDarkMode(!darkMode);
+    window.electron.sendIsDarkModeToMain(!darkMode);
+  };
+
+  // 言語変更の処理
+  const handleLanguageChange = (newLanguage: string) => {
+    setLanguage(newLanguage);
+    window.electron.sendLanguageToMain(newLanguage);
+  };
 
   // グローバルショートカットの設定
   useGlobalShortcuts({
@@ -475,622 +322,74 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     >
       <Allotment ref={editorSplitRef}>
         <Allotment.Pane minSize={400} preferredSize={preferredSize}>
-          <Box sx={{ height: '100%' }}>
-            <Box
-              aria-label="Browser tabs container"
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                position: 'relative',
-              }}
-            >
-              <Tooltip
-                title="(Ctrl + Tab) to switch AI"
-                placement="right"
-                arrow
-                slotProps={{
-                  popper: {
-                    modifiers: [
-                      {
-                        name: 'offset',
-                        options: {
-                          offset: [0, 40],
-                        },
-                      },
-                    ],
-                  },
-                }}
-              >
-                {isInitialized && browserTabs.length > 0 ? (
-                  <Box
-                    sx={{ position: 'relative', width: 'calc(100% - 48px)' }}
-                  >
-                    <Tabs
-                      value={visibleTabs.findIndex(tab => tab.id === activeTabId)}
-                      onChange={handleBrowserTabChange}
-                      variant="scrollable"
-                      scrollButtons="auto"
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: theme.palette.divider,
-                        '& .MuiTabs-scrollButtons': {
-                          '&.Mui-disabled': {
-                            opacity: 0.3,
-                          },
-                        },
-                      }}
-                      key="browser-tabs"
-                    >
-                      {visibleTabs.map((tab, index) => (
-                        <BrowserTab
-                          key={tab.id}
-                          isEditingBrowserShow={isEditingBrowserShow}
-                          enabled={tab.enabled !== false}
-                          setEnabledBrowsers={() => {
-                            // タブの有効/無効を切り替え
-                            actions.toggleTabEnabled(tab.id);
-                          }}
-                          index={index}
-                          label={tab.label}
-                          loading={
-                            tab.type === 'browser'
-                              ? browserLoadings[index]
-                              : false
-                          }
-                          onClick={handleBrowserTabChange}
-                          icon={'IconComponent' in tab ? tab.IconComponent : null}
-                          tabId={tab.id}
-                          isTerminal={tab.type === 'terminal'}
-                        />
-                      ))}
-                    </Tabs>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      borderBottom: 1,
-                      borderColor: theme.palette.divider,
-                      width: '100%',
-                      height: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <CircularProgress size={24} />
-                  </Box>
-                )}
-              </Tooltip>
-              <Box>
-                <Tooltip title="Edit tabs" placement="right" arrow>
-                  <IconButton
-                    onClick={() =>
-                      setIsEditingBrowserShow(!isEditingBrowserShow)
-                    }
-                    sx={{
-                      color: isEditingBrowserShow
-                        ? theme.palette.primary.main
-                        : theme.palette.text.secondary,
-                    }}
-                  >
-                    <Settings />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-
-            <Box sx={{ height: 57 }}>
-              <Box
-                sx={{
-                  height: '100%',
-                  p: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                }}
-              >
-                <Tooltip title="Reload" placement="top" arrow>
-                  <IconButton
-                    onClick={() => window.electron.reloadCurrentView()}
-                  >
-                    <ReplayOutlined
-                      sx={{
-                        transform: 'scaleX(-1)',
-                        color: theme.palette.text.secondary,
-                      }}
-                    />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Reload all tabs" placement="top" arrow>
-                  <IconButton
-                    onClick={() => window.electron.reloadAllViews()}
-                    sx={{ mr: 1 }}
-                  >
-                    <ReplayOutlined
-                      sx={{
-                        transform: 'scaleX(-1)',
-                        color: theme.palette.text.secondary,
-                      }}
-                    />
-                    <Typography variant="subtitle2">all</Typography>
-                  </IconButton>
-                </Tooltip>
-                <TextField
-                  value={browserUrls[visibleTabs.findIndex(tab => tab.id === activeTabId)] || ''}
-                  size="small"
-                  fullWidth
-                  sx={{
-                    '& fieldset': {
-                      borderColor:
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.23) !important'
-                          : 'rgba(0, 0, 0, 0.23) !important',
-                    },
-                    '& input': { color: theme.palette.text.secondary },
-                  }}
-                  disabled
-                />
-              </Box>
-              <Divider />
-            </Box>
-
-            <Box
-              sx={{
-                height: 'calc(100% - 100px)',
-                textAlign: isTerminalActive ? 'left' : 'center',
-                position: 'relative' // ターミナルの位置決めのため
-              }}
-              ref={browserRef}
-            >
-              {/* ターミナルビューを常にレンダリングし、表示/非表示をCSSで制御 */}
-              <Box sx={{ display: isTerminalActive ? 'none' : 'block', height: '100%' }}>
-                <CircularProgress sx={{ mt: 'calc(50% + 50px)' }} />
-              </Box>
-              {tabs
-                .filter(tab => tab.type === 'terminal')
-                .map(terminal => (
-                  <Box
-                    key={terminal.id}
-                    sx={{
-                      display: isTerminalActive && activeTabId === terminal.id ? 'flex' : 'none',
-                      height: '100%',
-                      width: '100%',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      zIndex: isTerminalActive && activeTabId === terminal.id ? 1 : -1
-                    }}
-                  >
-                    <TerminalView
-                      terminalId={terminal.id}
-                      isVisible={isTerminalActive && activeTabId === terminal.id}
-                    />
-                  </Box>
-                ))
-              }
-            </Box>
-          </Box>
+          <BrowserView
+            ref={browserRef}
+            tabs={tabs}
+            activeTabId={activeTabId}
+            isTerminalActive={isTerminalActive}
+            visibleTabs={visibleTabs}
+            isInitialized={isInitialized}
+            onTabChange={handleTabChange}
+            onToggleTabEnabled={handleToggleTabEnabled}
+          />
         </Allotment.Pane>
         <Allotment.Pane minSize={500}>
-          <Box sx={{ height: '100%' }} ref={editorPaneRef}>
-            {isChipVisible && (
-              <Chip
-                label={`Update? v${latestVersion}`}
-                color="primary"
-                onClick={() => {
-                  if (releasePageUrl) {
-                    window.electron.openExternalLink(releasePageUrl);
-                  }
-                }}
-                onDelete={() => setIsChipVisible(false)}
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  m: 1,
-                  zIndex: 1000,
-                }}
-              />
-            )}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                borderBottom: 1,
-                borderColor: theme.palette.divider,
-              }}
-            >
-              <Tabs
-                value={editorIndex}
-                onChange={handleEditorTabChange}
-                sx={{ flex: 1 }}
-              >
-                <Tab
-                  value={0}
-                  icon={
-                    <Split1Icon
-                      sx={{
-                        fontSize: 22,
-                        color:
-                          editorIndex !== 0
-                            ? theme.palette.action.disabled
-                            : undefined,
-                      }}
-                    />
-                  }
-                />
-                <Tab
-                  value={1}
-                  icon={
-                    <Split2Icon
-                      sx={{
-                        fontSize: 22,
-                        color:
-                          editorIndex !== 1
-                            ? theme.palette.action.disabled
-                            : undefined,
-                      }}
-                    />
-                  }
-                />
-                <Tab
-                  value={2}
-                  icon={
-                    <Split3Icon
-                      sx={{
-                        fontSize: 22,
-                        color:
-                          editorIndex !== 2
-                            ? theme.palette.action.disabled
-                            : undefined,
-                      }}
-                    />
-                  }
-                />
-                <Tab
-                  value={3}
-                  icon={
-                    <Split4Icon
-                      sx={{
-                        fontSize: 22,
-                        color:
-                          editorIndex !== 3
-                            ? theme.palette.action.disabled
-                            : undefined,
-                      }}
-                    />
-                  }
-                />
-                <Tab
-                  value={4}
-                  icon={
-                    <Split5Icon
-                      sx={{
-                        fontSize: 22,
-                        color:
-                          editorIndex !== 4
-                            ? theme.palette.action.disabled
-                            : undefined,
-                      }}
-                    />
-                  }
-                />
-              </Tabs>
-              <Tooltip title="License Information" placement="left" arrow>
-                <IconButton
-                  onClick={() => setIsLicenseDialogOpen(true)}
-                  size="small"
-                  sx={{ mr: 1, color: theme.palette.text.secondary }}
-                >
-                  <InfoOutlined />
-                </IconButton>
-              </Tooltip>
-            </Box>
-            <Box sx={{ w: '100%', p: 1 }}>
-              <FormControl sx={{ width: 'calc(100% - 202px)' }}>
-                <InputLabel size="small" sx={{ fontSize: 14 }}>
-                  Logs
-                </InputLabel>
-                <Select
-                  ref={promptHistoryRef}
-                  label="Logs"
-                  value={selectedLog ? selectedLog.id : ''}
-                  onChange={(e) => {
-                    const log = logs.find((log) => log.id === e.target.value);
-                    if (log) {
-                      handleSelectedLogChange(log.id);
-                    }
-                  }}
-                  size="small"
-                  sx={{
-                    width: '100%',
-                    '& .MuiListItemText-root': {
-                      overflow: 'hidden',
-                    },
-                  }}
-                  MenuProps={{
-                    PaperProps: { sx: { maxHeight: '30vh' } },
-                  }}
-                >
-                  {logs.map((log) => (
-                    <MenuItem
-                      key={log.id}
-                      value={log.id}
-                      sx={{
-                        width: promptHistoryWidth,
-                        position: 'relative',
-                        '&:hover .delete-button': {
-                          opacity: 1,
-                        },
-                      }}
-                    >
-                      <Typography
-                        noWrap
-                        sx={{ width: `calc(${promptHistoryWidth} - 40px)` }}
-                        variant="body2"
-                      >
-                        {log.displayText}
-                      </Typography>
-                      <IconButton
-                        className="delete-button"
-                        size="small"
-                        onClick={(e) => handleDeleteLog(log.id, e)}
-                        sx={{
-                          position: 'absolute',
-                          right: 8,
-                          opacity: 0,
-                          transition: 'opacity 0.2s',
-                          color: theme.palette.text.secondary,
-                          '&:hover': {
-                            color: theme.palette.error.main,
-                          },
-                        }}
-                      >
-                        <Clear fontSize="small" />
-                      </IconButton>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <Tooltip title={`Newer log (${commandKey} + ↑)`} arrow>
-                <span>
-                  <IconButton
-                    ref={newerLogButtonRef}
-                    touchRippleRef={newerLogButtonTouchRippleRef}
-                    size="small"
-                    sx={{ width: 22, ml: 0.5 }}
-                    disabled={
-                      selectedLog === logs[0] ||
-                      !selectedLog ||
-                      logs.length === 0
-                    }
-                    onClick={handleNextLogButtonClick}
-                  >
-                    <KeyboardArrowUp />
-                  </IconButton>
-                </span>
-              </Tooltip>
-
-              <Tooltip title={`Older log (${commandKey} + ↓)`} arrow>
-                <span>
-                  <IconButton
-                    ref={olderLogButtonRef}
-                    touchRippleRef={olderLogButtonTouchRippleRef}
-                    size="small"
-                    sx={{ width: 22, mr: 0.5 }}
-                    disabled={selectedLog === logs[logs.length - 1]}
-                    onClick={handlePrevLogButtonClick}
-                  >
-                    <KeyboardArrowDown />
-                  </IconButton>
-                </span>
-              </Tooltip>
-
-              <FormControl>
-                <InputLabel size="small" sx={{ fontSize: 14 }}>
-                  Syntax highlighting
-                </InputLabel>
-                <Select
-                  label="Syntax highlighting"
-                  value={language}
-                  onChange={(e) => {
-                    setLanguage(e.target.value);
-                    window.electron.sendLanguageToMain(e.target.value);
-                  }}
-                  size="small"
-                  sx={{
-                    right: 0,
-                    width: 150,
-                  }}
-                  MenuProps={{
-                    PaperProps: { sx: { maxHeight: '50vh' } },
-                  }}
-                >
-                  {getSupportedLanguages().map((language) => (
-                    <MenuItem key={language.id} value={language.id}>
-                      <Typography noWrap variant="body2">
-                        {language.aliases?.[0] || language.id}
-                      </Typography>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-
-            <MonacoEditors
-              darkMode={darkMode}
-              editorIndex={editorIndex}
-              language={language}
-              fontSize={fontSize}
-              editor1Value={editor1Value}
-              setEditor1Value={setEditor1Value}
-              editor2Value={editor2Value}
-              setEditor2Value={setEditor2Value}
-              editor3Value={editor3Value}
-              setEditor3Value={setEditor3Value}
-              editor4Value={editor4Value}
-              setEditor4Value={setEditor4Value}
-              editor5Value={editor5Value}
-              setEditor5Value={setEditor5Value}
-              sendButtonRef={sendButtonRef}
-              copyButtonRef={copyButtonRef}
-              clearButtonRef={clearButtonRef}
-              saveButtonRef={saveButtonRef}
-              newerLogButtonRef={newerLogButtonRef}
-              olderLogButtonRef={olderLogButtonRef}
-              browserWidth={browserWidth}
-              browserHeight={browserHeight}
-              osInfo={osInfo}
-            />
-
-            <Box
-              sx={{
-                height: '50px',
-                borderTop: 1,
-                borderColor: theme.palette.divider,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <FormControl>
-                  <InputLabel size="small" sx={{ fontSize: 15 }}>
-                    Font size
-                  </InputLabel>
-                  <Select
-                    label="Font size"
-                    value={fontSize}
-                    onChange={(e) => {
-                      setFontSize(e.target.value as number);
-                      window.electron.sendFontSizeToMain(
-                        e.target.value as number,
-                      );
-                    }}
-                    size="small"
-                    sx={{
-                      width: 80,
-                      mx: 1,
-                    }}
-                    MenuProps={{
-                      PaperProps: { sx: { maxHeight: '30vh' } },
-                    }}
-                  >
-                    {fontSizeOptions.map((size) => (
-                      <MenuItem key={size} value={size}>
-                        <Typography variant="body2">{size}</Typography>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <MaterialUISwitch
-                  checked={darkMode}
-                  onChange={() => {
-                    setDarkMode(!darkMode);
-                    window.electron.sendIsDarkModeToMain(!darkMode);
-                  }}
-                />
-                <Tooltip title={`Clear (${commandKey} + Backspace)`} arrow>
-                  <Button
-                    ref={clearButtonRef}
-                    touchRippleRef={clearButtonTouchRippleRef}
-                    variant="outlined"
-                    size="small"
-                    sx={{ ml: 1 }}
-                    startIcon={<EraseIcon />}
-                    onClick={handleClearButtonClick}
-                  >
-                    Clear
-                  </Button>
-                </Tooltip>
-              </Box>
-              <Box>
-                <Tooltip title={`Save log (${commandKey} + S)`} arrow>
-                  <IconButton
-                    ref={saveButtonRef}
-                    touchRippleRef={saveButtonTouchRippleRef}
-                    color="primary"
-                    size="small"
-                    onClick={handleSaveButtonClick}
-                  >
-                    <Save />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip
-                  title={`Copy to clipboard (${commandKey} + Shift + C)`}
-                  arrow
-                >
-                  <IconButton
-                    ref={copyButtonRef}
-                    touchRippleRef={copyButtonTouchRippleRef}
-                    color="primary"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={handleCopyButtonClick}
-                  >
-                    <ContentPaste />
-                  </IconButton>
-                </Tooltip>
-                {isInitialized && activeTab ? (
-                  <>
-                    <Tooltip
-                      title={`Send to ${activeTab.label} (${commandKey} + Enter)`}
-                      arrow
-                    >
-                      <Button
-                        ref={sendButtonRef}
-                        touchRippleRef={sendButtonTouchRippleRef}
-                        variant="contained"
-                        sx={{ width: 100, mr: 1 }}
-                        startIcon={<Send sx={{ mr: -0.5 }} />}
-                        onClick={() => handleSendButtonClick(false)}
-                      >
-                        {activeTab.label}
-                      </Button>
-                    </Tooltip>
-                    <Tooltip 
-                      title={isTerminalActive ? "All button is disabled for terminal tabs" : "Send to all browser tabs"} 
-                      arrow
-                    >
-                      <span>
-                        <Button
-                          variant="contained"
-                          sx={{ width: 40, mr: 1 }}
-                          startIcon={<Send sx={{ mr: -0.5 }} />}
-                          onClick={() => handleSendButtonClick(true)}
-                          disabled={isTerminalActive}
-                        >
-                          All
-                        </Button>
-                      </span>
-                    </Tooltip>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      ref={sendButtonRef}
-                      variant="contained"
-                      sx={{ width: 100, mr: 1 }}
-                      startIcon={<Send sx={{ mr: -0.5 }} />}
-                      disabled
-                    >
-                      Send
-                    </Button>
-                    <Button
-                      variant="contained"
-                      sx={{ width: 40, mr: 1 }}
-                      startIcon={<Send sx={{ mr: -0.5 }} />}
-                      disabled
-                    >
-                      All
-                    </Button>
-                  </>
-                )}
-              </Box>
-            </Box>
-          </Box>
+          <EditorView
+            ref={editorPaneRef}
+            isChipVisible={isChipVisible}
+            latestVersion={latestVersion}
+            releasePageUrl={releasePageUrl}
+            onChipClick={handleChipClick}
+            onChipClose={() => setIsChipVisible(false)}
+            editorIndex={editorIndex}
+            language={language}
+            fontSize={fontSize}
+            darkMode={darkMode}
+            commandKey={commandKey}
+            isInitialized={isInitialized}
+            activeTab={activeTab}
+            isTerminalActive={isTerminalActive}
+            logs={logs}
+            selectedLog={selectedLog}
+            editor1Value={getEditorValue(0)}
+            editor2Value={getEditorValue(1)}
+            editor3Value={getEditorValue(2)}
+            editor4Value={getEditorValue(3)}
+            editor5Value={getEditorValue(4)}
+            onEditorTabChange={handleEditorTabChange}
+            onLicenseClick={() => setIsLicenseDialogOpen(true)}
+            onSelectLog={handleSelectedLogChange}
+            onDeleteLog={handleDeleteLog}
+            onNextLog={getNextLog}
+            onPreviousLog={getPreviousLog}
+            onLanguageChange={handleLanguageChange}
+            onFontSizeChange={handleFontSizeChange}
+            onDarkModeToggle={handleDarkModeToggle}
+            onClearClick={handleClearButtonClick}
+            onSaveClick={handleSaveButtonClick}
+            onCopyClick={handleCopyButtonClick}
+            onSendClick={handleSendButtonClick}
+            setEditor1Value={(value) => setEditorValue(0, value)}
+            setEditor2Value={(value) => setEditorValue(1, value)}
+            setEditor3Value={(value) => setEditorValue(2, value)}
+            setEditor4Value={(value) => setEditorValue(3, value)}
+            setEditor5Value={(value) => setEditorValue(4, value)}
+            sendButtonRef={sendButtonRef}
+            copyButtonRef={copyButtonRef}
+            clearButtonRef={clearButtonRef}
+            saveButtonRef={saveButtonRef}
+            newerLogButtonRef={newerLogButtonRef}
+            olderLogButtonRef={olderLogButtonRef}
+            sendButtonTouchRippleRef={sendButtonTouchRippleRef}
+            copyButtonTouchRippleRef={copyButtonTouchRippleRef}
+            clearButtonTouchRippleRef={clearButtonTouchRippleRef}
+            saveButtonTouchRippleRef={saveButtonTouchRippleRef}
+            newerLogButtonTouchRippleRef={newerLogButtonTouchRippleRef}
+            olderLogButtonTouchRippleRef={olderLogButtonTouchRippleRef}
+            browserWidth={browserWidth ?? null}
+            browserHeight={browserHeight ?? null}
+            osInfo={osInfo}
+          />
           <LicenseDialog
             currentVersion={currentVersion}
             open={isLicenseDialogOpen}

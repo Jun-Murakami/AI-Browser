@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const useResizeObserver = <T extends HTMLElement>() => {
   const [size, setSize] = useState<{ width?: number; height?: number }>({});

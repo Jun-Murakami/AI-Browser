@@ -23,5 +23,28 @@
     "formatter": {
       "quoteStyle": "single"
     }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              { "type": false, "source": ["react*", "react/**"] },
+              { "type": false, "source": ":PACKAGE:" },
+              ":BLANK_LINE:",
+              { "type": false, "source": "./lib/**" },
+              { "type": false, "source": ":PATH:" },
+              ":BLANK_LINE:",
+              { "type": false },
+              ":BLANK_LINE:",
+              { "type": true }
+            ]
+          }
+        }
+      }
+    }
   }
 }

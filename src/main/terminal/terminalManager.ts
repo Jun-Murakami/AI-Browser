@@ -1,7 +1,10 @@
-import { spawn, IPty } from '@homebridge/node-pty-prebuilt-multiarch';
+import { spawn } from '@homebridge/node-pty-prebuilt-multiarch';
 import { BrowserWindow, ipcMain } from 'electron';
-import { platform } from 'os';
-import { existsSync } from 'fs';
+
+import { existsSync } from 'node:fs';
+import { platform } from 'node:os';
+
+import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch';
 import type { TerminalSession } from '../types/interfaces';
 
 class TerminalManager {
@@ -14,28 +17,54 @@ class TerminalManager {
 
   private getDefaultShell(): string {
     switch (platform()) {
-      case 'win32':
+      case 'win32': {
         // Windows環境では以下の優先順位でシェルを選択
-        // 1. PowerShell Core (推奨)
-        // 2. Windows PowerShell
-        // 3. Command Prompt (cmd.exe)
-        const shells = [
+        // 1. PowerShell Core (推奨) - where.exeで検索
+        // 2. Windows PowerShell - where.exeで検索
+        // 3. Command Prompt (cmd.exe) - 環境変数から
+        
+        const { execSync } = require('node:child_process');
+        
+        // PowerShell Coreを検索
+        try {
+          const pwshPath = execSync('where.exe pwsh.exe', { encoding: 'utf8' }).trim().split('\n')[0];
+          if (pwshPath && existsSync(pwshPath)) {
+            return pwshPath;
+          }
+        } catch {
+          // pwsh.exeが見つからない場合は次へ
+        }
+        
+        // Windows PowerShellを検索
+        try {
+          const powershellPath = execSync('where.exe powershell.exe', { encoding: 'utf8' }).trim().split('\n')[0];
+          if (powershellPath && existsSync(powershellPath)) {
+            return powershellPath;
+          }
+        } catch {
+          // powershell.exeが見つからない場合は次へ
+        }
+        
+        // 既知のインストールパスをチェック（フォールバック）
+        const knownPaths = [
           'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
+          'C:\\Program Files (x86)\\PowerShell\\7\\pwsh.exe',
           'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
-          process.env.COMSPEC || 'C:\\Windows\\System32\\cmd.exe'
         ];
         
-        // 利用可能な最初のシェルを返す
-        for (const shell of shells) {
+        for (const path of knownPaths) {
           try {
-            if (existsSync(shell)) {
-              return shell;
+            if (existsSync(path)) {
+              return path;
             }
-          } catch (e) {
-            // Continue to next shell
+          } catch {
+            // Continue to next path
           }
         }
-        return 'cmd.exe';
+        
+        // 最後の手段としてcmd.exeを使用
+        return process.env.COMSPEC || 'C:\\Windows\\System32\\cmd.exe';
+      }
       case 'darwin':
         return process.env.SHELL || '/bin/zsh';
       default:
@@ -85,7 +114,9 @@ class TerminalManager {
 
   createSession(terminalId: string): void {
     if (this.sessions.has(terminalId)) {
-      console.log(`Terminal session ${terminalId} already exists, skipping creation`);
+      console.log(
+        `Terminal session ${terminalId} already exists, skipping creation`,
+      );
       return;
     }
 
@@ -146,7 +177,7 @@ class TerminalManager {
       console.error('Failed to create terminal session:', error);
       this.sendOutput(
         terminalId,
-        `\r\nError creating terminal: ${error.message}\r\n`,
+        `\r\nError creating terminal: ${error instanceof Error ? error.message : String(error)}\r\n`,
       );
     }
   }

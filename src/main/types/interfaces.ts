@@ -1,4 +1,5 @@
 import type { WebContentsView } from 'electron';
+import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch';
 
 export interface AppState {
   bounds: Electron.Rectangle;
@@ -46,7 +47,7 @@ export interface Terminal {
 
 export interface TerminalSession {
   id: string;
-  ptyProcess?: any; // Will be replaced with proper type when node-pty is installed
+  ptyProcess?: IPty;
   shell?: string;
   cwd?: string;
 }

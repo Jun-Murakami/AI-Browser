@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 
 interface UseGlobalShortcutsProps {
@@ -86,7 +87,6 @@ export const useGlobalShortcuts = ({
           clearButtonTouchRippleRef.current?.stop();
         }, 200);
       }
-
 
       // Log navigation commands (Cmd/Ctrl + Up/Down)
       if (cmdKey && e.key === 'ArrowUp') {

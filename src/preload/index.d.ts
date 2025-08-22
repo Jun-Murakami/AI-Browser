@@ -59,10 +59,10 @@ interface TerminalAPI {
   destroyTerminalSession: (terminalId: string) => Promise<void>;
   sendTerminalInput: (terminalId: string, data: string) => void;
   onTerminalOutput: (
-    callback: (event: any, terminalId: string, data: string) => void,
+    callback: (event: Electron.IpcRendererEvent, terminalId: string, data: string) => void,
   ) => void;
   removeTerminalOutputListener: (
-    callback: (event: any, terminalId: string, data: string) => void,
+    callback: (event: Electron.IpcRendererEvent, terminalId: string, data: string) => void,
   ) => void;
   resizeTerminal: (terminalId: string, cols: number, rows: number) => void;
 }

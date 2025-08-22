@@ -1,5 +1,6 @@
 import { BROWSER_DEFINITIONS } from '../../shared/constants/browsers';
 import { BROWSER_SCRIPTS } from '../scripts/browserScripts';
+
 import type { Browser } from '../types/interfaces';
 
 // 共通定義にスクリプトを追加してBrowser型に変換
