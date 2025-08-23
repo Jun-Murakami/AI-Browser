@@ -64,7 +64,15 @@ export function useTabManager(): UseTabManagerReturn {
 
       // ターミナルタブのデフォルト有効状態を追加（保存されていない場合）
       TERMINALS.forEach((terminal) => {
-        if (!(terminal.id in initialEnabledTabs)) {
+        // main から復元できる場合はそれを優先
+        if (
+          settings.enabledTerminals &&
+          terminal.id in settings.enabledTerminals
+        ) {
+          initialEnabledTabs[terminal.id] =
+            settings.enabledTerminals[terminal.id] !== false;
+        } else if (!(terminal.id in initialEnabledTabs)) {
+          // それ以外はデフォルト有効
           initialEnabledTabs[terminal.id] = true;
         }
       });
@@ -216,16 +224,20 @@ export function useTabManager(): UseTabManagerReturn {
       };
       setEnabledTabs(newEnabledTabs);
 
-      // メインプロセスに通知（ブラウザタブの場合のみ）
+      // メインプロセスに通知
       if (tab.type === 'browser') {
         // BROWSERS配列の順序でboolean配列を作成
         const enabledTabsArray = BROWSERS.map(
           (browser) => newEnabledTabs[browser.id] !== false,
         );
         window.electron.sendEnabledBrowsersToMain(enabledTabsArray);
+      } else if (tab.type === 'terminal') {
+        // TERMINALS配列の順序でboolean配列を作成
+        const enabledTerminalsArray = TERMINALS.map(
+          (terminal) => newEnabledTabs[terminal.id] !== false,
+        );
+        window.electron.sendEnabledTerminalsToMain(enabledTerminalsArray);
       }
-
-      // TODO: ターミナルタブの有効/無効状態も保存する
     },
     [tabsWithEnabled, enabledTabs],
   );

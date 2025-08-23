@@ -77,6 +77,8 @@ if (process.contextIsolated) {
         ipcRenderer.removeAllListeners('loading-status'),
       sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) =>
         ipcRenderer.send('update-enabled-browsers', enabledBrowsers),
+      sendEnabledTerminalsToMain: (enabledTerminals: boolean[]) =>
+        ipcRenderer.send('update-enabled-terminals', enabledTerminals),
       saveTabOrders: (tabOrders: Record<string, number>) =>
         ipcRenderer.send('save-tab-orders', tabOrders),
       onScriptError: (

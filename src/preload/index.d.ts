@@ -20,6 +20,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   ) => void;
   removeUpdateLoadingStatusListener: () => void;
   sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) => void;
+  sendEnabledTerminalsToMain: (enabledTerminals: boolean[]) => void;
   saveTabOrders: (tabOrders: Record<string, number>) => void;
   onScriptError: (
     callback: (error: { browser: string; error: string }) => void,
@@ -51,6 +52,7 @@ interface InitialSettings {
   fontSize: number;
   osInfo: string;
   enabledBrowsers: Record<string, boolean>;
+  enabledTerminals: Record<string, boolean>;
   browsers: Browser[];
   terminals: Terminal[];
   tabOrders?: Record<string, number>;

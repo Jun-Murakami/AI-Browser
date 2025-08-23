@@ -35,6 +35,8 @@ let appState: AppState = {
   language: 'text',
   fontSize: 16,
   enabledBrowsers: initialEnabledBrowsers,
+  // 既定では全ターミナル有効
+  enabledTerminals: Object.fromEntries(TERMINALS.map((t) => [t.id, true])),
   tabOrders: {},
 };
 
@@ -236,6 +238,8 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       fontSize: appState.fontSize,
       osInfo: process.platform,
       enabledBrowsers: appState.enabledBrowsers,
+      // レンダラー初期化用にターミナルの有効状態も返す
+      enabledTerminals: appState.enabledTerminals,
       browsers: BROWSERS.map((browser) => ({
         id: browser.id,
         label: browser.label,
@@ -256,6 +260,16 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     // boolean[]をRecord<string, boolean>に変換
     appState.enabledBrowsers = Object.fromEntries(
       BROWSERS.map((browser, index) => [browser.id, enabledBrowsers[index]]),
+    );
+  });
+
+  // ターミナルの有効/無効状態を更新
+  ipcMain.on('update-enabled-terminals', (_, enabledTerminals: boolean[]) => {
+    appState.enabledTerminals = Object.fromEntries(
+      TERMINALS.map((terminal, index) => [
+        terminal.id,
+        enabledTerminals[index],
+      ]),
     );
   });
 
@@ -382,11 +396,36 @@ function createMainWindow(): BrowserWindow {
       }
 
       appState = savedState;
+
+      // enabledTerminals の検証とガード処理
+      const isValidEnabledTerminals =
+        appState.enabledTerminals &&
+        typeof appState.enabledTerminals === 'object' &&
+        !Array.isArray(appState.enabledTerminals);
+
+      const savedTerminalIds = isValidEnabledTerminals
+        ? Object.keys(appState.enabledTerminals)
+        : [];
+      const currentTerminalIds = TERMINALS.map((t) => t.id);
+
+      if (
+        !isValidEnabledTerminals ||
+        savedTerminalIds.length !== currentTerminalIds.length ||
+        !currentTerminalIds.every((id) => savedTerminalIds.includes(id))
+      ) {
+        appState.enabledTerminals = Object.fromEntries(
+          TERMINALS.map((t) => [t.id, true]),
+        );
+      }
     } catch (error) {
       console.error('ウィンドウの状態の読み込みに失敗しました:', error);
       // エラーが発生した場合も全てのブラウザを有効にする
       appState.enabledBrowsers = Object.fromEntries(
         BROWSERS.map((browser) => [browser.id, true]),
+      );
+      // ターミナルも全て有効にする
+      appState.enabledTerminals = Object.fromEntries(
+        TERMINALS.map((t) => [t.id, true]),
       );
     }
   }
@@ -398,6 +437,16 @@ function createMainWindow(): BrowserWindow {
   ) {
     appState.enabledBrowsers = Object.fromEntries(
       BROWSERS.map((browser) => [browser.id, true]),
+    );
+  }
+
+  // 有効ターミナルの初期化処理
+  if (
+    !appState.enabledTerminals ||
+    typeof appState.enabledTerminals !== 'object'
+  ) {
+    appState.enabledTerminals = Object.fromEntries(
+      TERMINALS.map((t) => [t.id, true]),
     );
   }
 
@@ -494,6 +543,7 @@ function createMainWindow(): BrowserWindow {
         language: appState.language,
         fontSize: appState.fontSize,
         enabledBrowsers: appState.enabledBrowsers,
+        enabledTerminals: appState.enabledTerminals,
         tabOrders: appState.tabOrders,
       };
 

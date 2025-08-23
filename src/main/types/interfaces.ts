@@ -11,6 +11,8 @@ export interface AppState {
   language: string;
   fontSize: number;
   enabledBrowsers: Record<string, boolean>;
+  // ターミナルの有効/無効状態を保持
+  enabledTerminals: Record<string, boolean>;
   tabOrders: Record<string, number>;
 }
 
