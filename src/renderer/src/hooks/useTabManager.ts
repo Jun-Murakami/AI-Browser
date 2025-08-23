@@ -169,8 +169,16 @@ export function useTabManager(): UseTabManagerReturn {
       if (oldIndex === -1) return prevTabs;
 
       // タブを新しい位置に移動
+      // まず移動対象のタブを配列から取り除く
       newTabs.splice(oldIndex, 1);
-      newTabs.splice(newOrder, 0, movingTab);
+
+      // 右方向（oldIndex < newOrder）へ移動する場合、
+      // 先に要素を取り除いたことで挿入位置が1つ左に詰まるため、
+      // newOrder を 1 減算して補正する。
+      const insertIndex = oldIndex < newOrder ? newOrder - 1 : newOrder;
+
+      // 補正後の位置に挿入する
+      newTabs.splice(insertIndex, 0, movingTab);
 
       // 全てのタブのorderを更新
       newTabs.forEach((tab, index) => {
