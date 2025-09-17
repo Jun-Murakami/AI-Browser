@@ -30,7 +30,6 @@ class TerminalService {
     let instance = this.instances.get(terminalId);
 
     if (!instance) {
-      console.log('Creating new terminal instance for', terminalId);
       // ターミナルインスタンスを作成
       const terminal = new Terminal({
         // Windows での描画と入力の互換性を高める
@@ -118,67 +117,42 @@ class TerminalService {
     // セッションを作成（一度だけ）
     if (!instance.isSessionCreated) {
       instance.isSessionCreated = true; // 即座にフラグを立てて重複を防ぐ
-      window.api
-        .createTerminalSession(terminalId)
-        .then(() => {
-          console.log(`Terminal session created: ${terminalId}`);
-        })
-        .catch((error) => {
-          console.error('Failed to create terminal session:', error);
-          instance.isSessionCreated = false; // エラー時はフラグを戻す
-        });
+      window.api.createTerminalSession(terminalId).catch((_error) => {
+        // セッション作成に失敗した場合はフラグを戻す
+        instance.isSessionCreated = false;
+      });
     }
 
     return instance;
   }
 
   attachToDOM(terminalId: string, element: HTMLElement): void {
-    console.log(`Attaching terminal ${terminalId} to DOM`);
     const instance = this.getOrCreateInstance(terminalId);
 
     // 既にDOMに接続されている場合
     if (instance.terminal.element?.parentElement) {
-      console.log(
-        `Terminal ${terminalId} already has parent, moving to new parent`,
-      );
       // 既存の要素を新しい親に移動
       element.appendChild(instance.terminal.element);
       // 表示を確実にする
       (instance.terminal.element as HTMLElement).style.display = 'block';
     } else if (instance.terminal.element) {
-      console.log(`Terminal ${terminalId} element exists but no parent`);
       // 要素はあるが親がない場合
       element.appendChild(instance.terminal.element);
       (instance.terminal.element as HTMLElement).style.display = 'block';
     } else {
-      console.log(`Terminal ${terminalId} opening for first time`);
       // 初回のみopen()を呼ぶ
       instance.terminal.open(element);
     }
-
-    console.log(`Terminal ${terminalId} attached to DOM`);
-    console.log('Terminal element:', instance.terminal.element);
-    console.log('Parent element:', element);
-    console.log(
-      'Element dimensions:',
-      element.offsetWidth,
-      'x',
-      element.offsetHeight,
-    );
 
     // フィット
     setTimeout(() => {
       try {
         instance.fitAddon.fit();
-        console.log(`Terminal ${terminalId} fitted`);
-      } catch (error) {
-        console.error('Initial fit error:', error);
-      }
+      } catch (_error) {}
     }, 50);
   }
 
   detachFromDOM(terminalId: string): void {
-    console.log(`Detaching terminal ${terminalId} from DOM`);
     const instance = this.instances.get(terminalId);
     if (instance?.terminal.element) {
       // 要素をDOMから削除するが、インスタンスは保持
@@ -201,8 +175,8 @@ class TerminalService {
         window.api.resizeTerminal(terminalId, dimensions.cols, dimensions.rows);
         return dimensions;
       }
-    } catch (error) {
-      console.error('Terminal resize error:', error);
+    } catch (_error) {
+      // リサイズ中の一時的な失敗は無視（ログ抑制）
     }
 
     return null;
@@ -288,11 +262,8 @@ class TerminalService {
         if (autoSubmit) setTimeout(sendEnter, delayMs);
         return;
       }
-    } catch (error) {
-      console.error(
-        'xterm paste() failed; falling back to bracketed paste:',
-        error,
-      );
+    } catch (_error) {
+      // paste API の失敗はフォールバックに任せる（ログ抑制）
     }
 
     // 2) フォールバック: bracketed paste シーケンスでラップして送信

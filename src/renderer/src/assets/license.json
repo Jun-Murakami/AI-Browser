@@ -232,7 +232,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@fontsource\\lato",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@fontsource\\lato\\LICENSE"
   },
-  "@fontsource/m-plus-1p@5.2.6": {
+  "@fontsource/m-plus-1p@5.2.7": {
     "licenses": "OFL-1.1",
     "repository": "https://github.com/fontsource/font-files",
     "publisher": "Google Inc.",
@@ -284,56 +284,56 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@juggle\\resize-observer",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@juggle\\resize-observer\\LICENSE"
   },
-  "@mui/core-downloads-tracker@7.3.1": {
+  "@mui/core-downloads-tracker@7.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker\\LICENSE"
   },
-  "@mui/icons-material@7.3.1": {
+  "@mui/icons-material@7.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material\\LICENSE"
   },
-  "@mui/material@7.3.1": {
+  "@mui/material@7.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\material",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\material\\LICENSE"
   },
-  "@mui/private-theming@7.3.1": {
+  "@mui/private-theming@7.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\private-theming",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\private-theming\\LICENSE"
   },
-  "@mui/styled-engine@7.3.1": {
+  "@mui/styled-engine@7.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\styled-engine",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\styled-engine\\LICENSE"
   },
-  "@mui/system@7.3.1": {
+  "@mui/system@7.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\system",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\system\\LICENSE"
   },
-  "@mui/types@7.4.5": {
+  "@mui/types@7.4.6": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\types\\LICENSE"
   },
-  "@mui/utils@7.3.1": {
+  "@mui/utils@7.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
@@ -388,7 +388,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node\\LICENSE"
   },
-  "@types/node@24.3.0": {
+  "@types/node@24.5.1": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node",
@@ -412,7 +412,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group\\LICENSE"
   },
-  "@types/react@19.1.10": {
+  "@types/react@19.1.13": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react",
@@ -423,6 +423,12 @@
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\responselike",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\responselike\\LICENSE"
+  },
+  "@types/trusted-types@1.0.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\trusted-types",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\trusted-types\\LICENSE"
   },
   "@types/yauzl@2.10.3": {
     "licenses": "MIT",
@@ -452,7 +458,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm\\LICENSE"
   },
-  "ai-browser@1.6.2": {
+  "ai-browser@1.6.3": {
     "licenses": "MIT",
     "publisher": "Jun Murakami",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser",
@@ -721,7 +727,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron-is-dev",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron-is-dev\\license"
   },
-  "electron@37.3.1": {
+  "electron@38.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/electron/electron",
     "publisher": "Electron Community",
@@ -1219,7 +1225,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mkdirp-classic",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mkdirp-classic\\LICENSE"
   },
-  "monaco-editor@0.52.2": {
+  "monaco-editor@0.53.0": {
     "licenses": "MIT",
     "repository": "https://github.com/microsoft/monaco-editor",
     "publisher": "Microsoft Corporation",
@@ -1239,12 +1245,12 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\napi-build-utils",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\napi-build-utils\\LICENSE"
   },
-  "node-abi@3.74.0": {
+  "node-abi@3.77.0": {
     "licenses": "MIT",
     "repository": "https://github.com/electron/node-abi",
     "publisher": "Lukas Geiger",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\node-abi",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\node-abi\\LICENSE"
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\prebuild-install\\node_modules\\node-abi",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\prebuild-install\\node_modules\\node-abi\\LICENSE"
   },
   "node-addon-api@7.1.1": {
     "licenses": "MIT",
@@ -1525,8 +1531,15 @@
     "licenses": "ISC",
     "repository": "https://github.com/npm/node-semver",
     "publisher": "GitHub Inc.",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\node-abi\\node_modules\\semver",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\node-abi\\node_modules\\semver\\LICENSE"
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\global-agent\\node_modules\\semver",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\global-agent\\node_modules\\semver\\LICENSE"
+  },
+  "semver@7.7.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/node-semver",
+    "publisher": "GitHub Inc.",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\prebuild-install\\node_modules\\semver",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\prebuild-install\\node_modules\\semver\\LICENSE"
   },
   "serialize-error@7.0.1": {
     "licenses": "MIT",
@@ -1705,7 +1718,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\undici-types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\undici-types\\LICENSE"
   },
-  "undici-types@7.10.0": {
+  "undici-types@7.12.0": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\undici-types",

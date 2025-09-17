@@ -25,26 +25,15 @@ export function TerminalView({
 
   // ターミナルのアタッチ/デタッチ
   useEffect(() => {
-    console.log(
-      `TerminalView useEffect called for ${terminalId}, isVisible: ${isVisible}`,
-    );
-
     // 表示されていない場合は何もしない
     if (!isVisible) {
       return;
     }
 
     if (!terminalRef.current) {
-      console.log(`terminalRef.current is null for ${terminalId}`);
+      // 要素が未マウントの場合は何もしない（ログ抑制）
       return;
     }
-
-    console.log(
-      'TerminalView element dimensions:',
-      terminalRef.current.offsetWidth,
-      'x',
-      terminalRef.current.offsetHeight,
-    );
 
     // DOMにアタッチ（遅延させて要素が完全にレンダリングされるのを待つ）
     const timeoutId = setTimeout(() => {
@@ -56,7 +45,6 @@ export function TerminalView({
     // クリーンアップ時はDOMからデタッチのみ（インスタンスは保持）
     return () => {
       clearTimeout(timeoutId);
-      console.log(`TerminalView cleanup called for ${terminalId}`);
       terminalService.detachFromDOM(terminalId);
     };
   }, [terminalId, isVisible]);

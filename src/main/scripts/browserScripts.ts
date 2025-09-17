@@ -58,7 +58,22 @@ export const BROWSER_SCRIPTS = {
     textareaTag.focus();
     textareaTag.dispatchEvent(pasteEvent);
     setTimeout(() => {
-      var closedDivs = document.querySelectorAll('div[data-state="closed"]');
+      // data-state="closed" だけを持つ <div> をまず厳密に抽出
+      var allClosedDivs = Array.from(document.querySelectorAll('div[data-state="closed"]')).filter(function (el) {
+        // この要素が持つ属性名の一覧を取得し、'data-state' のみを許容
+        var attrNames = el.getAttributeNames();
+        return attrNames.length === 1 && attrNames[0] === 'data-state' && el.getAttribute('data-state') === 'closed';
+      });
+
+      // 祖先に <main> を持つ要素のみを優先
+      var closedDivsInMain = allClosedDivs.filter(function (el) {
+        // closest('main') が見つかれば true（= <main> 配下）
+        return !!el.closest('main');
+      });
+
+      // <main> 配下の候補があればそれを、無ければ全件を採用
+      var closedDivs = closedDivsInMain.length > 0 ? closedDivsInMain : allClosedDivs;
+
       if (closedDivs.length > 0) {
         var sendButtons = closedDivs[closedDivs.length - 1].querySelectorAll('button');
         var sendButton = sendButtons[sendButtons.length - 1];
@@ -66,11 +81,12 @@ export const BROWSER_SCRIPTS = {
           sendButton.click();
         }
       }
-      console.log('closedDiv', closedDiv);
+      console.log('closedDivs', closedDivs);
     }, 700);
   `,
   DEEPSEEK: `
-    var textareaTag = document.querySelector('textarea[id="chat-input"]');
+    var textareaTags = document.querySelectorAll('textarea');
+    var textareaTag = textareaTags[textareaTags.length - 1];
     var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
       window.HTMLTextAreaElement.prototype,
       "value"

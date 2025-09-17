@@ -139,9 +139,6 @@ class TerminalManager {
 
   createSession(terminalId: string): void {
     if (this.sessions.has(terminalId)) {
-      console.log(
-        `Terminal session ${terminalId} already exists, skipping creation`,
-      );
       return;
     }
 
@@ -210,12 +207,8 @@ class TerminalManager {
           ptyProcess.write('cls\r\n');
         }, 200);
       }
-    } catch (error) {
-      console.error('Failed to create terminal session:', error);
-      this.sendOutput(
-        terminalId,
-        `\r\nError creating terminal: ${error instanceof Error ? error.message : String(error)}\r\n`,
-      );
+    } catch (_error) {
+      this.sendOutput(terminalId, `\r\nError creating terminal session.\r\n`);
     }
   }
 
@@ -224,9 +217,7 @@ class TerminalManager {
     if (ptyProcess) {
       try {
         ptyProcess.kill();
-      } catch (error) {
-        console.error('Error killing PTY process:', error);
-      }
+      } catch (_error) {}
       this.ptyProcesses.delete(terminalId);
     }
     // バッファも掃除
@@ -254,9 +245,7 @@ class TerminalManager {
     if (ptyProcess) {
       try {
         ptyProcess.resize(cols, rows);
-      } catch (error) {
-        console.error('Error resizing terminal:', error);
-      }
+      } catch (_error) {}
     }
   }
 
