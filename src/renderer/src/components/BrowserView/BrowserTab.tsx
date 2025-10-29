@@ -105,6 +105,7 @@ export const BrowserTab = ({
         minWidth:
           hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
         width: hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
+        opacity: enabled || isEditingBrowserShow ? 1 : 0.7,
       }}
     />
   );

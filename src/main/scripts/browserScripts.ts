@@ -310,4 +310,50 @@ export const BROWSER_SCRIPTS = {
       }
     }, 100);
   `,
+  NANI: `
+    var textareaTags = document.querySelectorAll('textarea');
+    var textareaTag = textareaTags[textareaTags.length - 1];
+    var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      "value"
+    ).set;
+    nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
+    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+    setTimeout(() => {
+      // 最後に見つかったtextareaの親要素の兄弟要素以下にあるすべてのボタンを取得
+      var textareaParent = textareaTag.parentElement;
+      var siblingButtons = [];
+      
+      // 指定された要素以下のすべてのボタンを再帰的に検索する関数
+      function findButtonsInElement(element) {
+        if (!element) return;
+        
+        // 現在の要素がボタンの場合、配列に追加
+        if (element.tagName === 'BUTTON') {
+          siblingButtons.push(element);
+        }
+        
+        // 子要素を再帰的に検索
+        var children = element.children;
+        for (var i = 0; i < children.length; i++) {
+          findButtonsInElement(children[i]);
+        }
+      }
+      
+      // textareaの親要素の兄弟要素を取得
+      var parentSiblings = textareaParent.parentElement.children;
+      
+      // 各兄弟要素以下にあるすべてのボタンを検索
+      for (var i = 0; i < parentSiblings.length; i++) {
+        var sibling = parentSiblings[i];
+        findButtonsInElement(sibling);
+      }
+      
+      // 見つかったボタンが存在する場合、最後のボタンをクリック
+      if (siblingButtons.length > 0) {
+        var lastButton = siblingButtons[siblingButtons.length - 1];
+        lastButton.click();
+      }
+    }, 700);
+  `,
 } as const;

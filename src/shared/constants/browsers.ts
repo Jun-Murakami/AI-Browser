@@ -92,4 +92,11 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     url: 'https://sourcegraph.com/cody/chat',
     urlPattern: 'sourcegraph.com',
   },
+  {
+    id: 'NANI',
+    label: 'Nani !?',
+    index: 15,
+    url: 'https://nani.now/',
+    urlPattern: 'nani.now',
+  },
 ];
