@@ -15,6 +15,7 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
   - Anthropic Claude
   - DeepSeek
   - Grok
+  - Nani !?
   - Phind
   - Perplexity
   - Genspark
