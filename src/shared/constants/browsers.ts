@@ -58,26 +58,27 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     urlPattern: 'nani.now',
   },
   {
-    id: 'PHIND',
-    label: 'Phind',
-    index: 7,
-    url: 'https://www.phind.com/',
-    urlPattern: 'phind.com',
-  },
-  {
     id: 'PERPLEXITY',
     label: 'Perplexity',
-    index: 8,
+    index: 7,
     url: 'https://www.perplexity.ai/',
     urlPattern: 'perplexity.ai',
   },
   {
     id: 'GENSPARK',
     label: 'Genspark',
-    index: 9,
+    index: 8,
     url: 'https://www.genspark.ai/',
     urlPattern: 'genspark.ai',
   },
+  {
+    id: 'PHIND',
+    label: 'Phind',
+    index: 9,
+    url: 'https://www.phind.com/',
+    urlPattern: 'phind.com',
+  },
+
   {
     id: 'FELO',
     label: 'Felo',
