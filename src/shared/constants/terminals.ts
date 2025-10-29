@@ -6,7 +6,7 @@ export interface TerminalDefinition {
 }
 
 export const TERMINAL_DEFINITIONS: TerminalDefinition[] = [
-  { id: 'TERMINAL_1', label: 'Terminal1', index: 12 },
-  { id: 'TERMINAL_2', label: 'Terminal2', index: 13 },
-  { id: 'TERMINAL_3', label: 'Terminal3', index: 14 },
+  { id: 'TERMINAL_1', label: 'Terminal1', index: 13 },
+  { id: 'TERMINAL_2', label: 'Terminal2', index: 14 },
+  { id: 'TERMINAL_3', label: 'Terminal3', index: 15 },
 ];

@@ -393,6 +393,8 @@ function createMainWindow(): BrowserWindow {
         savedState.enabledBrowsers = Object.fromEntries(
           BROWSERS.map((browser) => [browser.id, true]),
         );
+        // タブ順序もリセット（デフォルト順序に戻す）
+        savedState.tabOrders = {};
       }
 
       appState = savedState;
@@ -416,6 +418,8 @@ function createMainWindow(): BrowserWindow {
         appState.enabledTerminals = Object.fromEntries(
           TERMINALS.map((t) => [t.id, true]),
         );
+        // タブ順序もリセット（デフォルト順序に戻す）
+        appState.tabOrders = {};
       }
     } catch (error) {
       console.error('ウィンドウの状態の読み込みに失敗しました:', error);
