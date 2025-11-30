@@ -13,6 +13,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: AI-Browser
+  icon: build/icon.ico
 nsis:
   artifactName: ${productName}-${version}-setup_win_${arch}.${ext}
   shortcutName: ${productName}
@@ -27,6 +28,7 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   hardenedRuntime: true
   notarize: true
+  icon: build/icon.icns
   target:
     - target: dmg
       arch: universal
