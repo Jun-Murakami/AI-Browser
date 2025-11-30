@@ -1,4 +1,3 @@
-import * as monaco from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
@@ -23,4 +22,6 @@ self.MonacoEnvironment = {
   },
 };
 
-monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+// 注意: Monaco Editor 0.55.1では typescriptDefaults が非推奨のため、
+// setEagerModelSync の設定は削除しました。
+// 最新バージョンではモデル同期が自動的に処理されます。
