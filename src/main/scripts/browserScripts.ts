@@ -356,4 +356,22 @@ export const BROWSER_SCRIPTS = {
       }
     }, 700);
   `,
+  KIMI: `
+    var textareaTag = document.querySelector('div.chat-input-editor');
+    var dataTransfer = new DataTransfer();
+    dataTransfer.setData('text', TEXT_TO_SEND);
+    var pasteEvent = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+    textareaTag.focus();
+    textareaTag.dispatchEvent(pasteEvent);
+    setTimeout(() => {
+      var sendButton = document.querySelector('div.send-button-container');
+      if (sendButton) {
+        sendButton.click();
+      }
+    }, 700);
+  `,
 } as const;

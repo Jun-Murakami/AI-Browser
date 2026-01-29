@@ -232,7 +232,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@fontsource\\lato",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@fontsource\\lato\\LICENSE"
   },
-  "@fontsource/m-plus-1p@5.2.8": {
+  "@fontsource/m-plus-1p@5.2.9": {
     "licenses": "OFL-1.1",
     "repository": "https://github.com/fontsource/font-files",
     "publisher": "Google Inc.",
@@ -262,10 +262,11 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\resolve-uri",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\resolve-uri\\LICENSE"
   },
-  "@jridgewell/sourcemap-codec@1.5.0": {
+  "@jridgewell/sourcemap-codec@1.5.5": {
     "licenses": "MIT",
-    "repository": "https://github.com/jridgewell/sourcemap-codec",
-    "publisher": "Rich Harris",
+    "repository": "https://github.com/jridgewell/sourcemaps",
+    "publisher": "Justin Ridgewell",
+    "email": "justin@ridgewell.name",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\sourcemap-codec",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\sourcemap-codec\\LICENSE"
   },
@@ -277,63 +278,56 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\trace-mapping",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\trace-mapping\\LICENSE"
   },
-  "@juggle/resize-observer@3.4.0": {
-    "licenses": "Apache-2.0",
-    "repository": "https://github.com/juggle/resize-observer",
-    "publisher": "Juggle",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@juggle\\resize-observer",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@juggle\\resize-observer\\LICENSE"
-  },
-  "@mui/core-downloads-tracker@7.3.5": {
+  "@mui/core-downloads-tracker@7.3.7": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker\\LICENSE"
   },
-  "@mui/icons-material@7.3.5": {
+  "@mui/icons-material@7.3.7": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material\\LICENSE"
   },
-  "@mui/material@7.3.5": {
+  "@mui/material@7.3.7": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\material",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\material\\LICENSE"
   },
-  "@mui/private-theming@7.3.5": {
+  "@mui/private-theming@7.3.7": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\private-theming",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\private-theming\\LICENSE"
   },
-  "@mui/styled-engine@7.3.5": {
+  "@mui/styled-engine@7.3.7": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\styled-engine",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\styled-engine\\LICENSE"
   },
-  "@mui/system@7.3.5": {
+  "@mui/system@7.3.7": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\system",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\system\\LICENSE"
   },
-  "@mui/types@7.4.8": {
+  "@mui/types@7.4.10": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\types\\LICENSE"
   },
-  "@mui/utils@7.3.5": {
+  "@mui/utils@7.3.7": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
@@ -382,13 +376,13 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\keyv",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\keyv\\LICENSE"
   },
-  "@types/node@22.16.3": {
+  "@types/node@24.10.9": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node\\LICENSE"
   },
-  "@types/node@24.10.1": {
+  "@types/node@25.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node",
@@ -412,7 +406,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group\\LICENSE"
   },
-  "@types/react@19.2.7": {
+  "@types/react@19.2.10": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react",
@@ -436,7 +430,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\yauzl",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\yauzl\\LICENSE"
   },
-  "@xterm/addon-fit@0.10.0": {
+  "@xterm/addon-fit@0.11.0": {
     "licenses": "MIT",
     "repository": "https://github.com/xtermjs/xterm.js/tree/master/addons/addon-fit",
     "publisher": "The xterm.js authors",
@@ -444,7 +438,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\addon-fit",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\addon-fit\\LICENSE"
   },
-  "@xterm/addon-web-links@0.11.0": {
+  "@xterm/addon-web-links@0.12.0": {
     "licenses": "MIT",
     "repository": "https://github.com/xtermjs/xterm.js/tree/master/addons/addon-web-links",
     "publisher": "The xterm.js authors",
@@ -452,19 +446,19 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\addon-web-links",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\addon-web-links\\LICENSE"
   },
-  "@xterm/xterm@5.5.0": {
+  "@xterm/xterm@6.0.0": {
     "licenses": "MIT",
     "repository": "https://github.com/xtermjs/xterm.js",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm\\LICENSE"
   },
-  "ai-browser@1.6.7": {
+  "ai-browser@1.6.8": {
     "licenses": "MIT",
     "publisher": "Jun Murakami",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\LICENSE.txt"
   },
-  "allotment@1.20.4": {
+  "allotment@1.20.5": {
     "licenses": "MIT",
     "repository": "https://github.com/johnwalley/allotment",
     "publisher": "johnwalley",
@@ -736,7 +730,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron-is-dev",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron-is-dev\\license"
   },
-  "electron@39.2.4": {
+  "electron@40.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/electron/electron",
     "publisher": "Electron Community",
@@ -863,6 +857,13 @@
     "publisher": "max ogden",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\extract-zip",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\extract-zip\\LICENSE"
+  },
+  "fast-deep-equal@3.1.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/epoberezkin/fast-deep-equal",
+    "publisher": "Evgeny Poberezkin",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\fast-deep-equal",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\fast-deep-equal\\LICENSE"
   },
   "fd-slicer@1.1.0": {
     "licenses": "MIT",
@@ -1158,15 +1159,6 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lodash.debounce",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lodash.debounce\\LICENSE"
   },
-  "lodash.isequal@4.5.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/lodash/lodash",
-    "publisher": "John-David Dalton",
-    "email": "john.david.dalton@gmail.com",
-    "url": "http://allyoucanleet.com/",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lodash.isequal",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lodash.isequal\\LICENSE"
-  },
   "loose-envify@1.4.0": {
     "licenses": "MIT",
     "repository": "https://github.com/zertosh/loose-envify",
@@ -1435,7 +1427,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\rc",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\rc\\LICENSE.APACHE2"
   },
-  "react-dom@19.2.0": {
+  "react-dom@19.2.4": {
     "licenses": "MIT",
     "repository": "https://github.com/facebook/react",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-dom",
@@ -1447,7 +1439,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hoist-non-react-statics\\node_modules\\react-is",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hoist-non-react-statics\\node_modules\\react-is\\LICENSE"
   },
-  "react-is@19.2.0": {
+  "react-is@19.2.4": {
     "licenses": "MIT",
     "repository": "https://github.com/facebook/react",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-is",
@@ -1459,7 +1451,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-transition-group",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-transition-group\\LICENSE"
   },
-  "react@19.2.0": {
+  "react@19.2.4": {
     "licenses": "MIT",
     "repository": "https://github.com/facebook/react",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react",
@@ -1728,12 +1720,6 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\type-fest",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\type-fest\\license"
   },
-  "undici-types@6.21.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/nodejs/undici",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\undici-types",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\undici-types\\LICENSE"
-  },
   "undici-types@7.16.0": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
@@ -1757,13 +1743,13 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unused-filename",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unused-filename\\license"
   },
-  "use-resize-observer@9.1.0": {
+  "usehooks-ts@3.1.1": {
     "licenses": "MIT",
-    "repository": "https://github.com/ZeeCoder/use-resize-observer",
-    "publisher": "Viktor Hubert",
-    "email": "contact@hubertviktor.com",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\allotment\\node_modules\\use-resize-observer",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\allotment\\node_modules\\use-resize-observer\\LICENSE"
+    "repository": "https://github.com/juliencrn/usehooks-ts",
+    "publisher": "Julien CARON",
+    "email": "juliencaron@protonmail.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\usehooks-ts",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\usehooks-ts\\LICENSE"
   },
   "util-deprecate@1.0.2": {
     "licenses": "MIT",

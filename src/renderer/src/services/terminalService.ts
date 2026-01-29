@@ -32,8 +32,8 @@ class TerminalService {
     if (!instance) {
       // ターミナルインスタンスを作成
       const terminal = new Terminal({
-        // Windows での描画と入力の互換性を高める
-        windowsMode: true,
+        // xterm.js v5 以降は windowsMode が削除されたため、
+        // Windows 向けの互換性は既定挙動に任せる（型エラー回避も兼ねる）
         // VSCode に近い等幅フォントとチューニング
         fontFamily: '"Consolas", "Courier New", monospace',
         fontSize: 14,
@@ -148,7 +148,7 @@ class TerminalService {
     setTimeout(() => {
       try {
         instance.fitAddon.fit();
-      } catch (_error) {}
+      } catch (_error) { }
     }, 50);
   }
 
