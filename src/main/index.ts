@@ -330,14 +330,32 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 function removeIpcHandlers() {
   ipcMain.removeAllListeners('browser-size');
   ipcMain.removeAllListeners('browser-tab-index');
+  // 画面操作系（複数ウィンドウ生成時に二重に発火しないよう、明示的に解除）
+  ipcMain.removeAllListeners('reload-current-view');
+  ipcMain.removeAllListeners('reload-all-views');
   ipcMain.removeAllListeners('is-dark-mode');
   ipcMain.removeAllListeners('editor-mode');
   ipcMain.removeAllListeners('language');
   ipcMain.removeAllListeners('font-size');
   ipcMain.removeAllListeners('logs');
-  ipcMain.removeAllListeners('get-initial-settings');
+  ipcMain.removeAllListeners('update-enabled-browsers');
+  ipcMain.removeAllListeners('update-enabled-terminals');
   ipcMain.removeAllListeners('text');
   ipcMain.removeAllListeners('save-tab-orders');
+  ipcMain.removeAllListeners('open-external-link');
+
+  /**
+   * IMPORTANT:
+   * `ipcMain.handle(channel, handler)` で登録したハンドラは、
+   * `ipcMain.on/removeAllListeners` の対象ではありません。
+   *
+   * そのため、ウィンドウを閉じて再生成する（macOSの⌘W/赤い×など）と、
+   * 同じ `channel` に対して2回目の `ipcMain.handle` が走って
+   * "Attempted to register a second handler" でクラッシュします。
+   *
+   * `invoke` 用ハンドラは `ipcMain.removeHandler(channel)` で解除します。
+   */
+  ipcMain.removeHandler('get-initial-settings');
 }
 
 /**
