@@ -59,7 +59,7 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
   },
   {
     id: 'SAKANA',
-    label: 'Sakana Chat',
+    label: 'Sakana',
     index: 6,
     url: 'https://chat.sakana.ai/',
     urlPattern: 'sakana.ai',
