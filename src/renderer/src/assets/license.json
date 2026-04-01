@@ -55,7 +55,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@babel\\parser",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@babel\\parser\\LICENSE"
   },
-  "@babel/runtime@7.28.4": {
+  "@babel/runtime@7.29.2": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -278,56 +278,56 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\trace-mapping",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@jridgewell\\trace-mapping\\LICENSE"
   },
-  "@mui/core-downloads-tracker@7.3.7": {
+  "@mui/core-downloads-tracker@7.3.9": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\core-downloads-tracker\\LICENSE"
   },
-  "@mui/icons-material@7.3.7": {
+  "@mui/icons-material@7.3.9": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\icons-material\\LICENSE"
   },
-  "@mui/material@7.3.7": {
+  "@mui/material@7.3.9": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\material",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\material\\LICENSE"
   },
-  "@mui/private-theming@7.3.7": {
+  "@mui/private-theming@7.3.9": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\private-theming",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\private-theming\\LICENSE"
   },
-  "@mui/styled-engine@7.3.7": {
+  "@mui/styled-engine@7.3.9": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\styled-engine",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\styled-engine\\LICENSE"
   },
-  "@mui/system@7.3.7": {
+  "@mui/system@7.3.9": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\system",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\system\\LICENSE"
   },
-  "@mui/types@7.4.10": {
+  "@mui/types@7.4.12": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@mui\\types\\LICENSE"
   },
-  "@mui/utils@7.3.7": {
+  "@mui/utils@7.3.9": {
     "licenses": "MIT",
     "repository": "https://github.com/mui/material-ui",
     "publisher": "MUI Team",
@@ -382,7 +382,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron\\node_modules\\@types\\node\\LICENSE"
   },
-  "@types/node@25.1.0": {
+  "@types/node@25.5.0": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node",
@@ -406,7 +406,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react-transition-group\\LICENSE"
   },
-  "@types/react@19.2.10": {
+  "@types/react@19.2.14": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\react",
@@ -418,7 +418,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\responselike",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\responselike\\LICENSE"
   },
-  "@types/trusted-types@2.0.7": {
+  "@types/trusted-types@1.0.6": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\trusted-types",
@@ -694,16 +694,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\dom-helpers",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\dom-helpers\\LICENSE"
   },
-  "dompurify@3.2.7": {
-    "licenses": "(MPL-2.0 OR Apache-2.0)",
-    "repository": "https://github.com/cure53/DOMPurify",
-    "publisher": "Dr.-Ing. Mario Heiderich, Cure53",
-    "email": "mario@cure53.de",
-    "url": "https://cure53.de/",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\dompurify",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\dompurify\\LICENSE"
-  },
-  "electron-context-menu@4.1.1": {
+  "electron-context-menu@4.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/electron-context-menu",
     "publisher": "Sindre Sorhus",
@@ -730,7 +721,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron-is-dev",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\electron-is-dev\\license"
   },
-  "electron@40.1.0": {
+  "electron@41.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/electron/electron",
     "publisher": "Electron Community",
@@ -1176,13 +1167,6 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lowercase-keys",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lowercase-keys\\license"
   },
-  "marked@14.0.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/markedjs/marked",
-    "publisher": "Christopher Jeffrey",
-    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\marked",
-    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\marked\\LICENSE.md"
-  },
   "matcher@3.0.0": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/matcher",
@@ -1233,7 +1217,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mkdirp-classic",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mkdirp-classic\\LICENSE"
   },
-  "monaco-editor@0.55.1": {
+  "monaco-editor@0.53.0": {
     "licenses": "MIT",
     "repository": "https://github.com/microsoft/monaco-editor",
     "publisher": "Microsoft Corporation",
@@ -1726,6 +1710,12 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\undici-types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\undici-types\\LICENSE"
   },
+  "undici-types@7.18.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nodejs/undici",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node\\node_modules\\undici-types",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node\\node_modules\\undici-types\\LICENSE"
+  },
   "universalify@0.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/RyanZim/universalify",
@@ -1769,7 +1759,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\wrappy",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\wrappy\\LICENSE"
   },
-  "yaml@1.10.2": {
+  "yaml@1.10.3": {
     "licenses": "ISC",
     "repository": "https://github.com/eemeli/yaml",
     "publisher": "Eemeli Aro",
