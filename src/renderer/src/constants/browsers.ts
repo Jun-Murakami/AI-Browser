@@ -5,9 +5,12 @@ import {
   ClaudeIcon,
   DeepSeekIcon,
   GeminiIcon,
+  GensparkIcon,
   GrokIcon,
-  NaniIcon,
   KimiIcon,
+  NaniIcon,
+  PerplexityIcon,
+  SakanaIcon,
 } from '../components/Icons';
 
 import type { SvgIconProps } from '@mui/material';
@@ -23,6 +26,9 @@ const BROWSER_ICON_COMPONENTS: Record<string, ComponentType<SvgIconProps>> = {
   GROK: GrokIcon,
   NANI: NaniIcon,
   KIMI: KimiIcon,
+  SAKANA: SakanaIcon,
+  PERPLEXITY: PerplexityIcon,
+  GENSPARK: GensparkIcon,
 };
 
 // 共通定義にアイコンコンポーネントを追加（ラベルはそのまま使用）

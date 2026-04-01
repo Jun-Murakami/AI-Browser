@@ -148,7 +148,7 @@ class TerminalService {
     setTimeout(() => {
       try {
         instance.fitAddon.fit();
-      } catch (_error) { }
+      } catch (_error) {}
     }, 50);
   }
 

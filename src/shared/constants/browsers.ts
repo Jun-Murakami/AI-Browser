@@ -5,6 +5,7 @@ export interface BrowserDefinition {
   index: number;
   url: string;
   urlPattern?: string | string[];
+  group: 'primary' | 'secondary'; // primary: ターミナルタブの前, secondary: ターミナルタブの後
 }
 
 export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
@@ -14,6 +15,7 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 0,
     url: 'https://chatgpt.com/',
     urlPattern: 'chatgpt.com',
+    group: 'primary',
   },
   {
     id: 'GEMINI',
@@ -21,6 +23,7 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 1,
     url: 'https://gemini.google.com/',
     urlPattern: 'gemini.google.com',
+    group: 'primary',
   },
   {
     id: 'CLAUDE',
@@ -28,6 +31,7 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 2,
     url: 'https://claude.ai/',
     urlPattern: 'claude.ai',
+    group: 'primary',
   },
   {
     id: 'KIMI',
@@ -35,6 +39,7 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 3,
     url: 'https://kimi.com/',
     urlPattern: 'kimi.com',
+    group: 'primary',
   },
   {
     id: 'GROK',
@@ -42,6 +47,7 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 4,
     url: 'https://grok.com/',
     urlPattern: ['x.com', 'grok'],
+    group: 'primary',
   },
   {
     id: 'DEEPSEEK',
@@ -49,20 +55,23 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 5,
     url: 'https://chat.deepseek.com/',
     urlPattern: 'deepseek.com',
+    group: 'primary',
+  },
+  {
+    id: 'SAKANA',
+    label: 'Sakana Chat',
+    index: 6,
+    url: 'https://chat.sakana.ai/',
+    urlPattern: 'sakana.ai',
+    group: 'primary',
   },
   {
     id: 'NANI',
     label: 'Nani !?',
-    index: 6,
+    index: 7,
     url: 'https://nani.now/',
     urlPattern: 'nani.now',
-  },
-  {
-    id: 'AISTUDIO',
-    label: 'AIStudio',
-    index: 7,
-    url: 'https://aistudio.google.com/',
-    urlPattern: ['aistudio.google.com', 'ai.google.dev'],
+    group: 'primary',
   },
   {
     id: 'PERPLEXITY',
@@ -70,6 +79,7 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 8,
     url: 'https://www.perplexity.ai/',
     urlPattern: 'perplexity.ai',
+    group: 'primary',
   },
   {
     id: 'GENSPARK',
@@ -77,34 +87,6 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 9,
     url: 'https://www.genspark.ai/',
     urlPattern: 'genspark.ai',
-  },
-  {
-    id: 'PHIND',
-    label: 'Phind',
-    index: 10,
-    url: 'https://www.phind.com/',
-    urlPattern: 'phind.com',
-  },
-
-  {
-    id: 'FELO',
-    label: 'Felo',
-    index: 11,
-    url: 'https://felo.ai/',
-    urlPattern: 'felo.ai',
-  },
-  {
-    id: 'CODY',
-    label: 'Cody',
-    index: 12,
-    url: 'https://sourcegraph.com/cody/chat',
-    urlPattern: 'sourcegraph.com',
-  },
-  {
-    id: 'JENOVA',
-    label: 'JENOVA',
-    index: 13,
-    url: 'https://app.jenova.ai/',
-    urlPattern: 'jenova.ai',
+    group: 'primary',
   },
 ];

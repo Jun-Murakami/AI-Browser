@@ -20,8 +20,11 @@ interface UseTabManagerReturn {
   actions: TabActions;
 }
 
-// ブラウザタブを作成（Naniまでとそれ以降を分割）
-const browserTabsBeforeTerminal: BrowserTab[] = BROWSERS.slice(0, 7).map(
+// ブラウザタブをグループで分割（primary: ターミナルの前, secondary: ターミナルの後）
+const primaryBrowsers = BROWSERS.filter((b) => b.group === 'primary');
+const secondaryBrowsers = BROWSERS.filter((b) => b.group === 'secondary');
+
+const browserTabsBeforeTerminal: BrowserTab[] = primaryBrowsers.map(
   (browser, index) => ({
     ...browser,
     type: 'browser' as const,
@@ -29,19 +32,19 @@ const browserTabsBeforeTerminal: BrowserTab[] = BROWSERS.slice(0, 7).map(
   }),
 );
 
-const browserTabsAfterTerminal: BrowserTab[] = BROWSERS.slice(7).map(
+const browserTabsAfterTerminal: BrowserTab[] = secondaryBrowsers.map(
   (browser, index) => ({
     ...browser,
     type: 'browser' as const,
-    order: 7 + TERMINALS.length + index, //Naniまで(7) + ターミナル(3) + インデックス
+    order: primaryBrowsers.length + TERMINALS.length + index,
   }),
 );
 
-// ターミナルタブを作成（Grokの後に配置）
+// ターミナルタブを作成（primaryブラウザの後に配置）
 const terminalTabs: TerminalTab[] = TERMINALS.map((terminal, index) => ({
   ...terminal,
   type: 'terminal' as const,
-  order: 7 + index, // Naniの後（index 7）から開始
+  order: primaryBrowsers.length + index,
 }));
 
 const allTabs = [

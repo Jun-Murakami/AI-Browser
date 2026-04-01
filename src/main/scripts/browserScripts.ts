@@ -36,9 +36,11 @@ export const BROWSER_SCRIPTS = {
       textareaTag.textContent = TEXT_TO_SEND;
       textareaTag.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true }));
       setTimeout(() => {
-        var sendButton = document.querySelector('main button.send-button');
+        var sendButton = document.querySelector('button.send-button') || document.querySelector('button[aria-label="プロンプトを送信"]');
         if (sendButton) {
-          sendButton.click();
+          sendButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+          sendButton.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+          sendButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         }
       }, 700);
     } catch (error) {
@@ -190,10 +192,12 @@ export const BROWSER_SCRIPTS = {
       textareaTag.dispatchEvent(pasteEvent);
 
       setTimeout(() => {
-        var buttons = document.querySelectorAll('main button[aria-label="Submit"]');
+        var buttons = document.querySelectorAll('button[aria-label="Submit"], button[aria-label="送信"]');
         var sendButton = buttons[buttons.length - 1];
         if (sendButton) {
-          sendButton.click();
+          sendButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+          sendButton.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+          sendButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         }
       }, 300);
     } else {
@@ -216,9 +220,11 @@ export const BROWSER_SCRIPTS = {
     textareaTag.value = TEXT_TO_SEND;
     textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
     setTimeout(() => {
-      var sendButton = document.querySelector('button.run-button');
+      var sendButton = document.querySelector('button[type="submit"]') || document.querySelector('button.run-button');
       if (sendButton) {
-        sendButton.click();
+        sendButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        sendButton.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+        sendButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       }
     }, 700);
   `,
@@ -311,8 +317,7 @@ export const BROWSER_SCRIPTS = {
     }, 100);
   `,
   NANI: `
-    var textareaTags = document.querySelectorAll('textarea');
-    var textareaTag = textareaTags[textareaTags.length - 1];
+    var textareaTag = document.querySelector('textarea#basic-input-main') || document.querySelectorAll('textarea')[document.querySelectorAll('textarea').length - 1];
     var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
       window.HTMLTextAreaElement.prototype,
       "value"
@@ -323,36 +328,51 @@ export const BROWSER_SCRIPTS = {
       // 最後に見つかったtextareaの親要素の兄弟要素以下にあるすべてのボタンを取得
       var textareaParent = textareaTag.parentElement;
       var siblingButtons = [];
-      
+
       // 指定された要素以下のすべてのボタンを再帰的に検索する関数
       function findButtonsInElement(element) {
         if (!element) return;
-        
+
         // 現在の要素がボタンの場合、配列に追加
         if (element.tagName === 'BUTTON') {
           siblingButtons.push(element);
         }
-        
+
         // 子要素を再帰的に検索
         var children = element.children;
         for (var i = 0; i < children.length; i++) {
           findButtonsInElement(children[i]);
         }
       }
-      
+
       // textareaの親要素の兄弟要素を取得
       var parentSiblings = textareaParent.parentElement.children;
-      
+
       // 各兄弟要素以下にあるすべてのボタンを検索
       for (var i = 0; i < parentSiblings.length; i++) {
         var sibling = parentSiblings[i];
         findButtonsInElement(sibling);
       }
-      
+
       // 見つかったボタンが存在する場合、最後のボタンをクリック
       if (siblingButtons.length > 0) {
         var lastButton = siblingButtons[siblingButtons.length - 1];
         lastButton.click();
+      }
+    }, 700);
+  `,
+  SAKANA: `
+    var textareaTag = document.querySelector('form textarea');
+    var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      "value"
+    ).set;
+    nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
+    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+    setTimeout(() => {
+      var sendButton = document.querySelector('form button[type="submit"]');
+      if (sendButton) {
+        sendButton.click();
       }
     }, 700);
   `,

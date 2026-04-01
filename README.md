@@ -11,17 +11,13 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
 - **Multi-AI Service Support**: Seamlessly interact with multiple AI services including:
   - ChatGPT
   - Google Gemini
-  - Google AI Studio
   - Anthropic Claude
   - DeepSeek
   - Grok
   - Nani !?
-  - Phind
   - Perplexity
   - Genspark
-  - Felo
-  - JENOVA
-  - Cody
+  - Sakana Chat
 
 - **Integrated Terminal Support**: Use CLI-based AI agents alongside chat interfaces:
   - Built-in terminal emulator with up to 3 instances
