@@ -12,6 +12,7 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
   - ChatGPT
   - Google Gemini
   - Anthropic Claude
+  - Moonshot Kimi
   - DeepSeek
   - Grok
   - Nani !?
