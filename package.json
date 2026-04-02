@@ -39,6 +39,7 @@
     "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
+    "@tanstack/react-virtual": "^3.13.23",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/addon-web-links": "^0.12.0",
     "@xterm/xterm": "^6.0.0",
