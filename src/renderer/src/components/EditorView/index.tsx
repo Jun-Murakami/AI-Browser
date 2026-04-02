@@ -54,6 +54,9 @@ interface EditorViewProps {
   onSaveClick: () => void;
   onCopyClick: () => void;
   onSendClick: (sendToAll: boolean) => void;
+  sendTargets: Record<string, boolean>;
+  browserLoadings: Record<string, boolean>;
+  onToggleSendTarget: (tabId: string) => void;
   setEditor1Value: (value: string) => void;
   setEditor2Value: (value: string) => void;
   setEditor3Value: (value: string) => void;
@@ -115,6 +118,9 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       onSaveClick,
       onCopyClick,
       onSendClick,
+      sendTargets,
+      browserLoadings,
+      onToggleSendTarget,
       setEditor1Value,
       setEditor2Value,
       setEditor3Value,
@@ -223,6 +229,9 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           onSaveClick={onSaveClick}
           onCopyClick={onCopyClick}
           onSendClick={onSendClick}
+          sendTargets={sendTargets}
+          browserLoadings={browserLoadings}
+          onToggleSendTarget={onToggleSendTarget}
           clearButtonRef={clearButtonRef}
           saveButtonRef={saveButtonRef}
           copyButtonRef={copyButtonRef}

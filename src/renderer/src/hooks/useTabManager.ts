@@ -17,6 +17,8 @@ interface UseTabManagerReturn {
   activeTab: Tab | null;
   isTerminalActive: boolean;
   visibleTabs: Tab[];
+  sendTargets: Record<string, boolean>;
+  browserLoadings: Record<string, boolean>;
   actions: TabActions;
 }
 
@@ -57,6 +59,30 @@ export function useTabManager(): UseTabManagerReturn {
   const [tabs, setTabs] = useState<Tab[]>(allTabs);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [enabledTabs, setEnabledTabs] = useState<Record<string, boolean>>({});
+  const [sendTargets, setSendTargets] = useState<Record<string, boolean>>({});
+  const [browserLoadings, setBrowserLoadings] = useState<
+    Record<string, boolean>
+  >({});
+
+  // ローディング状態の監視
+  useEffect(() => {
+    const handleLoadingStatus = (status: {
+      index: number;
+      isLoading: boolean;
+    }) => {
+      const browser = BROWSERS[status.index];
+      if (browser) {
+        setBrowserLoadings((prev) => ({
+          ...prev,
+          [browser.id]: status.isLoading,
+        }));
+      }
+    };
+    window.electron.onUpdateLoadingStatus(handleLoadingStatus);
+    return () => {
+      window.electron.removeUpdateLoadingStatusListener();
+    };
+  }, []);
 
   // 初期化
   useEffect(() => {
@@ -81,6 +107,17 @@ export function useTabManager(): UseTabManagerReturn {
       });
 
       setEnabledTabs(initialEnabledTabs);
+
+      // 送信対象の初期化
+      if (settings.sendTargets) {
+        setSendTargets(settings.sendTargets);
+      } else {
+        // デフォルト: 全ブラウザタブを対象（NANIは除外）
+        const defaultTargets = Object.fromEntries(
+          BROWSERS.map((b) => [b.id, b.id !== 'NANI']),
+        );
+        setSendTargets(defaultTargets);
+      }
 
       // 保存されたタブ順序があれば適用
       if (settings.tabOrders) {
@@ -245,12 +282,26 @@ export function useTabManager(): UseTabManagerReturn {
     [tabsWithEnabled, enabledTabs],
   );
 
+  // 送信対象の切り替え
+  const toggleSendTarget = useCallback(
+    (tabId: string) => {
+      const newTargets = {
+        ...sendTargets,
+        [tabId]: !sendTargets[tabId],
+      };
+      setSendTargets(newTargets);
+      window.electron.saveSendTargets(newTargets);
+    },
+    [sendTargets],
+  );
+
   const actions: TabActions = {
     selectTab,
     sendMessage,
     sendMessageToAll,
     reorderTab,
     toggleTabEnabled,
+    toggleSendTarget,
   };
 
   return {
@@ -259,6 +310,8 @@ export function useTabManager(): UseTabManagerReturn {
     activeTab,
     isTerminalActive,
     visibleTabs,
+    sendTargets,
+    browserLoadings,
     actions,
   };
 }

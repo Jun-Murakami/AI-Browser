@@ -25,7 +25,6 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 
-import { BROWSERS } from '../../constants/browsers';
 import { DraggableTab } from './DraggableTab';
 
 import type { DragEndEvent } from '@dnd-kit/core';
@@ -36,7 +35,7 @@ interface TabBarProps {
   visibleTabs: TabType[];
   activeTabId: string | null;
   isEditingBrowserShow: boolean;
-  browserLoadings: boolean[];
+  browserLoadings: Record<string, boolean>;
   onTabChange: (event: React.SyntheticEvent, index: number) => void;
   onToggleEditMode: () => void;
   onToggleTabEnabled: (tabId: string) => void;
@@ -152,9 +151,7 @@ export function TabBar({
                       label={tab.label}
                       loading={
                         tab.type === 'browser'
-                          ? browserLoadings[
-                              BROWSERS.findIndex((b) => b.id === tab.id)
-                            ]
+                          ? (browserLoadings[tab.id] ?? false)
                           : false
                       }
                       onClick={onTabChange}

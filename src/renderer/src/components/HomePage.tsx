@@ -32,6 +32,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     activeTab,
     isTerminalActive,
     visibleTabs,
+    sendTargets,
+    browserLoadings,
     actions,
   } = useTabManager();
 
@@ -120,6 +122,14 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleToggleTabEnabled = useCallback(
     (tabId: string) => {
       actions.toggleTabEnabled(tabId);
+    },
+    [actions],
+  );
+
+  // 一括送信対象の切り替え
+  const handleToggleSendTarget = useCallback(
+    (tabId: string) => {
+      actions.toggleSendTarget(tabId);
     },
     [actions],
   );
@@ -394,6 +404,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             isTerminalActive={isTerminalActive}
             visibleTabs={visibleTabs}
             isInitialized={isInitialized}
+            browserLoadings={browserLoadings}
             onTabChange={handleTabChange}
             onToggleTabEnabled={handleToggleTabEnabled}
             onTabReorder={handleTabReorder}
@@ -436,6 +447,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             onSaveClick={handleSaveButtonClick}
             onCopyClick={handleCopyButtonClick}
             onSendClick={handleSendButtonClick}
+            sendTargets={sendTargets}
+            browserLoadings={browserLoadings}
+            onToggleSendTarget={handleToggleSendTarget}
             setEditor1Value={(value) => setEditorValue(0, value)}
             setEditor2Value={(value) => setEditorValue(1, value)}
             setEditor3Value={(value) => setEditorValue(2, value)}

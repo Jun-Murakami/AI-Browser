@@ -38,6 +38,9 @@ let appState: AppState = {
   // 既定では全ターミナル有効
   enabledTerminals: Object.fromEntries(TERMINALS.map((t) => [t.id, true])),
   tabOrders: {},
+  sendTargets: Object.fromEntries(
+    BROWSERS.map((browser) => [browser.id, browser.id !== 'NANI']),
+  ),
 };
 
 let logs: Log[] = [];
@@ -47,32 +50,31 @@ const tabManager: TabManager = {
   currentIndex: 0,
 };
 
+// 非表示ビューのbounds
+const HIDDEN_BOUNDS = { x: -1, y: -1, width: 1, height: 1 };
+
 /**
  * タブの表示/非表示を切り替える
+ * ビューは常にcontentViewに接続したまま、setBoundsで表示/非表示を制御する。
+ * removeChildView方式だとsite_for_cookiesがnullになりCloudflare Access等が失敗するため。
  */
 function switchTab(mainWindow: BrowserWindow, newIndex: number) {
-  // BrowserWindow を BaseWindow に変更
   if (newIndex < 0 || newIndex >= tabManager.views.length) return;
 
-  // 現在のビューを非表示
-  if (
-    tabManager.currentIndex >= 0 &&
-    tabManager.currentIndex < tabManager.views.length
-  ) {
-    const currentView = tabManager.views[tabManager.currentIndex];
-    mainWindow.contentView.removeChildView(currentView); // removeBrowserView を removeChildView に変更
-  }
-
-  // 新しいビューを表示
-  const newView = tabManager.views[newIndex];
-  mainWindow.contentView.addChildView(newView); // addBrowserView を addChildView に変更
   const bounds = mainWindow.getBounds();
-  newView.setBounds({
+  const visibleBounds = {
     x: 0,
     y: 108,
     width: appState.browserWidth ? appState.browserWidth - 2 : bounds.width - 2,
     height: bounds.height - 108 - 36,
-  });
+  };
+
+  // 全ビューを非表示にし、対象のみ表示
+  for (let i = 0; i < tabManager.views.length; i++) {
+    tabManager.views[i].setBounds(
+      i === newIndex ? visibleBounds : HIDDEN_BOUNDS,
+    );
+  }
 
   tabManager.currentIndex = newIndex;
 }
@@ -88,14 +90,26 @@ function setupView(
 ) {
   // BrowserWindow を BaseWindow に変更
   const view = new WebContentsView({
-    // BrowserView を WebContentsView に変更
     webPreferences: {
       spellcheck: false,
+      backgroundThrottling: false,
     },
   });
 
   // タブマネージャーに追加
   tabManager.views.push(view);
+
+  // 初期ロード時はフルサイズboundsでcontentViewに追加する。
+  // 微小/ゼロサイズだとChromiumレンダラーのフレームツリーが正しく初期化されず
+  // site_for_cookiesがnullになりCloudflare Access等が失敗するため。
+  const bounds = mainWindow.getBounds();
+  mainWindow.contentView.addChildView(view);
+  view.setBounds({
+    x: 0,
+    y: 108,
+    width: appState.browserWidth ? appState.browserWidth - 2 : bounds.width - 2,
+    height: bounds.height - 108 - 36,
+  });
 
   view.webContents.loadURL(url);
 
@@ -103,6 +117,9 @@ function setupView(
     window: view.webContents,
     showInspectElement: is.dev,
   });
+
+  // 初期ロード完了フラグ
+  let initialLoadDone = false;
 
   // ブラウザのURLを更新するイベント
   view.webContents.on('did-navigate', (_, newUrl) => {
@@ -124,6 +141,13 @@ function setupView(
   // ローディング終了時
   view.webContents.on('did-stop-loading', () => {
     mainWindow.webContents.send('loading-status', { index, isLoading: false });
+    // 初期ロード完了後に非アクティブビューを非表示にする
+    if (!initialLoadDone) {
+      initialLoadDone = true;
+      if (tabManager.currentIndex !== index) {
+        view.setBounds(HIDDEN_BOUNDS);
+      }
+    }
   });
 
   // 最初のタブを表示
@@ -163,7 +187,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         tabManager.currentIndex < tabManager.views.length
       ) {
         const currentView = tabManager.views[tabManager.currentIndex];
-        mainWindow.contentView.removeChildView(currentView);
+        currentView.setBounds(HIDDEN_BOUNDS);
       }
       return;
     }
@@ -253,6 +277,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         type: terminal.type,
       })),
       tabOrders: appState.tabOrders,
+      sendTargets: appState.sendTargets,
     };
   });
 
@@ -277,6 +302,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     appState.tabOrders = tabOrders;
   });
 
+  ipcMain.on('save-send-targets', (_, sendTargets: Record<string, boolean>) => {
+    appState.sendTargets = sendTargets;
+  });
+
   ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
     if (tabManager.views.length === 0) {
       return;
@@ -290,7 +319,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
       const currentUrl = view.webContents.getURL();
       const shouldSend =
-        sendToAll ||
+        (sendToAll && appState.sendTargets[browser.id] !== false) ||
         (tabManager.currentIndex === index &&
           (Array.isArray(browser.urlPattern)
             ? browser.urlPattern.some((p) => currentUrl.includes(p))
@@ -417,6 +446,17 @@ function createMainWindow(): BrowserWindow {
 
       appState = savedState;
 
+      // sendTargets のマイグレーション（古い設定ファイルに存在しない場合）
+      if (
+        !appState.sendTargets ||
+        typeof appState.sendTargets !== 'object' ||
+        Array.isArray(appState.sendTargets)
+      ) {
+        appState.sendTargets = Object.fromEntries(
+          BROWSERS.map((browser) => [browser.id, browser.id !== 'NANI']),
+        );
+      }
+
       // enabledTerminals の検証とガード処理
       const isValidEnabledTerminals =
         appState.enabledTerminals &&
@@ -448,6 +488,10 @@ function createMainWindow(): BrowserWindow {
       // ターミナルも全て有効にする
       appState.enabledTerminals = Object.fromEntries(
         TERMINALS.map((t) => [t.id, true]),
+      );
+      // 送信対象のデフォルト（NANIを除外）
+      appState.sendTargets = Object.fromEntries(
+        BROWSERS.map((browser) => [browser.id, browser.id !== 'NANI']),
       );
     }
   }
@@ -567,6 +611,7 @@ function createMainWindow(): BrowserWindow {
         enabledBrowsers: appState.enabledBrowsers,
         enabledTerminals: appState.enabledTerminals,
         tabOrders: appState.tabOrders,
+        sendTargets: appState.sendTargets,
       };
 
       // ファイルに保存（fsモジュールを使用）

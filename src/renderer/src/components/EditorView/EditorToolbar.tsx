@@ -1,23 +1,50 @@
+import { useRef, useState } from 'react';
 import { ContentPaste, Save, Send } from '@mui/icons-material';
 import {
   Box,
   Button,
+  Checkbox,
+  CircularProgress,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
+  Paper,
+  Popper,
   Select,
+  SvgIcon,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 
+import { BROWSERS } from '../../constants/browsers';
 import { EraseIcon } from '../Icons';
 import { MaterialUISwitch } from './DarkModeSwitch';
 
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 import type { RefObject } from 'react';
 import type { Tab } from '../../types/tab.types';
+
+// 紙飛行機2つ重ねアイコン
+function SendAllIcon(props: React.ComponentProps<typeof SvgIcon>) {
+  return (
+    <SvgIcon {...props} viewBox="0 0 24 24">
+      {/* 背面の紙飛行機（少し左上にオフセット、薄め） */}
+      <path
+        d="M2.01 3L2 10l13 2-13 2 .01 7L23 12 2.01 3z"
+        opacity="0.4"
+        transform="translate(-2, -2) scale(0.85)"
+      />
+      {/* 前面の紙飛行機 */}
+      <path
+        d="M2.01 3L2 10l13 2-13 2 .01 7L23 12 2.01 3z"
+        transform="translate(2, 2) scale(0.85)"
+      />
+    </SvgIcon>
+  );
+}
 
 interface EditorToolbarProps {
   fontSize: number;
@@ -27,12 +54,15 @@ interface EditorToolbarProps {
   activeTab: Tab | null;
   isTerminalActive: boolean;
   fontSizeOptions: number[];
+  sendTargets: Record<string, boolean>;
+  browserLoadings: Record<string, boolean>;
   onFontSizeChange: (size: number) => void;
   onDarkModeToggle: () => void;
   onClearClick: () => void;
   onSaveClick: () => void;
   onCopyClick: () => void;
   onSendClick: (sendToAll: boolean) => void;
+  onToggleSendTarget: (tabId: string) => void;
   clearButtonRef: RefObject<HTMLButtonElement | null>;
   saveButtonRef: RefObject<HTMLButtonElement | null>;
   copyButtonRef: RefObject<HTMLButtonElement | null>;
@@ -43,6 +73,9 @@ interface EditorToolbarProps {
   sendButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
 }
 
+// 一括送信対象から除外するタブID
+const EXCLUDED_SEND_TARGET_IDS = new Set(['NANI']);
+
 export function EditorToolbar({
   fontSize,
   darkMode,
@@ -51,12 +84,15 @@ export function EditorToolbar({
   activeTab,
   isTerminalActive,
   fontSizeOptions,
+  sendTargets,
+  browserLoadings,
   onFontSizeChange,
   onDarkModeToggle,
   onClearClick,
   onSaveClick,
   onCopyClick,
   onSendClick,
+  onToggleSendTarget,
   clearButtonRef,
   saveButtonRef,
   copyButtonRef,
@@ -67,6 +103,38 @@ export function EditorToolbar({
   sendButtonTouchRippleRef,
 }: EditorToolbarProps) {
   const theme = useTheme();
+  const [popperOpen, setPopperOpen] = useState(false);
+  const sendAllButtonRef = useRef<HTMLButtonElement>(null);
+  const popperTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    if (popperTimeoutRef.current) {
+      clearTimeout(popperTimeoutRef.current);
+      popperTimeoutRef.current = null;
+    }
+    setPopperOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    popperTimeoutRef.current = setTimeout(() => {
+      setPopperOpen(false);
+    }, 200);
+  };
+
+  // 一括送信対象のブラウザタブ（ターミナルとNANIを除外）
+  const sendTargetBrowsers = BROWSERS.filter(
+    (b) => !EXCLUDED_SEND_TARGET_IDS.has(b.id),
+  );
+
+  // チェックされている送信対象の数
+  const checkedCount = sendTargetBrowsers.filter(
+    (b) => sendTargets[b.id] !== false,
+  ).length;
+
+  // チェックされた送信対象のうち、まだ読み込み中のものがあるか
+  const isAnyTargetLoading = sendTargetBrowsers.some(
+    (b) => sendTargets[b.id] !== false && browserLoadings[b.id],
+  );
 
   return (
     <Box
@@ -160,26 +228,84 @@ export function EditorToolbar({
                 {activeTab.label}
               </Button>
             </Tooltip>
-            <Tooltip
-              title={
-                isTerminalActive
-                  ? 'All button is disabled for terminal tabs'
-                  : 'Send to all browser tabs'
-              }
-              arrow
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: hover container for popper */}
+            <span
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
-              <span>
-                <Button
-                  variant="contained"
-                  sx={{ width: 40, mr: 1 }}
-                  startIcon={<Send sx={{ mr: -0.5 }} />}
-                  onClick={() => onSendClick(true)}
-                  disabled={isTerminalActive}
+              <Button
+                ref={sendAllButtonRef}
+                variant="contained"
+                sx={{ width: 40, mr: 1 }}
+                startIcon={
+                  isAnyTargetLoading ? (
+                    <CircularProgress
+                      size={18}
+                      color="inherit"
+                      sx={{ mr: -0.5 }}
+                    />
+                  ) : (
+                    <SendAllIcon sx={{ mr: -0.5 }} />
+                  )
+                }
+                onClick={() => onSendClick(true)}
+                disabled={
+                  isTerminalActive || checkedCount === 0 || isAnyTargetLoading
+                }
+              >
+                {isAnyTargetLoading ? '' : checkedCount}
+              </Button>
+              <Popper
+                open={popperOpen && !isTerminalActive}
+                anchorEl={sendAllButtonRef.current}
+                placement="top-end"
+                sx={{ zIndex: 1300 }}
+              >
+                <Paper
+                  elevation={8}
+                  sx={{
+                    p: 1.5,
+                    mb: 1,
+                    maxHeight: '60vh',
+                    overflowY: 'auto',
+                  }}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
                 >
-                  All
-                </Button>
-              </span>
-            </Tooltip>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 'bold',
+                      display: 'block',
+                      mb: 0.5,
+                      px: 1,
+                    }}
+                  >
+                    Send targets
+                  </Typography>
+                  {sendTargetBrowsers.map((browser) => (
+                    <FormControlLabel
+                      key={browser.id}
+                      control={
+                        <Checkbox
+                          size="small"
+                          checked={sendTargets[browser.id] !== false}
+                          onChange={() => onToggleSendTarget(browser.id)}
+                        />
+                      }
+                      label={
+                        <Typography variant="body2">{browser.label}</Typography>
+                      }
+                      sx={{
+                        display: 'flex',
+                        mx: 0,
+                        '& .MuiFormControlLabel-label': { fontSize: '0.85rem' },
+                      }}
+                    />
+                  ))}
+                </Paper>
+              </Popper>
+            </span>
           </>
         ) : (
           <>
@@ -195,10 +321,10 @@ export function EditorToolbar({
             <Button
               variant="contained"
               sx={{ width: 40, mr: 1 }}
-              startIcon={<Send sx={{ mr: -0.5 }} />}
+              startIcon={<SendAllIcon sx={{ mr: -0.5 }} />}
               disabled
             >
-              All
+              0
             </Button>
           </>
         )}

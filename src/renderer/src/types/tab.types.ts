@@ -40,4 +40,5 @@ export interface TabActions {
   sendMessageToAll: (message: string) => void;
   reorderTab: (tabId: string, newOrder: number) => void;
   toggleTabEnabled: (tabId: string) => void;
+  toggleSendTarget: (tabId: string) => void;
 }

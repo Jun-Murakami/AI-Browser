@@ -81,6 +81,8 @@ if (process.contextIsolated) {
         ipcRenderer.send('update-enabled-terminals', enabledTerminals),
       saveTabOrders: (tabOrders: Record<string, number>) =>
         ipcRenderer.send('save-tab-orders', tabOrders),
+      saveSendTargets: (sendTargets: Record<string, boolean>) =>
+        ipcRenderer.send('save-send-targets', sendTargets),
       onScriptError: (
         callback: (error: { browser: string; error: string }) => void,
       ) =>

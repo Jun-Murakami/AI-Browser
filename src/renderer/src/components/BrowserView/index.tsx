@@ -14,6 +14,7 @@ interface BrowserViewProps {
   isTerminalActive: boolean;
   visibleTabs: Tab[];
   isInitialized: boolean;
+  browserLoadings: Record<string, boolean>;
   onTabChange: (tabId: string) => void;
   onToggleTabEnabled: (tabId: string) => void;
   onTabReorder: (tabId: string, newOrder: number) => void;
@@ -28,6 +29,7 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
       isTerminalActive,
       visibleTabs,
       isInitialized,
+      browserLoadings,
       onTabChange,
       onToggleTabEnabled,
       onTabReorder,
@@ -36,7 +38,6 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
     ref,
   ) => {
     const [browserUrls, setBrowserUrls] = useState<string[]>([]);
-    const [browserLoadings, setBrowserLoadings] = useState<boolean[]>([]);
     const [isEditingBrowserShow, setIsEditingBrowserShow] = useState(false);
 
     // 現在のブラウザURLまたはターミナル名
@@ -70,26 +71,14 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
       setIsEditingBrowserShow(!isEditingBrowserShow);
     }, [isEditingBrowserShow]);
 
-    // ブラウザのURLとローディング状態を監視
+    // ブラウザのURL状態を監視
     useEffect(() => {
-      // ローディング状態を監視
-      window.electron.onUpdateLoadingStatus((status) => {
-        setBrowserLoadings((prev) => {
-          const newLoadings = [...prev];
-          newLoadings[status.index] = status.isLoading;
-          return newLoadings;
-        });
-      });
-
-      // ブラウザのURLを監視
       window.electron.onUpdateUrls((newUrls) => {
         setBrowserUrls(newUrls);
       });
 
-      // クリーンアップ
       return () => {
         window.electron.removeUpdateUrlsListener();
-        window.electron.removeUpdateLoadingStatusListener();
       };
     }, []);
 

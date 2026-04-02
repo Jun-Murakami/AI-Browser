@@ -22,6 +22,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   sendEnabledBrowsersToMain: (enabledBrowsers: boolean[]) => void;
   sendEnabledTerminalsToMain: (enabledTerminals: boolean[]) => void;
   saveTabOrders: (tabOrders: Record<string, number>) => void;
+  saveSendTargets: (sendTargets: Record<string, boolean>) => void;
   onScriptError: (
     callback: (error: { browser: string; error: string }) => void,
   ) => void;
@@ -56,6 +57,7 @@ interface InitialSettings {
   browsers: Browser[];
   terminals: Terminal[];
   tabOrders?: Record<string, number>;
+  sendTargets?: Record<string, boolean>;
 }
 
 interface TerminalAPI {

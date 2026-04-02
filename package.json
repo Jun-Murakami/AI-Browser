@@ -21,7 +21,7 @@
     "postinstall-disabled": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "license-checker --production --json --out src/renderer/src/assets/license.json && npm run build && electron-builder --win",
-    "build:electron:mac": "electron-vite build && APPLE_API_KEY_ID=\"$APPLE_API_KEY\" APPLE_API_KEY=\"$APPLE_API_KEY_PATH\" electron-builder --mac",
+    "build:mac": "electron-vite build && APPLE_API_KEY_ID=\"$APPLE_API_KEY\" APPLE_API_KEY=\"$APPLE_API_KEY_PATH\" electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
     "build-appx": "electron-builder -w appx"
   },

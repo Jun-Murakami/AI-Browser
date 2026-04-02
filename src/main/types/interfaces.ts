@@ -14,6 +14,7 @@ export interface AppState {
   // ターミナルの有効/無効状態を保持
   enabledTerminals: Record<string, boolean>;
   tabOrders: Record<string, number>;
+  sendTargets: Record<string, boolean>;
 }
 
 export interface Log {
