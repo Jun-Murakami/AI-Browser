@@ -91,6 +91,8 @@ export function TerminalView({
         borderColor: 'divider',
         overflow: 'hidden',
         textAlign: 'left',
+        // 親子の計算誤差で 1px の隙間が見えるケースを抑止
+        boxSizing: 'border-box',
       }}
     >
       <Box
@@ -98,12 +100,21 @@ export function TerminalView({
         sx={{
           width: '100%',
           height: '100%',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
           // xterm 内部のスタイルに干渉しない
           '& .xterm': {
-            padding: 1,
+            // padding を入れると表示領域が縮み、親背景が見えて「隙間」に見えるため無効化
+            padding: 0,
+            width: '100%',
+            height: '100%',
+            boxSizing: 'border-box',
+            backgroundColor: 'inherit',
           },
           '& .xterm-viewport': {
             textAlign: 'left',
+            // 親側にスクロールバーが出たり、途中で見切れるのを防ぐ
+            overflow: 'hidden',
           },
           '& .xterm-screen': {
             textAlign: 'left',

@@ -17,9 +17,14 @@ export const ContentArea = forwardRef<HTMLDivElement, ContentAreaProps>(
     return (
       <Box
         sx={{
-          height: 'calc(100% - 100px)',
+          // 親（BrowserView）を flex column にし、残り領域をここで受ける
+          flex: 1,
+          minHeight: 0,
           textAlign: isTerminalActive ? 'left' : 'center',
           position: 'relative',
+          // この領域自体はスクロールさせず、子（xterm など）に任せる
+          overflow: 'hidden',
+          backgroundColor: 'background.default',
         }}
         ref={ref}
       >
@@ -48,6 +53,8 @@ export const ContentArea = forwardRef<HTMLDivElement, ContentAreaProps>(
                 left: 0,
                 zIndex:
                   isTerminalActive && activeTabId === terminal.id ? 1 : -1,
+                overflow: 'hidden',
+                backgroundColor: 'background.default',
               }}
             >
               <TerminalView

@@ -83,7 +83,17 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
     }, []);
 
     return (
-      <Box sx={{ height: '100%' }}>
+      <Box
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          // 親側はこの領域でスクロールしない（タブ/URL/コンテンツのズレでスクロールバーが出るのを抑止）
+          overflow: 'hidden',
+          // Allotment 配下での 1px のズレや内側計算誤差で隙間が見えるのを防ぐ
+          backgroundColor: 'background.default',
+        }}
+      >
         <TabBar
           isInitialized={isInitialized}
           visibleTabs={
