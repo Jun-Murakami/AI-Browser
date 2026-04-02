@@ -100,7 +100,15 @@ export function TerminalView({
           height: '100%',
           // xterm 内部のスタイルに干渉しない
           '& .xterm': {
-            padding: 1,
+            /**
+             * xterm に余白を入れると「ペインより微妙に小さい」見え方になり、
+             * 背景（親コンテナ）が見えてしまうため 0 に固定する。
+             *
+             * 余白が欲しい場合は、ターミナル外側のレイアウト（ヘッダー/ツールバーなど）
+             * で吸収し、表示領域そのものは常にフルフィルにする。
+             */
+            padding: 0,
+            margin: 0,
           },
           '& .xterm-viewport': {
             textAlign: 'left',
