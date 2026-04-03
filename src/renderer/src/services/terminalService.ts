@@ -241,7 +241,7 @@ class TerminalService {
     const instance = this.getOrCreateInstance(terminalId);
     const { terminal } = instance;
     const autoSubmit = options?.autoSubmit !== false; // 既定で確定まで送る
-    const delayMs = options?.submitDelayMs ?? 80; // 貼り付け終了を待つ小さな遅延
+    const delayMs = options?.submitDelayMs ?? 300; // 貼り付け終了を待つ遅延（Claude Code等のTUI対応）
     const submitKey = options?.submitKey ?? 'cr';
 
     const sendEnter = () => {
@@ -249,6 +249,12 @@ class TerminalService {
         submitKey === 'lf' ? '\n' : submitKey === 'crlf' ? '\r\n' : '\r';
       window.api.sendTerminalInput(terminalId, seq);
     };
+
+    // テキストが空の場合はEnterのみ送信（ターミナルでの確認応答用）
+    if (!text) {
+      sendEnter();
+      return;
+    }
 
     // 1) xterm の paste を最優先で使用
     try {

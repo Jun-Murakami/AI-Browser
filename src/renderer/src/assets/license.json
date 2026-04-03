@@ -358,6 +358,20 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@szmarczak\\http-timer",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@szmarczak\\http-timer\\LICENSE"
   },
+  "@tanstack/react-virtual@3.13.23": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/virtual",
+    "publisher": "Tanner Linsley",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-virtual",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-virtual\\LICENSE"
+  },
+  "@tanstack/virtual-core@3.13.23": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/virtual",
+    "publisher": "Tanner Linsley",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\virtual-core",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\virtual-core\\LICENSE"
+  },
   "@types/cacheable-request@6.0.3": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
@@ -452,7 +466,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm\\LICENSE"
   },
-  "ai-browser@1.6.9": {
+  "ai-browser@1.6.10": {
     "licenses": "MIT",
     "publisher": "Jun Murakami",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser",

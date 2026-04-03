@@ -249,7 +249,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // テキストを送信
   const handleSendButtonClick = (sendToAll: boolean) => {
     const combinedEditorValue = getCombinedValue(editorIndex);
-    if (combinedEditorValue.trim() === '') {
+    const isEmpty = combinedEditorValue.trim() === '';
+
+    // ターミナルアクティブ時は空でもEnterのみ送信を許可
+    if (isEmpty && isTerminalActive && !sendToAll && activeTab) {
+      actions.sendMessage(activeTab.id, '');
+      return;
+    }
+
+    if (isEmpty) {
       toast('Failed to send. (Prompt is empty)');
       return;
     }
