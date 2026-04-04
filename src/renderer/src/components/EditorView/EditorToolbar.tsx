@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { ContentPaste, Save, Send } from '@mui/icons-material';
+import { useEffect, useRef, useState } from 'react';
+import { ContentPaste, Save, Send,MenuOpen } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import {
   Popper,
   Select,
   SvgIcon,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -63,6 +64,10 @@ interface EditorToolbarProps {
   onCopyClick: () => void;
   onSendClick: (sendToAll: boolean) => void;
   onToggleSendTarget: (tabId: string) => void;
+  boilerplates: Record<string, string>;
+  isCtrlHeld: boolean;
+  onBoilerplateChange: (key: string, text: string) => void;
+  onInsertBoilerplate: (key: string) => void;
   clearButtonRef: RefObject<HTMLButtonElement | null>;
   saveButtonRef: RefObject<HTMLButtonElement | null>;
   copyButtonRef: RefObject<HTMLButtonElement | null>;
@@ -93,6 +98,10 @@ export function EditorToolbar({
   onCopyClick,
   onSendClick,
   onToggleSendTarget,
+  boilerplates,
+  isCtrlHeld,
+  onBoilerplateChange,
+  onInsertBoilerplate,
   clearButtonRef,
   saveButtonRef,
   copyButtonRef,
@@ -104,7 +113,27 @@ export function EditorToolbar({
 }: EditorToolbarProps) {
   const theme = useTheme();
   const [popperOpen, setPopperOpen] = useState(false);
+  const [boilerplateClickOpen, setBoilerplateClickOpen] = useState(false);
   const sendAllButtonRef = useRef<HTMLButtonElement>(null);
+  const boilerplateButtonRef = useRef<HTMLButtonElement>(null);
+  const boilerplatePaperRef = useRef<HTMLDivElement>(null);
+
+  // ポップアップ外クリックで閉じる
+  useEffect(() => {
+    if (!boilerplateClickOpen) return;
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        boilerplatePaperRef.current?.contains(target) ||
+        boilerplateButtonRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setBoilerplateClickOpen(false);
+    };
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, [boilerplateClickOpen]);
   const popperTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleMouseEnter = () => {
@@ -120,6 +149,11 @@ export function EditorToolbar({
       setPopperOpen(false);
     }, 200);
   };
+
+  // 定型文スロットキー (1-9, 0)
+  const BOILERPLATE_SLOTS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+
+  const isBoilerplateOpen = isCtrlHeld || boilerplateClickOpen;
 
   // 一括送信対象のブラウザタブ（ターミナルとNANIを除外）
   const sendTargetBrowsers = BROWSERS.filter(
@@ -188,6 +222,91 @@ export function EditorToolbar({
         </Tooltip>
       </Box>
       <Box>
+        <Tooltip title={`Boilerplate (${commandKey} + 1-0)`} arrow>
+          <IconButton
+            ref={boilerplateButtonRef}
+            color="primary"
+            size="small"
+            onClick={() => setBoilerplateClickOpen((prev) => !prev)}
+          >
+            <MenuOpen />
+          </IconButton>
+        </Tooltip>
+        <Popper
+          open={isBoilerplateOpen}
+          anchorEl={boilerplateButtonRef.current}
+          placement="top"
+          sx={{ zIndex: 1300 }}
+        >
+          <Paper
+            ref={boilerplatePaperRef}
+            elevation={8}
+            sx={{
+              p: 1.5,
+              mb: 1,
+              maxHeight: '60vh',
+              overflowY: 'auto',
+              width: 360,
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 'bold',
+                display: 'block',
+                mb: 0.5,
+                px: 1,
+              }}
+            >
+              Boilerplate
+            </Typography>
+            {BOILERPLATE_SLOTS.map((slot) => (
+              <Box
+                key={slot}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  mb: 0.5,
+                  px: 0.5,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    minWidth: 32,
+                    width: 32,
+                    height: 32,
+                    p: 0,
+                    fontWeight: 'bold',
+                    flexShrink: 0,
+                  }}
+                  onClick={() => {
+                    onInsertBoilerplate(slot);
+                    setBoilerplateClickOpen(false);
+                  }}
+                >
+                  {slot}
+                </Button>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  placeholder={`${commandKey}+${slot}`}
+                  value={boilerplates[slot] ?? ''}
+                  onChange={(e) => onBoilerplateChange(slot, e.target.value)}
+                  fullWidth
+                  slotProps={{
+                    input: {
+                      sx: { fontSize: '0.8rem', height: 32 },
+                    },
+                  }}
+                />
+              </Box>
+            ))}
+          </Paper>
+        </Popper>
         <Tooltip title={`Save log (${commandKey} + S)`} arrow>
           <IconButton
             ref={saveButtonRef}

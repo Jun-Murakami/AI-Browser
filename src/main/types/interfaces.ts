@@ -15,6 +15,7 @@ export interface AppState {
   enabledTerminals: Record<string, boolean>;
   tabOrders: Record<string, number>;
   sendTargets: Record<string, boolean>;
+  boilerplates: Record<string, string>;
 }
 
 export interface Log {
@@ -25,6 +26,7 @@ export interface Log {
 export interface TabManager {
   views: WebContentsView[];
   currentIndex: number;
+  isTerminalActive: boolean;
 }
 
 export interface UrlPattern {

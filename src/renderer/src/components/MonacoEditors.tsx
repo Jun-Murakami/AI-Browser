@@ -21,6 +21,7 @@ interface MonacoEditorsProps {
   saveButtonRef: React.RefObject<HTMLButtonElement | null>;
   newerLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement | null>;
+  lastFocusedEditorRef: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   editor1Value: string;
   editor2Value: string;
   editor3Value: string;
@@ -47,6 +48,7 @@ export const MonacoEditors = ({
   newerLogButtonRef,
   olderLogButtonRef,
   saveButtonRef,
+  lastFocusedEditorRef,
   editor1Value,
   editor2Value,
   editor3Value,
@@ -98,6 +100,7 @@ export const MonacoEditors = ({
     saveButtonRef,
     newerLogButtonRef,
     olderLogButtonRef,
+    lastFocusedEditorRef,
   };
 
   const placeholderText = 'Type your prompt for the AI assistant...';

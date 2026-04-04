@@ -32,6 +32,7 @@ export interface MonacoEditorProps {
   saveButtonRef: React.RefObject<HTMLButtonElement | null>;
   newerLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement | null>;
+  lastFocusedEditorRef?: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
@@ -50,6 +51,7 @@ export const MonacoEditor = ({
   saveButtonRef,
   newerLogButtonRef,
   olderLogButtonRef,
+  lastFocusedEditorRef,
   value,
   onChange,
   placeholder,
@@ -103,6 +105,15 @@ export const MonacoEditor = ({
     }
     return () => {};
   }, [darkMode, language, isBoxReady, placeholder]);
+
+  // フォーカス時に最後にフォーカスしたエディタを記録
+  useEffect(() => {
+    if (!editorInstance || !lastFocusedEditorRef) return;
+    const disposable = editorInstance.onDidFocusEditorText(() => {
+      lastFocusedEditorRef.current = editorInstance;
+    });
+    return () => disposable.dispose();
+  }, [editorInstance, lastFocusedEditorRef]);
 
   // モデル変更のハンドラーを別のuseEffectで管理
   useEffect(() => {

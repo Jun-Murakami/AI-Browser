@@ -83,6 +83,8 @@ if (process.contextIsolated) {
         ipcRenderer.send('save-tab-orders', tabOrders),
       saveSendTargets: (sendTargets: Record<string, boolean>) =>
         ipcRenderer.send('save-send-targets', sendTargets),
+      saveBoilerplatesToMain: (boilerplates: Record<string, string>) =>
+        ipcRenderer.send('save-boilerplates', boilerplates),
       onScriptError: (
         callback: (error: { browser: string; error: string }) => void,
       ) =>

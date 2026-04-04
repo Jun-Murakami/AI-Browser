@@ -41,6 +41,7 @@ let appState: AppState = {
   sendTargets: Object.fromEntries(
     BROWSERS.map((browser) => [browser.id, browser.id !== 'NANI']),
   ),
+  boilerplates: {},
 };
 
 let logs: Log[] = [];
@@ -48,6 +49,7 @@ let logs: Log[] = [];
 const tabManager: TabManager = {
   views: [],
   currentIndex: 0,
+  isTerminalActive: false,
 };
 
 // 非表示ビューのbounds
@@ -166,6 +168,11 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     if (!width || !height || tabManager.views.length === 0) {
       return;
     }
+    appState.browserWidth = width;
+    // ターミナルがアクティブな場合はビューを非表示のままにする
+    if (tabManager.isTerminalActive) {
+      return;
+    }
     // 現在表示中のビューのサイズのみを更新
     const currentView = tabManager.views[tabManager.currentIndex];
     if (currentView) {
@@ -176,7 +183,6 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         height: height - 8,
       });
     }
-    appState.browserWidth = width;
   });
 
   ipcMain.on('browser-tab-index', (_, index) => {
@@ -189,8 +195,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         const currentView = tabManager.views[tabManager.currentIndex];
         currentView.setBounds(HIDDEN_BOUNDS);
       }
+      tabManager.isTerminalActive = true;
       return;
     }
+    tabManager.isTerminalActive = false;
 
     if (tabManager.views.length === 0) {
       return;
@@ -278,6 +286,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       })),
       tabOrders: appState.tabOrders,
       sendTargets: appState.sendTargets,
+      boilerplates: appState.boilerplates,
     };
   });
 
@@ -304,6 +313,10 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
   ipcMain.on('save-send-targets', (_, sendTargets: Record<string, boolean>) => {
     appState.sendTargets = sendTargets;
+  });
+
+  ipcMain.on('save-boilerplates', (_, boilerplates: Record<string, string>) => {
+    appState.boilerplates = boilerplates;
   });
 
   ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
@@ -371,6 +384,7 @@ function removeIpcHandlers() {
   ipcMain.removeAllListeners('update-enabled-terminals');
   ipcMain.removeAllListeners('text');
   ipcMain.removeAllListeners('save-tab-orders');
+  ipcMain.removeAllListeners('save-boilerplates');
   ipcMain.removeAllListeners('open-external-link');
 
   /**
@@ -455,6 +469,15 @@ function createMainWindow(): BrowserWindow {
         appState.sendTargets = Object.fromEntries(
           BROWSERS.map((browser) => [browser.id, browser.id !== 'NANI']),
         );
+      }
+
+      // boilerplates のマイグレーション
+      if (
+        !appState.boilerplates ||
+        typeof appState.boilerplates !== 'object' ||
+        Array.isArray(appState.boilerplates)
+      ) {
+        appState.boilerplates = {};
       }
 
       // enabledTerminals の検証とガード処理
@@ -612,6 +635,7 @@ function createMainWindow(): BrowserWindow {
         enabledTerminals: appState.enabledTerminals,
         tabOrders: appState.tabOrders,
         sendTargets: appState.sendTargets,
+        boilerplates: appState.boilerplates,
       };
 
       // ファイルに保存（fsモジュールを使用）

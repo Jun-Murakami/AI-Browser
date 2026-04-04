@@ -3,12 +3,12 @@ import { Allotment, type AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/system';
+import { useHotkeys } from '@tanstack/react-hotkeys';
 import * as monaco from 'monaco-editor';
 import { toast } from 'sonner';
 
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useEditorValues } from '../hooks/useEditorValues';
-import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
 import { useLogManager } from '../hooks/useLogManager';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useTabManager } from '../hooks/useTabManager';
@@ -71,6 +71,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [osInfo, setOsInfo] = useState('');
   const [isChipVisible, setIsChipVisible] = useState(false);
   const [isLicenseDialogOpen, setIsLicenseDialogOpen] = useState(false);
+  const [boilerplates, setBoilerplates] = useState<Record<string, string>>({});
+  const [isCtrlHeld, setIsCtrlHeld] = useState(false);
+  const boilerplatesRef = useRef<Record<string, string>>({});
+  const lastFocusedEditorRef =
+    useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   const checkForUpdates = useCheckForUpdates();
 
@@ -221,6 +226,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         }
         setLanguage(settings.language);
         setFontSize(settings.fontSize);
+        if (settings.boilerplates) {
+          setBoilerplates(settings.boilerplates);
+          boilerplatesRef.current = settings.boilerplates;
+        }
         // OS情報に基づいてコマンドキーを設定
         const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
         setCommandKey(commandKey);
@@ -380,23 +389,136 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     window.electron.sendLanguageToMain(newLanguage);
   };
 
+  // boilerplatesRefを常に最新に保つ
+  boilerplatesRef.current = boilerplates;
+
+  // 定型文の変更ハンドラ
+  const handleBoilerplateChange = useCallback((key: string, text: string) => {
+    setBoilerplates((prev) => {
+      const next = { ...prev, [key]: text };
+      boilerplatesRef.current = next;
+      window.electron.saveBoilerplatesToMain(next);
+      return next;
+    });
+  }, []);
+
+  // 定型文をMonacoカーソル位置に挿入
+  const handleInsertBoilerplate = useCallback((key: string) => {
+    const text = boilerplatesRef.current[key];
+    if (!text) return;
+    const editors = monaco.editor.getEditors();
+    const editor =
+      editors.find((e) => e.hasTextFocus()) ||
+      lastFocusedEditorRef.current ||
+      editors[0];
+    if (!editor) return;
+    const selection = editor.getSelection();
+    if (selection) {
+      editor.executeEdits('boilerplate', [
+        { range: selection, text, forceMoveMarkers: true },
+      ]);
+    }
+    editor.focus();
+  }, []);
+
+  // 修飾キーの押下追跡（長押しでポップアップ表示。macはCmd、他はCtrl）
+  const ctrlTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const modKey = osInfo === 'darwin' ? 'Meta' : 'Control';
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === modKey && !ctrlTimerRef.current) {
+        ctrlTimerRef.current = setTimeout(() => {
+          setIsCtrlHeld(true);
+          ctrlTimerRef.current = null;
+        }, 200);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === modKey) {
+        if (ctrlTimerRef.current) {
+          clearTimeout(ctrlTimerRef.current);
+          ctrlTimerRef.current = null;
+        }
+        setIsCtrlHeld(false);
+      }
+    };
+    const handleBlur = () => {
+      if (ctrlTimerRef.current) {
+        clearTimeout(ctrlTimerRef.current);
+        ctrlTimerRef.current = null;
+      }
+      setIsCtrlHeld(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', handleBlur);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleBlur);
+      if (ctrlTimerRef.current) {
+        clearTimeout(ctrlTimerRef.current);
+      }
+    };
+  }, [modKey]);
+
+  // ボタン押下のリップルエフェクト付きヘルパー
+  const triggerButton = useCallback(
+    (
+      ref: React.RefObject<HTMLButtonElement | null>,
+      ripple: React.RefObject<TouchRippleActions | null>,
+    ) => {
+      ref.current?.focus();
+      ripple.current?.start();
+      ref.current?.click();
+      setTimeout(() => ripple.current?.stop(), 200);
+    },
+    [],
+  );
+
   // グローバルショートカットの設定
-  useGlobalShortcuts({
-    sendButtonRef,
-    saveButtonRef,
-    copyButtonRef,
-    clearButtonRef,
-    newerLogButtonRef,
-    olderLogButtonRef,
-    sendButtonTouchRippleRef,
-    copyButtonTouchRippleRef,
-    clearButtonTouchRippleRef,
-    saveButtonTouchRippleRef,
-    newerLogButtonTouchRippleRef,
-    olderLogButtonTouchRippleRef,
-    osInfo,
-    onTabSwitch: handleTabSwitch,
-  });
+  useHotkeys([
+    {
+      hotkey: 'Mod+Enter',
+      callback: () => triggerButton(sendButtonRef, sendButtonTouchRippleRef),
+    },
+    {
+      hotkey: 'Mod+S',
+      callback: () => triggerButton(saveButtonRef, saveButtonTouchRippleRef),
+    },
+    {
+      hotkey: 'Mod+Shift+C',
+      callback: () => triggerButton(copyButtonRef, copyButtonTouchRippleRef),
+    },
+    {
+      hotkey: 'Mod+Backspace',
+      callback: () => triggerButton(clearButtonRef, clearButtonTouchRippleRef),
+    },
+    {
+      hotkey: 'Mod+ArrowUp',
+      callback: () =>
+        triggerButton(newerLogButtonRef, newerLogButtonTouchRippleRef),
+    },
+    {
+      hotkey: 'Mod+ArrowDown',
+      callback: () =>
+        triggerButton(olderLogButtonRef, olderLogButtonTouchRippleRef),
+    },
+    {
+      hotkey: 'Mod+Tab',
+      callback: () => handleTabSwitch('next'),
+    },
+    {
+      hotkey: 'Mod+Shift+Tab',
+      callback: () => handleTabSwitch('prev'),
+    },
+    ...(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const).map(
+      (key) => ({
+        hotkey: `Mod+${key}` as const,
+        callback: () => handleInsertBoilerplate(key),
+      }),
+    ),
+  ]);
 
   return (
     <Box
@@ -404,7 +526,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       component="main"
     >
       <Allotment ref={editorSplitRef}>
-        <Allotment.Pane minSize={400} preferredSize={preferredSize}>
+        <Allotment.Pane minSize={370} preferredSize={preferredSize}>
           <BrowserView
             ref={browserRef}
             tabs={tabs}
@@ -419,7 +541,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             isDarkMode={darkMode}
           />
         </Allotment.Pane>
-        <Allotment.Pane minSize={500}>
+        <Allotment.Pane minSize={530}>
           <EditorView
             ref={editorPaneRef}
             isChipVisible={isChipVisible}
@@ -458,6 +580,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             sendTargets={sendTargets}
             browserLoadings={browserLoadings}
             onToggleSendTarget={handleToggleSendTarget}
+            boilerplates={boilerplates}
+            isCtrlHeld={isCtrlHeld}
+            onBoilerplateChange={handleBoilerplateChange}
+            onInsertBoilerplate={handleInsertBoilerplate}
+            lastFocusedEditorRef={lastFocusedEditorRef}
             setEditor1Value={(value) => setEditorValue(0, value)}
             setEditor2Value={(value) => setEditorValue(1, value)}
             setEditor3Value={(value) => setEditorValue(2, value)}

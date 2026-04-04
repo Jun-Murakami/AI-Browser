@@ -8,6 +8,7 @@ import { EditorToolbar } from './EditorToolbar';
 import { LogSelector } from './LogSelector';
 
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
+import type * as monaco from 'monaco-editor';
 import type { Log } from '../../types/log.types';
 import type { Tab } from '../../types/tab.types';
 
@@ -57,6 +58,11 @@ interface EditorViewProps {
   sendTargets: Record<string, boolean>;
   browserLoadings: Record<string, boolean>;
   onToggleSendTarget: (tabId: string) => void;
+  boilerplates: Record<string, string>;
+  isCtrlHeld: boolean;
+  onBoilerplateChange: (key: string, text: string) => void;
+  onInsertBoilerplate: (key: string) => void;
+  lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   setEditor1Value: (value: string) => void;
   setEditor2Value: (value: string) => void;
   setEditor3Value: (value: string) => void;
@@ -141,6 +147,11 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       browserWidth,
       browserHeight,
       osInfo,
+      boilerplates,
+      isCtrlHeld,
+      onBoilerplateChange,
+      onInsertBoilerplate,
+      lastFocusedEditorRef,
     } = props;
 
     const fontSizeOptions = [
@@ -213,6 +224,7 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           browserWidth={browserWidth ?? undefined}
           browserHeight={browserHeight ?? undefined}
           osInfo={osInfo}
+          lastFocusedEditorRef={lastFocusedEditorRef}
         />
 
         <EditorToolbar
@@ -240,6 +252,10 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           saveButtonTouchRippleRef={saveButtonTouchRippleRef}
           copyButtonTouchRippleRef={copyButtonTouchRippleRef}
           sendButtonTouchRippleRef={sendButtonTouchRippleRef}
+          boilerplates={boilerplates}
+          isCtrlHeld={isCtrlHeld}
+          onBoilerplateChange={onBoilerplateChange}
+          onInsertBoilerplate={onInsertBoilerplate}
         />
       </Box>
     );

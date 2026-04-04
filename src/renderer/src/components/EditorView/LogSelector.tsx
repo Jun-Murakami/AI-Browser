@@ -1,3 +1,4 @@
+import { forwardRef, useMemo, useRef } from 'react';
 import { Clear, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import {
   Autocomplete,
@@ -17,7 +18,6 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useResizeObserver } from '../../hooks/useResizeObserver';
 
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
-import { forwardRef, useMemo, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Log } from '../../types/log.types';
 
