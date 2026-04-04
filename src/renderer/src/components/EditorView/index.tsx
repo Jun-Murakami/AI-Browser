@@ -16,7 +16,6 @@ interface EditorViewProps {
   // チップ関連
   isChipVisible: boolean;
   latestVersion: string | null;
-  releasePageUrl: string | null;
   onChipClick: () => void;
   onChipClose: () => void;
 

@@ -28,6 +28,18 @@ interface ExtendedElectronAPI extends ElectronAPI {
     callback: (error: { browser: string; error: string }) => void,
   ) => void;
   removeScriptErrorListener: () => void;
+  startUpdateDownload: (
+    downloadUrl: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  cancelUpdateDownload: () => void;
+  onUpdateDownloadProgress: (
+    callback: (progress: {
+      receivedBytes: number;
+      totalBytes: number;
+      percent: number;
+    }) => void,
+  ) => void;
+  removeUpdateDownloadProgressListener: () => void;
 }
 
 interface Browser {

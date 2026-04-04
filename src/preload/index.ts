@@ -94,6 +94,21 @@ if (process.contextIsolated) {
         ),
       removeScriptErrorListener: () =>
         ipcRenderer.removeAllListeners('script-error'),
+      startUpdateDownload: (downloadUrl: string) =>
+        ipcRenderer.invoke('update:download', downloadUrl),
+      cancelUpdateDownload: () => ipcRenderer.send('update:cancel-download'),
+      onUpdateDownloadProgress: (
+        callback: (progress: {
+          receivedBytes: number;
+          totalBytes: number;
+          percent: number;
+        }) => void,
+      ) =>
+        ipcRenderer.on('update:download-progress', (_, progress) =>
+          callback(progress),
+        ),
+      removeUpdateDownloadProgressListener: () =>
+        ipcRenderer.removeAllListeners('update:download-progress'),
     });
 
     contextBridge.exposeInMainWorld('api', api);

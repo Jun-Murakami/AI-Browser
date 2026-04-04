@@ -16,6 +16,7 @@ import { BrowserView } from './BrowserView';
 import { EditorView } from './EditorView';
 import { LicenseDialog } from './EditorView/LicenseDialog';
 import { cleanupAllTerminals } from './TerminalView';
+import { UpdateDialog } from './UpdateDialog';
 
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 
@@ -60,8 +61,13 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   } = useEditorValues();
 
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
-  const [latestVersion, setLatestVersion] = useState<string | null>(null);
-  const [releasePageUrl, setReleasePageUrl] = useState<string | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<{
+    latestVersion: string;
+    releasePageUrl: string;
+    releaseBody: string;
+    releaseAssets: { name: string; browserDownloadUrl: string; size: number }[];
+  } | null>(null);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [editorIndex, setEditorIndex] = useState(0);
   const [language, setLanguage] = useState('plaintext');
@@ -236,8 +242,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         setOsInfo(settings.osInfo);
         const result = await checkForUpdates(settings.currentVersion);
         if (result) {
-          setLatestVersion(result.latestVersion);
-          setReleasePageUrl('https://jun-murakami.web.app/#aiBrowser');
+          setUpdateInfo(result);
           setIsChipVisible(true);
         }
         setTimeout(() => {
@@ -366,9 +371,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // チップがクリックされたときの処理
   const handleChipClick = () => {
-    if (releasePageUrl) {
-      window.electron.openExternalLink(releasePageUrl);
-    }
+    setIsUpdateDialogOpen(true);
   };
 
   // フォントサイズ変更の処理
@@ -545,8 +548,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
           <EditorView
             ref={editorPaneRef}
             isChipVisible={isChipVisible}
-            latestVersion={latestVersion}
-            releasePageUrl={releasePageUrl}
+            latestVersion={updateInfo?.latestVersion ?? null}
             onChipClick={handleChipClick}
             onChipClose={() => setIsChipVisible(false)}
             editorIndex={editorIndex}
@@ -610,6 +612,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             currentVersion={currentVersion}
             open={isLicenseDialogOpen}
             onClose={() => setIsLicenseDialogOpen(false)}
+          />
+          <UpdateDialog
+            open={isUpdateDialogOpen}
+            onClose={() => setIsUpdateDialogOpen(false)}
+            latestVersion={updateInfo?.latestVersion ?? ''}
+            releaseBody={updateInfo?.releaseBody ?? ''}
+            releaseAssets={updateInfo?.releaseAssets ?? []}
+            releasePageUrl={updateInfo?.releasePageUrl ?? ''}
+            osInfo={osInfo}
           />
         </Allotment.Pane>
       </Allotment>

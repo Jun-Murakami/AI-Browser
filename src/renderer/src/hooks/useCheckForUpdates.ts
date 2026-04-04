@@ -3,6 +3,19 @@ import { useCallback } from 'react';
 const repoUrl =
   'https://api.github.com/repos/Jun-Murakami/AI-Browser/releases/latest';
 
+export interface ReleaseAsset {
+  name: string;
+  browserDownloadUrl: string;
+  size: number;
+}
+
+export interface UpdateInfo {
+  latestVersion: string;
+  releasePageUrl: string;
+  releaseBody: string;
+  releaseAssets: ReleaseAsset[];
+}
+
 // バージョン番号を比較する関数
 const compareVersions = (version1: string, version2: string): number => {
   const v1Parts = version1.split('.').map(Number);
@@ -20,32 +33,46 @@ const compareVersions = (version1: string, version2: string): number => {
 };
 
 export const useCheckForUpdates = () => {
-  const checkForUpdates = useCallback(async (currentVersion: string | null) => {
-    try {
-      if (!currentVersion) {
-        console.error('バージョン情報が見つかりません');
-        return null;
-      }
-      const response = await fetch(repoUrl);
-      const data = await response.json();
-      if (!data) {
-        console.error('データが見つかりません');
-        return null;
-      }
-      const latestVersion = data.tag_name.replace('v', '');
+  const checkForUpdates = useCallback(
+    async (currentVersion: string | null): Promise<UpdateInfo | null> => {
+      try {
+        if (!currentVersion) {
+          console.error('バージョン情報が見つかりません');
+          return null;
+        }
+        const response = await fetch(repoUrl);
+        const data = await response.json();
+        if (!data) {
+          console.error('データが見つかりません');
+          return null;
+        }
+        const latestVersion = data.tag_name.replace('v', '');
 
-      // 新しい比較関数を使用
-      if (compareVersions(latestVersion, currentVersion) > 0) {
-        const releasePageUrl = data.html_url; // リリースページのURLを取得
-        return { latestVersion, releasePageUrl };
+        if (compareVersions(latestVersion, currentVersion) > 0) {
+          const releasePageUrl = data.html_url;
+          const releaseBody = data.body ?? '';
+          const releaseAssets: ReleaseAsset[] = (data.assets ?? []).map(
+            (asset: {
+              name: string;
+              browser_download_url: string;
+              size: number;
+            }) => ({
+              name: asset.name,
+              browserDownloadUrl: asset.browser_download_url,
+              size: asset.size,
+            }),
+          );
+          return { latestVersion, releasePageUrl, releaseBody, releaseAssets };
+        }
+        console.log('最新バージョンです');
+        return null;
+      } catch (error) {
+        console.error('更新のチェック中にエラーが発生しました:', error);
+        return null;
       }
-      console.log('最新バージョンです');
-      return null;
-    } catch (error) {
-      console.error('更新のチェック中にエラーが発生しました:', error);
-      return null;
-    }
-  }, []);
+    },
+    [],
+  );
 
   return checkForUpdates;
 };

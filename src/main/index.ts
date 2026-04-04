@@ -14,11 +14,18 @@ import { BROWSERS, URL_PATTERNS } from './constants/browsers';
 import { TERMINALS } from './constants/terminals';
 import { terminalManager } from './terminal/terminalManager';
 
+import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
+import * as http from 'node:http';
+import * as https from 'node:https';
 import * as path from 'node:path';
 import { join } from 'node:path';
 
 import type { AppState, Log, TabManager } from './types/interfaces';
+
+// アップデートダウンロード用
+let activeDownloadRequest: http.ClientRequest | null = null;
+let activeDownloadPath: string | null = null;
 
 // 初期のenabledBrowsersを生成
 const initialEnabledBrowsers = Object.fromEntries(
@@ -367,6 +374,204 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.on('open-external-link', (_, url) => {
     shell.openExternal(url);
   });
+
+  // アップデートダウンロード
+  ipcMain.handle(
+    'update:download',
+    async (
+      event,
+      downloadUrl: string,
+    ): Promise<{ success: boolean; error?: string }> => {
+      const savePath =
+        process.platform === 'linux'
+          ? app.getPath('downloads')
+          : app.getPath('temp');
+      const fileName = decodeURIComponent(
+        downloadUrl.split('/').pop() || 'update-installer',
+      );
+      const fullPath = path.join(savePath, fileName);
+      activeDownloadPath = fullPath;
+
+      return new Promise((resolve) => {
+        const doDownload = (url: string, redirectCount = 0): void => {
+          if (redirectCount > 5) {
+            activeDownloadRequest = null;
+            activeDownloadPath = null;
+            resolve({ success: false, error: 'Too many redirects' });
+            return;
+          }
+
+          const lib = url.startsWith('https') ? https : http;
+          const req = lib.get(url, (response) => {
+            // リダイレクト対応
+            if (
+              (response.statusCode === 301 || response.statusCode === 302) &&
+              response.headers.location
+            ) {
+              response.resume();
+              doDownload(response.headers.location, redirectCount + 1);
+              return;
+            }
+
+            if (response.statusCode !== 200) {
+              activeDownloadRequest = null;
+              activeDownloadPath = null;
+              resolve({
+                success: false,
+                error: `HTTP ${response.statusCode}`,
+              });
+              return;
+            }
+
+            const totalBytes = Number.parseInt(
+              response.headers['content-length'] || '0',
+              10,
+            );
+            let receivedBytes = 0;
+
+            const fileStream = fs.createWriteStream(fullPath);
+
+            response.on('data', (chunk: Buffer) => {
+              receivedBytes += chunk.length;
+              const percent =
+                totalBytes > 0
+                  ? Math.round((receivedBytes / totalBytes) * 100)
+                  : 0;
+              if (!event.sender.isDestroyed()) {
+                event.sender.send('update:download-progress', {
+                  receivedBytes,
+                  totalBytes,
+                  percent,
+                });
+              }
+            });
+
+            response.pipe(fileStream);
+
+            fileStream.on('finish', async () => {
+              activeDownloadRequest = null;
+              activeDownloadPath = null;
+
+              if (process.platform === 'win32') {
+                const errorMsg = await shell.openPath(fullPath);
+                if (errorMsg) {
+                  resolve({ success: false, error: errorMsg });
+                  return;
+                }
+                setTimeout(() => app.quit(), 500);
+              } else if (process.platform === 'darwin') {
+                // macOS: シェルスクリプトでDMGマウント→アプリ上書き→再起動
+                const appBundlePath = path.resolve(
+                  process.execPath,
+                  '..',
+                  '..',
+                  '..',
+                );
+                if (!appBundlePath.endsWith('.app')) {
+                  // dev環境などではフォールバック
+                  await shell.openPath(fullPath);
+                  setTimeout(() => app.quit(), 500);
+                  resolve({ success: true });
+                  return;
+                }
+                const pid = process.pid;
+                const scriptPath = path.join(
+                  app.getPath('temp'),
+                  'ai-browser-update.sh',
+                );
+                const script = `#!/bin/bash
+# アプリ終了を待機
+while kill -0 ${pid} 2>/dev/null; do sleep 0.5; done
+
+# DMGをマウント
+MOUNT_OUTPUT=$(hdiutil attach "${fullPath}" -nobrowse -noautoopen 2>&1)
+MOUNT_POINT=$(echo "$MOUNT_OUTPUT" | grep -oE '/Volumes/.*' | head -1)
+
+if [ -z "$MOUNT_POINT" ]; then
+  exit 1
+fi
+
+# マウントされたボリューム内の.appを検索
+SRC_APP=$(find "$MOUNT_POINT" -maxdepth 1 -name "*.app" -print -quit)
+
+if [ -z "$SRC_APP" ]; then
+  hdiutil detach "$MOUNT_POINT" -quiet
+  exit 1
+fi
+
+# 旧アプリを削除して新アプリをコピー
+rm -rf "${appBundlePath}"
+ditto "$SRC_APP" "${appBundlePath}"
+
+# アンマウント＆クリーンアップ
+hdiutil detach "$MOUNT_POINT" -quiet
+rm -f "${fullPath}"
+
+# 再起動
+open "${appBundlePath}"
+
+# スクリプト自体を削除
+rm -f "${scriptPath}"
+`;
+                fs.writeFileSync(scriptPath, script, { mode: 0o755 });
+                spawn('bash', [scriptPath], {
+                  detached: true,
+                  stdio: 'ignore',
+                }).unref();
+                setTimeout(() => app.quit(), 500);
+              } else {
+                shell.showItemInFolder(fullPath);
+              }
+              resolve({ success: true });
+            });
+
+            fileStream.on('error', (err) => {
+              activeDownloadRequest = null;
+              try {
+                fs.unlinkSync(fullPath);
+              } catch {}
+              activeDownloadPath = null;
+              resolve({ success: false, error: err.message });
+            });
+          });
+
+          req.on('error', (err) => {
+            activeDownloadRequest = null;
+            try {
+              if (activeDownloadPath) fs.unlinkSync(activeDownloadPath);
+            } catch {}
+            activeDownloadPath = null;
+            // ユーザーキャンセルの場合はエラーにしない
+            if (
+              (err as NodeJS.ErrnoException).code === 'ERR_STREAM_DESTROYED'
+            ) {
+              resolve({ success: false, error: 'cancelled' });
+            } else {
+              resolve({ success: false, error: err.message });
+            }
+          });
+
+          activeDownloadRequest = req;
+        };
+
+        doDownload(downloadUrl);
+      });
+    },
+  );
+
+  // アップデートダウンロードのキャンセル
+  ipcMain.on('update:cancel-download', () => {
+    if (activeDownloadRequest) {
+      activeDownloadRequest.destroy();
+      activeDownloadRequest = null;
+    }
+    if (activeDownloadPath) {
+      try {
+        fs.unlinkSync(activeDownloadPath);
+      } catch {}
+      activeDownloadPath = null;
+    }
+  });
 }
 
 /**
@@ -389,6 +594,19 @@ function removeIpcHandlers() {
   ipcMain.removeAllListeners('save-tab-orders');
   ipcMain.removeAllListeners('save-boilerplates');
   ipcMain.removeAllListeners('open-external-link');
+  ipcMain.removeAllListeners('update:cancel-download');
+
+  // アクティブなダウンロードを中断
+  if (activeDownloadRequest) {
+    activeDownloadRequest.destroy();
+    activeDownloadRequest = null;
+  }
+  if (activeDownloadPath) {
+    try {
+      fs.unlinkSync(activeDownloadPath);
+    } catch {}
+    activeDownloadPath = null;
+  }
 
   /**
    * IMPORTANT:
@@ -402,6 +620,7 @@ function removeIpcHandlers() {
    * `invoke` 用ハンドラは `ipcMain.removeHandler(channel)` で解除します。
    */
   ipcMain.removeHandler('get-initial-settings');
+  ipcMain.removeHandler('update:download');
 }
 
 /**
