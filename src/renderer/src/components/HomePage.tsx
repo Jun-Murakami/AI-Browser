@@ -430,7 +430,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         ctrlTimerRef.current = setTimeout(() => {
           setIsCtrlHeld(true);
           ctrlTimerRef.current = null;
-        }, 200);
+        }, 300);
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
