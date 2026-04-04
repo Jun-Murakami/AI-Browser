@@ -46,6 +46,9 @@ let appState: AppState = {
 
 let logs: Log[] = [];
 
+// ウィンドウ終了処理の二重実行を防止するフラグ
+let isClosing = false;
+
 const tabManager: TabManager = {
   views: [],
   currentIndex: 0,
@@ -402,24 +405,31 @@ function removeIpcHandlers() {
 }
 
 /**
- * BrowserView に登録しているイベントリスナーを削除
+ * BrowserView に登録しているイベントリスナーを削除し、webContentsを破棄
  */
-function removeBrowserViewListeners(view: WebContentsView) {
-  // BrowserView を WebContentsView に変更
+function destroyBrowserView(view: WebContentsView) {
   const wc = view.webContents;
   wc.removeAllListeners('did-navigate');
   wc.removeAllListeners('did-finish-load');
   wc.removeAllListeners('did-start-loading');
   wc.removeAllListeners('did-stop-loading');
+  // WebContentsViewのRendererプロセスを明示的に破棄
+  if (!wc.isDestroyed()) {
+    wc.close();
+  }
 }
 
 /**
- * メインウィンドウに登録されている全ての BrowserView のイベントを削除
+ * メインウィンドウに登録されている全ての BrowserView を破棄
  */
-function removeAllBrowserViewsListeners() {
+function destroyAllBrowserViews(mainWindow: BrowserWindow) {
   for (const view of tabManager.views) {
-    removeBrowserViewListeners(view);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.contentView.removeChildView(view);
+    }
+    destroyBrowserView(view);
   }
+  tabManager.views = [];
 }
 
 /**
@@ -604,11 +614,12 @@ function createMainWindow(): BrowserWindow {
   });
 
   mainWindow.on('close', (e) => {
-    // Mac以外でデフォルトの閉じる動作をキャンセル
-    e.preventDefault();
+    // 二重実行防止: isClosingフラグが立っている場合はそのまま閉じる
+    if (isClosing) return;
+    isClosing = true;
 
-    // ここでBrowserViewのイベントリスナーを削除
-    removeAllBrowserViewsListeners();
+    // デフォルトのclose動作をキャンセルして状態保存を行う
+    e.preventDefault();
 
     if (mainWindow && !mainWindow.isDestroyed()) {
       // ウィンドウの状態を取得
@@ -652,6 +663,9 @@ function createMainWindow(): BrowserWindow {
         path.join(userDataPath, 'logs.json'),
         JSON.stringify(logs, null, 2),
       );
+
+      // 全WebContentsViewを明示的に破棄（Rendererプロセスの残留を防止）
+      destroyAllBrowserViews(mainWindow);
     }
     removeIpcHandlers();
     mainWindow.destroy();
@@ -679,7 +693,10 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      isClosing = false;
+      createMainWindow();
+    }
   });
 });
 
@@ -697,6 +714,11 @@ app.on('will-quit', () => {
   removeIpcHandlers();
   // ターミナルセッションをクリーンアップ
   terminalManager.destroyAllSessions();
+
+  // フォールバック: 5秒以内にプロセスが終了しない場合は強制終了
+  setTimeout(() => {
+    app.exit(0);
+  }, 5000);
 });
 
 // In this file you can include the rest of your app"s specific main process
