@@ -93,6 +93,9 @@ interface TerminalAPI {
     ) => void,
   ) => void;
   resizeTerminal: (terminalId: string, cols: number, rows: number) => void;
+  saveClipboardImage: (
+    dataBase64: string,
+  ) => Promise<{ success: boolean; filePath?: string; error?: string }>;
 }
 
 declare global {

@@ -12,6 +12,7 @@ import { useEditorValues } from '../hooks/useEditorValues';
 import { useLogManager } from '../hooks/useLogManager';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useTabManager } from '../hooks/useTabManager';
+import { terminalService } from '../services/terminalService';
 import { BrowserView } from './BrowserView';
 import { EditorView } from './EditorView';
 import { LicenseDialog } from './EditorView/LicenseDialog';
@@ -240,6 +241,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
         setCommandKey(commandKey);
         setOsInfo(settings.osInfo);
+        terminalService.setPlatform(settings.osInfo);
         const result = await checkForUpdates(settings.currentVersion);
         if (result) {
           setUpdateInfo(result);

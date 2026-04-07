@@ -26,6 +26,8 @@ const api = {
   ) => ipcRenderer.removeListener('terminal:output', callback),
   resizeTerminal: (terminalId: string, cols: number, rows: number) =>
     ipcRenderer.send('terminal:resize', terminalId, cols, rows),
+  saveClipboardImage: (dataBase64: string) =>
+    ipcRenderer.invoke('terminal:save-clipboard-image', dataBase64),
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

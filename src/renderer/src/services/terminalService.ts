@@ -16,11 +16,19 @@ interface TerminalInstance {
   // 高頻度の出力を集約するためのバッファとフラグ
   writeBuffer: string;
   isFlushScheduled: boolean;
+  // クリップボード画像ペースト用ハンドラー
+  pasteHandler?: (e: ClipboardEvent) => void;
 }
 
 class TerminalService {
   private instances = new Map<string, TerminalInstance>();
   private currentTheme: 'dark' | 'light' = 'dark';
+  private _platform = '';
+
+  /** メインプロセスから取得した process.platform をセットする */
+  setPlatform(platform: string): void {
+    this._platform = platform;
+  }
 
   /**
    * ターミナルインスタンスを取得（なければ作成）。
@@ -144,6 +152,42 @@ class TerminalService {
       instance.terminal.open(element);
     }
 
+    // クリップボード画像ペースト用リスナーを登録（Windows のみ。macOS はネイティブで対応済み）
+    if (!instance.pasteHandler && this._platform === 'win32') {
+      instance.pasteHandler = (e: ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of items) {
+          if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const blob = item.getAsFile();
+            if (!blob) return;
+
+            const reader = new FileReader();
+            reader.onload = async () => {
+              const dataUrl = reader.result as string;
+              // "data:image/png;base64,..." から base64 部分を抽出
+              const base64 = dataUrl.split(',')[1];
+              if (!base64) return;
+
+              const result = await window.api.saveClipboardImage(base64);
+              if (result.success && result.filePath) {
+                // ファイルパスをブラケットペーストでPTYに送信
+                this.pasteToTerminal(terminalId, result.filePath, {
+                  autoSubmit: false,
+                });
+              }
+            };
+            reader.readAsDataURL(blob);
+            return; // 最初の画像のみ処理
+          }
+        }
+      };
+      element.addEventListener('paste', instance.pasteHandler, true);
+    }
+
     // フィット
     setTimeout(() => {
       try {
@@ -155,6 +199,15 @@ class TerminalService {
   detachFromDOM(terminalId: string): void {
     const instance = this.instances.get(terminalId);
     if (instance?.terminal.element) {
+      // ペーストリスナーを解除
+      if (instance.pasteHandler && instance.terminal.element.parentElement) {
+        instance.terminal.element.parentElement.removeEventListener(
+          'paste',
+          instance.pasteHandler,
+          true,
+        );
+        instance.pasteHandler = undefined;
+      }
       // 要素をDOMから削除するが、インスタンスは保持
       if (instance.terminal.element.parentElement) {
         instance.terminal.element.parentElement.removeChild(

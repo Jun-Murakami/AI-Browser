@@ -1,8 +1,9 @@
 import { spawn } from '@homebridge/node-pty-prebuilt-multiarch';
 import { BrowserWindow, ipcMain } from 'electron';
 
-import { existsSync } from 'node:fs';
-import { platform } from 'node:os';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { platform, tmpdir } from 'node:os';
+import { join as pathJoin } from 'node:path';
 
 import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch';
 import type { TerminalSession } from '../types/interfaces';
@@ -118,6 +119,27 @@ class TerminalManager {
       'terminal:resize',
       (_event, terminalId: string, cols: number, rows: number) => {
         this.resizeTerminal(terminalId, cols, rows);
+      },
+    );
+
+    // クリップボードの画像データを一時ファイルに保存
+    ipcMain.handle(
+      'terminal:save-clipboard-image',
+      async (_event, dataBase64: string) => {
+        try {
+          const dir = pathJoin(tmpdir(), 'ai-browser-clipboard');
+          if (!existsSync(dir)) {
+            mkdirSync(dir, { recursive: true });
+          }
+          const filePath = pathJoin(dir, `clipboard-${Date.now()}.png`);
+          writeFileSync(filePath, Buffer.from(dataBase64, 'base64'));
+          return { success: true, filePath };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
       },
     );
   }

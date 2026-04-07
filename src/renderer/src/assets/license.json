@@ -358,12 +358,40 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@szmarczak\\http-timer",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@szmarczak\\http-timer\\LICENSE"
   },
+  "@tanstack/hotkeys@0.7.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/hotkeys",
+    "publisher": "Tanner Linsley",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\hotkeys",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\hotkeys\\LICENSE"
+  },
+  "@tanstack/react-hotkeys@0.9.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/hotkeys",
+    "publisher": "Tanner Linsley",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-hotkeys",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-hotkeys\\LICENSE"
+  },
+  "@tanstack/react-store@0.9.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/store",
+    "publisher": "Tanner Linsley",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-store",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-store\\LICENSE"
+  },
   "@tanstack/react-virtual@3.13.23": {
     "licenses": "MIT",
     "repository": "https://github.com/TanStack/virtual",
     "publisher": "Tanner Linsley",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-virtual",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\react-virtual\\LICENSE"
+  },
+  "@tanstack/store@0.9.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/store",
+    "publisher": "Tanner Linsley",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\store",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@tanstack\\store\\LICENSE"
   },
   "@tanstack/virtual-core@3.13.23": {
     "licenses": "MIT",
@@ -378,6 +406,30 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\cacheable-request",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\cacheable-request\\LICENSE"
   },
+  "@types/debug@4.1.13": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\debug",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\debug\\LICENSE"
+  },
+  "@types/estree-jsx@1.0.5": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\estree-jsx",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\estree-jsx\\LICENSE"
+  },
+  "@types/estree@1.0.8": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\estree",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\estree\\LICENSE"
+  },
+  "@types/hast@3.0.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\hast",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\hast\\LICENSE"
+  },
   "@types/http-cache-semantics@4.0.4": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
@@ -389,6 +441,18 @@
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\keyv",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\keyv\\LICENSE"
+  },
+  "@types/mdast@4.0.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\mdast",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\mdast\\LICENSE"
+  },
+  "@types/ms@2.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\ms",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\ms\\LICENSE"
   },
   "@types/node@24.10.9": {
     "licenses": "MIT",
@@ -438,11 +502,30 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\trusted-types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\trusted-types\\LICENSE"
   },
+  "@types/unist@2.0.11": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\parse-entities\\node_modules\\@types\\unist",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\parse-entities\\node_modules\\@types\\unist\\LICENSE"
+  },
+  "@types/unist@3.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\unist",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\unist\\LICENSE"
+  },
   "@types/yauzl@2.10.3": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\yauzl",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\yauzl\\LICENSE"
+  },
+  "@ungap/structured-clone@1.3.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/ungap/structured-clone",
+    "publisher": "Andrea Giammarchi",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@ungap\\structured-clone",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@ungap\\structured-clone\\LICENSE"
   },
   "@xterm/addon-fit@0.11.0": {
     "licenses": "MIT",
@@ -466,7 +549,7 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@xterm\\xterm\\LICENSE"
   },
-  "ai-browser@1.6.11": {
+  "ai-browser@1.6.12": {
     "licenses": "MIT",
     "publisher": "Jun Murakami",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser",
@@ -506,6 +589,15 @@
     "url": "https://kentcdodds.com",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\babel-plugin-macros",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\babel-plugin-macros\\LICENSE"
+  },
+  "bail@2.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/bail",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\bail",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\bail\\license"
   },
   "base64-js@1.5.1": {
     "licenses": "MIT",
@@ -569,6 +661,51 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\callsites",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\callsites\\license"
   },
+  "ccount@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/ccount",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\ccount",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\ccount\\license"
+  },
+  "character-entities-html4@2.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/character-entities-html4",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-entities-html4",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-entities-html4\\license"
+  },
+  "character-entities-legacy@3.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/character-entities-legacy",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-entities-legacy",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-entities-legacy\\license"
+  },
+  "character-entities@2.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/character-entities",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-entities",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-entities\\license"
+  },
+  "character-reference-invalid@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/character-reference-invalid",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-reference-invalid",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\character-reference-invalid\\license"
+  },
   "chownr@1.1.4": {
     "licenses": "ISC",
     "repository": "https://github.com/isaacs/chownr",
@@ -612,6 +749,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\clsx",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\clsx\\license"
   },
+  "comma-separated-tokens@2.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/comma-separated-tokens",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\comma-separated-tokens",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\comma-separated-tokens\\license"
+  },
   "convert-source-map@1.9.0": {
     "licenses": "MIT",
     "repository": "https://github.com/thlorenz/convert-source-map",
@@ -644,6 +790,15 @@
     "url": "https://github.com/qix-",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\debug",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\debug\\LICENSE"
+  },
+  "decode-named-character-reference@1.3.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/decode-named-character-reference",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\decode-named-character-reference",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\decode-named-character-reference\\license"
   },
   "decompress-response@6.0.0": {
     "licenses": "MIT",
@@ -685,6 +840,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\define-properties",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\define-properties\\LICENSE"
   },
+  "dequal@2.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/lukeed/dequal",
+    "publisher": "Luke Edwards",
+    "email": "luke.edwards05@gmail.com",
+    "url": "https://lukeed.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\dequal",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\dequal\\license"
+  },
   "detect-libc@2.0.3": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/lovell/detect-libc",
@@ -699,6 +863,15 @@
     "publisher": "Ilya Kantor",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\detect-node",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\detect-node\\LICENSE"
+  },
+  "devlop@1.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/devlop",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\devlop",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\devlop\\license"
   },
   "dom-helpers@5.2.1": {
     "licenses": "MIT",
@@ -823,6 +996,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unused-filename\\node_modules\\escape-string-regexp",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unused-filename\\node_modules\\escape-string-regexp\\license"
   },
+  "estree-util-is-identifier-name@3.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/estree-util-is-identifier-name",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\estree-util-is-identifier-name",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\estree-util-is-identifier-name\\license"
+  },
   "eventemitter3@5.0.1": {
     "licenses": "MIT",
     "repository": "https://github.com/primus/eventemitter3",
@@ -855,6 +1037,15 @@
     "url": "https://github.com/kevva",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\ext-name",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\ext-name\\license"
+  },
+  "extend@3.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/justmoon/node-extend",
+    "publisher": "Stefan Thomas",
+    "email": "justmoon@members.fsf.org",
+    "url": "http://www.justmoon.net",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\extend",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\extend\\LICENSE"
   },
   "extract-zip@2.0.1": {
     "licenses": "BSD-2-Clause",
@@ -989,6 +1180,24 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hasown",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hasown\\LICENSE"
   },
+  "hast-util-to-jsx-runtime@2.3.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/hast-util-to-jsx-runtime",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hast-util-to-jsx-runtime",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hast-util-to-jsx-runtime\\license"
+  },
+  "hast-util-whitespace@3.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/hast-util-whitespace",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hast-util-whitespace",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hast-util-whitespace\\license"
+  },
   "hoist-non-react-statics@3.3.2": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/mridgway/hoist-non-react-statics",
@@ -996,6 +1205,15 @@
     "email": "mcridgway@gmail.com",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hoist-non-react-statics",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\hoist-non-react-statics\\LICENSE.md"
+  },
+  "html-url-attributes@3.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/rehypejs/rehype-minify/tree/main/packages/html-url-attributes",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\html-url-attributes",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\html-url-attributes\\license"
   },
   "http-cache-semantics@4.1.1": {
     "licenses": "BSD-2-Clause",
@@ -1046,6 +1264,30 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\ini",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\ini\\LICENSE"
   },
+  "inline-style-parser@0.2.7": {
+    "licenses": "MIT",
+    "repository": "https://github.com/remarkablemark/inline-style-parser",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\inline-style-parser",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\inline-style-parser\\LICENSE"
+  },
+  "is-alphabetical@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/is-alphabetical",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-alphabetical",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-alphabetical\\license"
+  },
+  "is-alphanumerical@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/is-alphanumerical",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-alphanumerical",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-alphanumerical\\license"
+  },
   "is-arrayish@0.2.1": {
     "licenses": "MIT",
     "repository": "https://github.com/qix-/node-is-arrayish",
@@ -1062,6 +1304,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-core-module",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-core-module\\LICENSE"
   },
+  "is-decimal@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/is-decimal",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-decimal",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-decimal\\license"
+  },
   "is-fullwidth-code-point@4.0.0": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/is-fullwidth-code-point",
@@ -1071,6 +1322,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-fullwidth-code-point",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-fullwidth-code-point\\license"
   },
+  "is-hexadecimal@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/is-hexadecimal",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-hexadecimal",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-hexadecimal\\license"
+  },
   "is-plain-obj@1.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/is-plain-obj",
@@ -1079,6 +1339,15 @@
     "url": "sindresorhus.com",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-plain-obj",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\is-plain-obj\\license"
+  },
+  "is-plain-obj@4.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/sindresorhus/is-plain-obj",
+    "publisher": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "https://sindresorhus.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unified\\node_modules\\is-plain-obj",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unified\\node_modules\\is-plain-obj\\license"
   },
   "js-tokens@4.0.0": {
     "licenses": "MIT",
@@ -1164,6 +1433,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lodash.debounce",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\lodash.debounce\\LICENSE"
   },
+  "longest-streak@3.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/longest-streak",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\longest-streak",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\longest-streak\\license"
+  },
   "loose-envify@1.4.0": {
     "licenses": "MIT",
     "repository": "https://github.com/zertosh/loose-envify",
@@ -1189,6 +1467,267 @@
     "url": "https://sindresorhus.com",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\matcher",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\matcher\\license"
+  },
+  "mdast-util-from-markdown@2.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-from-markdown",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-from-markdown",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-from-markdown\\license"
+  },
+  "mdast-util-mdx-expression@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-mdx-expression",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-mdx-expression",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-mdx-expression\\license"
+  },
+  "mdast-util-mdx-jsx@3.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-mdx-jsx",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-mdx-jsx",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-mdx-jsx\\license"
+  },
+  "mdast-util-mdxjs-esm@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-mdxjs-esm",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-mdxjs-esm",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-mdxjs-esm\\license"
+  },
+  "mdast-util-phrasing@4.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-phrasing",
+    "publisher": "Victor Felder",
+    "email": "victor@draft.li",
+    "url": "https://draft.li",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-phrasing",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-phrasing\\license"
+  },
+  "mdast-util-to-hast@13.2.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-to-hast",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-to-hast",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-to-hast\\license"
+  },
+  "mdast-util-to-markdown@2.1.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-to-markdown",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-to-markdown",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-to-markdown\\license"
+  },
+  "mdast-util-to-string@4.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/mdast-util-to-string",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-to-string",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\mdast-util-to-string\\license"
+  },
+  "micromark-core-commonmark@2.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-core-commonmark",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-core-commonmark",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-core-commonmark\\license"
+  },
+  "micromark-factory-destination@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-factory-destination",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-destination",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-destination\\license"
+  },
+  "micromark-factory-label@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-factory-label",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-label",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-label\\license"
+  },
+  "micromark-factory-space@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-factory-space",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-space",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-space\\license"
+  },
+  "micromark-factory-title@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-factory-title",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-title",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-title\\license"
+  },
+  "micromark-factory-whitespace@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-factory-whitespace",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-whitespace",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-factory-whitespace\\license"
+  },
+  "micromark-util-character@2.1.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-character",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-character",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-character\\license"
+  },
+  "micromark-util-chunked@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-chunked",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-chunked",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-chunked\\license"
+  },
+  "micromark-util-classify-character@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-classify-character",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-classify-character",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-classify-character\\license"
+  },
+  "micromark-util-combine-extensions@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-combine-extensions",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-combine-extensions",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-combine-extensions\\license"
+  },
+  "micromark-util-decode-numeric-character-reference@2.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-decode-numeric-character-reference",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-decode-numeric-character-reference",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-decode-numeric-character-reference\\license"
+  },
+  "micromark-util-decode-string@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-decode-string",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-decode-string",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-decode-string\\license"
+  },
+  "micromark-util-encode@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-encode",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-encode",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-encode\\license"
+  },
+  "micromark-util-html-tag-name@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-html-tag-name",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-html-tag-name",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-html-tag-name\\license"
+  },
+  "micromark-util-normalize-identifier@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-normalize-identifier",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-normalize-identifier",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-normalize-identifier\\license"
+  },
+  "micromark-util-resolve-all@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-resolve-all",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-resolve-all",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-resolve-all\\license"
+  },
+  "micromark-util-sanitize-uri@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-sanitize-uri",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-sanitize-uri",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-sanitize-uri\\license"
+  },
+  "micromark-util-subtokenize@2.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-subtokenize",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-subtokenize",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-subtokenize\\license"
+  },
+  "micromark-util-symbol@2.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-symbol",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-symbol",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-symbol\\license"
+  },
+  "micromark-util-types@2.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark-util-types",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-types",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark-util-types\\license"
+  },
+  "micromark@4.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/micromark/micromark/tree/main/packages/micromark",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\micromark\\license"
   },
   "mime-db@1.54.0": {
     "licenses": "MIT",
@@ -1318,6 +1857,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\parent-module",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\parent-module\\license"
   },
+  "parse-entities@4.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/parse-entities",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\parse-entities",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\parse-entities\\license"
+  },
   "parse-json@5.2.0": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/parse-json",
@@ -1390,6 +1938,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\prop-types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\prop-types\\LICENSE"
   },
+  "property-information@7.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/property-information",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\property-information",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\property-information\\license"
+  },
   "pump@3.0.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mafintosh/pump",
@@ -1443,6 +2000,14 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-is",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-is\\LICENSE"
   },
+  "react-markdown@10.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/remarkjs/react-markdown",
+    "publisher": "Espen Hovlandsdal",
+    "email": "espen@hovlandsdal.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-markdown",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\react-markdown\\license"
+  },
   "react-transition-group@4.4.5": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/reactjs/react-transition-group",
@@ -1460,6 +2025,24 @@
     "repository": "https://github.com/nodejs/readable-stream",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\readable-stream",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\readable-stream\\LICENSE"
+  },
+  "remark-parse@11.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/remarkjs/remark/tree/main/packages/remark-parse",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\remark-parse",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\remark-parse\\license"
+  },
+  "remark-rehype@11.1.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/remarkjs/remark-rehype",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\remark-rehype",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\remark-rehype\\license"
   },
   "resolve-alpn@1.2.1": {
     "licenses": "MIT",
@@ -1614,6 +2197,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\source-map",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\source-map\\LICENSE"
   },
+  "space-separated-tokens@2.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/space-separated-tokens",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\space-separated-tokens",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\space-separated-tokens\\license"
+  },
   "sprintf-js@1.1.3": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/alexei/sprintf.js",
@@ -1637,6 +2229,15 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\string_decoder",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\string_decoder\\LICENSE"
   },
+  "stringify-entities@4.0.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/stringify-entities",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\stringify-entities",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\stringify-entities\\license"
+  },
   "strip-ansi@7.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/chalk/strip-ansi",
@@ -1654,6 +2255,22 @@
     "url": "sindresorhus.com",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\strip-json-comments",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\strip-json-comments\\license"
+  },
+  "style-to-js@1.1.21": {
+    "licenses": "MIT",
+    "repository": "https://github.com/remarkablemark/style-to-js",
+    "publisher": "Mark",
+    "email": "mark@remarkablemark.org",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\style-to-js",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\style-to-js\\LICENSE"
+  },
+  "style-to-object@1.0.14": {
+    "licenses": "MIT",
+    "repository": "https://github.com/remarkablemark/style-to-object",
+    "publisher": "Mark",
+    "email": "mark@remarkablemark.org",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\style-to-object",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\style-to-object\\LICENSE"
   },
   "stylis@4.2.0": {
     "licenses": "MIT",
@@ -1693,6 +2310,24 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\tar-stream",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\tar-stream\\LICENSE"
   },
+  "trim-lines@3.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/trim-lines",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\trim-lines",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\trim-lines\\license"
+  },
+  "trough@2.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/trough",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\trough",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\trough\\license"
+  },
   "tslib@2.8.1": {
     "licenses": "0BSD",
     "repository": "https://github.com/Microsoft/tslib",
@@ -1730,6 +2365,60 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node\\node_modules\\undici-types",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\@types\\node\\node_modules\\undici-types\\LICENSE"
   },
+  "unified@11.0.5": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unifiedjs/unified",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unified",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unified\\license"
+  },
+  "unist-util-is@6.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/unist-util-is",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-is",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-is\\license"
+  },
+  "unist-util-position@5.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/unist-util-position",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-position",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-position\\license"
+  },
+  "unist-util-stringify-position@4.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/unist-util-stringify-position",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-stringify-position",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-stringify-position\\license"
+  },
+  "unist-util-visit-parents@6.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/unist-util-visit-parents",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-visit-parents",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-visit-parents\\license"
+  },
+  "unist-util-visit@5.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/syntax-tree/unist-util-visit",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-visit",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unist-util-visit\\license"
+  },
   "universalify@0.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/RyanZim/universalify",
@@ -1747,6 +2436,12 @@
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unused-filename",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\unused-filename\\license"
   },
+  "use-sync-external-store@1.6.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/facebook/react",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\use-sync-external-store",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\use-sync-external-store\\LICENSE"
+  },
   "usehooks-ts@3.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/juliencrn/usehooks-ts",
@@ -1763,6 +2458,24 @@
     "url": "http://n8.io/",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\util-deprecate",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\util-deprecate\\LICENSE"
+  },
+  "vfile-message@4.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/vfile/vfile-message",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\vfile-message",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\vfile-message\\license"
+  },
+  "vfile@6.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/vfile/vfile",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\vfile",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\vfile\\license"
   },
   "wrappy@1.0.2": {
     "licenses": "ISC",
@@ -1788,5 +2501,14 @@
     "email": "thejoshwolfe@gmail.com",
     "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\yauzl",
     "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\yauzl\\LICENSE"
+  },
+  "zwitch@2.0.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/wooorm/zwitch",
+    "publisher": "Titus Wormer",
+    "email": "tituswormer@gmail.com",
+    "url": "https://wooorm.com",
+    "path": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\zwitch",
+    "licenseFile": "D:\\Synching\\code\\Electron\\AI-Browser\\node_modules\\zwitch\\license"
   }
 }
