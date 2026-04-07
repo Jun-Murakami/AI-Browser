@@ -22,10 +22,72 @@ class TerminalService {
   private instances = new Map<string, TerminalInstance>();
   private currentTheme: 'dark' | 'light' = 'dark';
   private _platform = '';
+  private _clipboardHandlerAttached = new Set<string>();
 
   /** メインプロセスから取得した process.platform をセットする */
   setPlatform(platform: string): void {
     this._platform = platform;
+    // 既に作成済みのインスタンスにもクリップボード画像ハンドラーを適用
+    if (platform === 'win32') {
+      for (const [terminalId, instance] of this.instances) {
+        this._attachClipboardImageHandler(terminalId, instance.terminal);
+      }
+    }
+  }
+
+  /**
+   * Windows 用: クリップボード画像ペーストのキーハンドラーを登録する。
+   * 同一ターミナルに対して二重登録しないよう Set で管理。
+   *
+   * Electron ネイティブの clipboard.readImage()（メインプロセス経由）を使用し、
+   * レンダラーの navigator.clipboard.read() の不安定さを回避する。
+   */
+  private _attachClipboardImageHandler(
+    terminalId: string,
+    terminal: Terminal,
+  ): void {
+    if (this._clipboardHandlerAttached.has(terminalId)) return;
+    this._clipboardHandlerAttached.add(terminalId);
+
+    terminal.attachCustomKeyEventHandler((e) => {
+      const isPaste =
+        e.type === 'keydown' &&
+        e.key === 'v' &&
+        (e.ctrlKey || e.metaKey) &&
+        !e.shiftKey &&
+        !e.altKey;
+      if (!isPaste) return true; // 他のキーはそのまま
+
+      (async () => {
+        try {
+          // メインプロセスで clipboard.readImage() を実行
+          const result = await window.api.readClipboardImage();
+          if (result.hasImage && result.filePath) {
+            this.pasteToTerminal(terminalId, result.filePath, {
+              autoSubmit: false,
+            });
+            return;
+          }
+          // 画像がない場合は通常のテキストペーストを実行
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            this.pasteToTerminal(terminalId, text, { autoSubmit: false });
+          }
+        } catch {
+          // IPC失敗時はテキストペーストにフォールバック
+          try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+              this.pasteToTerminal(terminalId, text, { autoSubmit: false });
+            }
+          } catch {
+            // 無視
+          }
+        }
+      })();
+
+      return false; // xterm のデフォルトペースト処理を抑制
+    });
   }
 
   /**
@@ -88,65 +150,9 @@ class TerminalService {
       };
 
       // Windows でのクリップボード画像ペースト対応（macOS はネイティブで対応済み）
-      // xterm.js v6 は Ctrl+V を navigator.clipboard.readText() で処理するため
-      // DOM paste イベントが発火しない。キーイベントを横取りして対応する。
+      // setPlatform が先に呼ばれていれば即登録、まだなら setPlatform 側で後から登録
       if (this._platform === 'win32') {
-        terminal.attachCustomKeyEventHandler((e) => {
-          const isPaste =
-            e.type === 'keydown' &&
-            e.key === 'v' &&
-            (e.ctrlKey || e.metaKey) &&
-            !e.shiftKey &&
-            !e.altKey;
-          if (!isPaste) return true; // 他のキーはそのまま
-
-          // 非同期でクリップボードを読み、画像があれば処理
-          (async () => {
-            try {
-              const items = await navigator.clipboard.read();
-              for (const item of items) {
-                const imageType = item.types.find((t) =>
-                  t.startsWith('image/'),
-                );
-                if (imageType) {
-                  const blob = await item.getType(imageType);
-                  const buf = await blob.arrayBuffer();
-                  const base64 = btoa(
-                    String.fromCharCode(...new Uint8Array(buf)),
-                  );
-                  const result = await window.api.saveClipboardImage(base64);
-                  if (result.success && result.filePath) {
-                    this.pasteToTerminal(terminalId, result.filePath, {
-                      autoSubmit: false,
-                    });
-                  }
-                  return; // 画像を処理したので終了
-                }
-              }
-              // 画像がない場合は通常のテキストペーストを実行
-              const text = await navigator.clipboard.readText();
-              if (text) {
-                this.pasteToTerminal(terminalId, text, {
-                  autoSubmit: false,
-                });
-              }
-            } catch {
-              // クリップボードアクセス失敗時はテキストペーストにフォールバック
-              try {
-                const text = await navigator.clipboard.readText();
-                if (text) {
-                  this.pasteToTerminal(terminalId, text, {
-                    autoSubmit: false,
-                  });
-                }
-              } catch {
-                // 無視
-              }
-            }
-          })();
-
-          return false; // xterm のデフォルトペースト処理を抑制
-        });
+        this._attachClipboardImageHandler(terminalId, terminal);
       }
 
       // 入力ハンドラー
@@ -259,6 +265,7 @@ class TerminalService {
       instance.terminal.dispose();
     });
     this.instances.clear();
+    this._clipboardHandlerAttached.clear();
   }
 
   cleanupInstance(terminalId: string): void {
@@ -270,6 +277,7 @@ class TerminalService {
       }
       instance.terminal.dispose();
       this.instances.delete(terminalId);
+      this._clipboardHandlerAttached.delete(terminalId);
     }
   }
 

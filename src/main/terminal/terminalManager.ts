@@ -1,5 +1,5 @@
 import { spawn } from '@homebridge/node-pty-prebuilt-multiarch';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, clipboard, ipcMain } from 'electron';
 
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { platform } from 'node:os';
@@ -122,26 +122,29 @@ class TerminalManager {
       },
     );
 
-    // クリップボードの画像データをファイルに保存
-    ipcMain.handle(
-      'terminal:save-clipboard-image',
-      async (_event, dataBase64: string) => {
-        try {
-          const dir = pathJoin(app.getPath('userData'), 'Clipboard');
-          if (!existsSync(dir)) {
-            mkdirSync(dir, { recursive: true });
-          }
-          const filePath = pathJoin(dir, `${Date.now()}.png`);
-          writeFileSync(filePath, Buffer.from(dataBase64, 'base64'));
-          return { success: true, filePath };
-        } catch (error) {
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : String(error),
-          };
+    // クリップボードから画像を読み取り、一時ファイルに保存して返す
+    // Electron ネイティブの clipboard.readImage() を使用し、
+    // レンダラーの navigator.clipboard.read() の不安定さを回避する
+    ipcMain.handle('terminal:read-clipboard-image', async () => {
+      try {
+        const image = clipboard.readImage();
+        if (image.isEmpty()) {
+          return { hasImage: false };
         }
-      },
-    );
+        const dir = pathJoin(app.getPath('userData'), 'Clipboard');
+        if (!existsSync(dir)) {
+          mkdirSync(dir, { recursive: true });
+        }
+        const filePath = pathJoin(dir, `${Date.now()}.png`);
+        writeFileSync(filePath, image.toPNG());
+        return { hasImage: true, filePath };
+      } catch (error) {
+        return {
+          hasImage: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+    });
   }
 
   private scheduleFlush(terminalId: string) {
