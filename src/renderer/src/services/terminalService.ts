@@ -16,8 +16,6 @@ interface TerminalInstance {
   // 高頻度の出力を集約するためのバッファとフラグ
   writeBuffer: string;
   isFlushScheduled: boolean;
-  // クリップボード画像ペースト用ハンドラー
-  pasteHandler?: (e: ClipboardEvent) => void;
 }
 
 class TerminalService {
@@ -89,6 +87,68 @@ class TerminalService {
         });
       };
 
+      // Windows でのクリップボード画像ペースト対応（macOS はネイティブで対応済み）
+      // xterm.js v6 は Ctrl+V を navigator.clipboard.readText() で処理するため
+      // DOM paste イベントが発火しない。キーイベントを横取りして対応する。
+      if (this._platform === 'win32') {
+        terminal.attachCustomKeyEventHandler((e) => {
+          const isPaste =
+            e.type === 'keydown' &&
+            e.key === 'v' &&
+            (e.ctrlKey || e.metaKey) &&
+            !e.shiftKey &&
+            !e.altKey;
+          if (!isPaste) return true; // 他のキーはそのまま
+
+          // 非同期でクリップボードを読み、画像があれば処理
+          (async () => {
+            try {
+              const items = await navigator.clipboard.read();
+              for (const item of items) {
+                const imageType = item.types.find((t) =>
+                  t.startsWith('image/'),
+                );
+                if (imageType) {
+                  const blob = await item.getType(imageType);
+                  const buf = await blob.arrayBuffer();
+                  const base64 = btoa(
+                    String.fromCharCode(...new Uint8Array(buf)),
+                  );
+                  const result = await window.api.saveClipboardImage(base64);
+                  if (result.success && result.filePath) {
+                    this.pasteToTerminal(terminalId, result.filePath, {
+                      autoSubmit: false,
+                    });
+                  }
+                  return; // 画像を処理したので終了
+                }
+              }
+              // 画像がない場合は通常のテキストペーストを実行
+              const text = await navigator.clipboard.readText();
+              if (text) {
+                this.pasteToTerminal(terminalId, text, {
+                  autoSubmit: false,
+                });
+              }
+            } catch {
+              // クリップボードアクセス失敗時はテキストペーストにフォールバック
+              try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                  this.pasteToTerminal(terminalId, text, {
+                    autoSubmit: false,
+                  });
+                }
+              } catch {
+                // 無視
+              }
+            }
+          })();
+
+          return false; // xterm のデフォルトペースト処理を抑制
+        });
+      }
+
       // 入力ハンドラー
       terminal.onData((data) => {
         window.api.sendTerminalInput(terminalId, data);
@@ -152,42 +212,6 @@ class TerminalService {
       instance.terminal.open(element);
     }
 
-    // クリップボード画像ペースト用リスナーを登録（Windows のみ。macOS はネイティブで対応済み）
-    if (!instance.pasteHandler && this._platform === 'win32') {
-      instance.pasteHandler = (e: ClipboardEvent) => {
-        const items = e.clipboardData?.items;
-        if (!items) return;
-
-        for (const item of items) {
-          if (item.type.startsWith('image/')) {
-            e.preventDefault();
-            e.stopPropagation();
-            const blob = item.getAsFile();
-            if (!blob) return;
-
-            const reader = new FileReader();
-            reader.onload = async () => {
-              const dataUrl = reader.result as string;
-              // "data:image/png;base64,..." から base64 部分を抽出
-              const base64 = dataUrl.split(',')[1];
-              if (!base64) return;
-
-              const result = await window.api.saveClipboardImage(base64);
-              if (result.success && result.filePath) {
-                // ファイルパスをブラケットペーストでPTYに送信
-                this.pasteToTerminal(terminalId, result.filePath, {
-                  autoSubmit: false,
-                });
-              }
-            };
-            reader.readAsDataURL(blob);
-            return; // 最初の画像のみ処理
-          }
-        }
-      };
-      element.addEventListener('paste', instance.pasteHandler, true);
-    }
-
     // フィット
     setTimeout(() => {
       try {
@@ -199,15 +223,6 @@ class TerminalService {
   detachFromDOM(terminalId: string): void {
     const instance = this.instances.get(terminalId);
     if (instance?.terminal.element) {
-      // ペーストリスナーを解除
-      if (instance.pasteHandler && instance.terminal.element.parentElement) {
-        instance.terminal.element.parentElement.removeEventListener(
-          'paste',
-          instance.pasteHandler,
-          true,
-        );
-        instance.pasteHandler = undefined;
-      }
       // 要素をDOMから削除するが、インスタンスは保持
       if (instance.terminal.element.parentElement) {
         instance.terminal.element.parentElement.removeChild(

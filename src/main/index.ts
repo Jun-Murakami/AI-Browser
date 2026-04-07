@@ -933,6 +933,8 @@ app.on('will-quit', () => {
   removeIpcHandlers();
   // ターミナルセッションをクリーンアップ
   terminalManager.destroyAllSessions();
+  // クリップボード画像の一時ファイルを削除
+  terminalManager.cleanupClipboardImages();
 
   // フォールバック: 5秒以内にプロセスが終了しない場合は強制終了
   setTimeout(() => {

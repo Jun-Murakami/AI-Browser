@@ -1,8 +1,8 @@
 import { spawn } from '@homebridge/node-pty-prebuilt-multiarch';
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { platform, tmpdir } from 'node:os';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { platform } from 'node:os';
 import { join as pathJoin } from 'node:path';
 
 import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch';
@@ -122,16 +122,16 @@ class TerminalManager {
       },
     );
 
-    // クリップボードの画像データを一時ファイルに保存
+    // クリップボードの画像データをファイルに保存
     ipcMain.handle(
       'terminal:save-clipboard-image',
       async (_event, dataBase64: string) => {
         try {
-          const dir = pathJoin(tmpdir(), 'ai-browser-clipboard');
+          const dir = pathJoin(app.getPath('userData'), 'Clipboard');
           if (!existsSync(dir)) {
             mkdirSync(dir, { recursive: true });
           }
-          const filePath = pathJoin(dir, `clipboard-${Date.now()}.png`);
+          const filePath = pathJoin(dir, `${Date.now()}.png`);
           writeFileSync(filePath, Buffer.from(dataBase64, 'base64'));
           return { success: true, filePath };
         } catch (error) {
@@ -274,6 +274,18 @@ class TerminalManager {
   destroyAllSessions(): void {
     for (const terminalId of this.sessions.keys()) {
       this.destroySession(terminalId);
+    }
+  }
+
+  /** Clipboard フォルダを丸ごと削除する */
+  cleanupClipboardImages(): void {
+    try {
+      const dir = pathJoin(app.getPath('userData'), 'Clipboard');
+      if (existsSync(dir)) {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    } catch {
+      // 無視
     }
   }
 
