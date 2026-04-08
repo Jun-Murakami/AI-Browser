@@ -3,8 +3,8 @@ import {
   app,
   BrowserWindow,
   ipcMain,
-  nativeTheme,
   Menu,
+  nativeTheme,
   shell,
   WebContentsView,
 } from 'electron';
@@ -383,8 +383,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       if (tabManager.isTerminalActive) return;
       const view = tabManager.views[tabManager.currentIndex];
       if (!view) return;
-      const inputModifiers =
-        modifiers as Electron.InputEvent['modifiers'];
+      const inputModifiers = modifiers as Electron.InputEvent['modifiers'];
       view.webContents.sendInputEvent({
         type: 'keyDown',
         keyCode,

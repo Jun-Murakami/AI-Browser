@@ -1,6 +1,6 @@
 {
   "name": "ai-browser",
-  "version": "1.6.17",
+  "version": "1.6.18",
   "description": "AI Browser",
   "type": "module",
   "main": "./out/main/index.js",

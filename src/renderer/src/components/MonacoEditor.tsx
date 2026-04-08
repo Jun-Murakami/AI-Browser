@@ -37,6 +37,8 @@ export interface MonacoEditorProps {
   onChange?: (value: string) => void;
   placeholder?: string;
   ref?: React.Ref<monaco.editor.IStandaloneCodeEditor>;
+  isTerminalActive?: boolean;
+  osInfo?: string;
 }
 
 export const MonacoEditor = ({
@@ -56,6 +58,8 @@ export const MonacoEditor = ({
   onChange,
   placeholder,
   ref,
+  isTerminalActive,
+  osInfo,
 }: MonacoEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const isBoxReady = useWatchBoxHeight({ targetRef: editorRef });
@@ -114,6 +118,65 @@ export const MonacoEditor = ({
     });
     return () => disposable.dispose();
   }, [editorInstance, lastFocusedEditorRef]);
+
+  // Windows + ターミナルアクティブ時: Ctrl+V でクリップボード画像をファイルに保存しパスをカーソル位置に挿入
+  useEffect(() => {
+    if (!editorInstance || !isTerminalActive || osInfo !== 'win32') return;
+
+    const container = editorInstance.getDomNode();
+    if (!container) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isPaste =
+        e.key === 'v' && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey;
+      if (!isPaste) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      (async () => {
+        try {
+          const result = await window.api.readClipboardImage();
+          if (result.hasImage && result.filePath) {
+            const selection = editorInstance.getSelection();
+            if (selection) {
+              editorInstance.executeEdits('clipboard-image', [
+                {
+                  range: selection,
+                  text: result.filePath,
+                },
+              ]);
+            }
+            return;
+          }
+        } catch {
+          // 画像読み取り失敗時はテキストペーストにフォールバック
+        }
+        // 画像がない場合は通常のテキストペースト
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            const selection = editorInstance.getSelection();
+            if (selection) {
+              editorInstance.executeEdits('clipboard-paste', [
+                {
+                  range: selection,
+                  text: text,
+                },
+              ]);
+            }
+          }
+        } catch {
+          // 無視
+        }
+      })();
+    };
+
+    container.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      container.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [editorInstance, isTerminalActive, osInfo]);
 
   // モデル変更のハンドラーを別のuseEffectで管理
   useEffect(() => {

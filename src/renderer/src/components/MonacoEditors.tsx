@@ -33,6 +33,7 @@ interface MonacoEditorsProps {
   setEditor4Value: (value: string) => void;
   setEditor5Value: (value: string) => void;
   osInfo: string;
+  isTerminalActive?: boolean;
 }
 
 export const MonacoEditors = ({
@@ -59,6 +60,8 @@ export const MonacoEditors = ({
   setEditor3Value,
   setEditor4Value,
   setEditor5Value,
+  osInfo,
+  isTerminalActive,
 }: MonacoEditorsProps) => {
   const handleEditor1Change = (value: string | undefined) => {
     setEditor1Value(value ?? '');
@@ -101,6 +104,8 @@ export const MonacoEditors = ({
     newerLogButtonRef,
     olderLogButtonRef,
     lastFocusedEditorRef,
+    isTerminalActive,
+    osInfo,
   };
 
   const placeholderText = 'Type your prompt for the AI assistant...';

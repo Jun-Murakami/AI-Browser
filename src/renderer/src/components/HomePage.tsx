@@ -81,7 +81,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [boilerplates, setBoilerplates] = useState<Record<string, string>>({});
   const [isCtrlHeld, setIsCtrlHeld] = useState(false);
   const [isAltHeld, setIsAltHeld] = useState(false);
-  const [activeArrowKey, setActiveArrowKey] = useState<'up' | 'down' | 'left' | 'right' | 'enter' | null>(null);
+  const [activeArrowKey, setActiveArrowKey] = useState<
+    'up' | 'down' | 'left' | 'right' | 'enter' | null
+  >(null);
   const arrowKeyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const boilerplatesRef = useRef<Record<string, string>>({});
   const lastFocusedEditorRef =
@@ -453,7 +455,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
           left: '\x1b[D',
           enter: '\r',
         };
-        window.api.sendTerminalInput(activeTab.id, TERMINAL_SEQUENCES[direction]);
+        window.api.sendTerminalInput(
+          activeTab.id,
+          TERMINAL_SEQUENCES[direction],
+        );
       } else {
         const VIEW_KEYCODES: Record<string, string> = {
           up: 'Up',
@@ -513,13 +518,14 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       setIsAltHeld(false);
     };
     // Ctrl+Alt+Arrow/Enter をcaptureフェーズでMonacoより先にキャッチ
-    const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> = {
-      ArrowUp: 'up',
-      ArrowDown: 'down',
-      ArrowLeft: 'left',
-      ArrowRight: 'right',
-      Enter: 'enter',
-    };
+    const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> =
+      {
+        ArrowUp: 'up',
+        ArrowDown: 'down',
+        ArrowLeft: 'left',
+        ArrowRight: 'right',
+        Enter: 'enter',
+      };
     const handleArrowKeyCapture = (e: KeyboardEvent) => {
       const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
       if (isMod && e.altKey && KEY_MAP[e.key]) {

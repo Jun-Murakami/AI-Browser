@@ -80,7 +80,9 @@ interface EditorToolbarProps {
   activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
   onBoilerplateChange: (key: string, text: string) => void;
   onInsertBoilerplate: (key: string) => void;
-  onSendArrowKey: (direction: 'up' | 'down' | 'left' | 'right' | 'enter') => void;
+  onSendArrowKey: (
+    direction: 'up' | 'down' | 'left' | 'right' | 'enter',
+  ) => void;
   clearButtonRef: RefObject<HTMLButtonElement | null>;
   saveButtonRef: RefObject<HTMLButtonElement | null>;
   copyButtonRef: RefObject<HTMLButtonElement | null>;
@@ -364,8 +366,12 @@ export function EditorToolbar({
                   sx={{
                     width: 34,
                     height: 34,
-                    bgcolor: activeArrowKey === 'up' ? 'primary.main' : undefined,
-                    color: activeArrowKey === 'up' ? 'primary.contrastText' : undefined,
+                    bgcolor:
+                      activeArrowKey === 'up' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'up'
+                        ? 'primary.contrastText'
+                        : undefined,
                     transition: 'all 0.1s',
                   }}
                 >
@@ -379,8 +385,12 @@ export function EditorToolbar({
                   sx={{
                     width: 34,
                     height: 34,
-                    bgcolor: activeArrowKey === 'left' ? 'primary.main' : undefined,
-                    color: activeArrowKey === 'left' ? 'primary.contrastText' : undefined,
+                    bgcolor:
+                      activeArrowKey === 'left' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'left'
+                        ? 'primary.contrastText'
+                        : undefined,
                     transition: 'all 0.1s',
                   }}
                 >
@@ -393,7 +403,9 @@ export function EditorToolbar({
                     lineHeight: 1,
                     textAlign: 'center',
                     userSelect: 'none',
-                    color: isAltHeld ? 'primary.contrastText' : 'text.secondary',
+                    color: isAltHeld
+                      ? 'primary.contrastText'
+                      : 'text.secondary',
                     bgcolor: isAltHeld ? 'primary.main' : 'action.hover',
                     borderRadius: '8px',
                     px: 0.6,
@@ -409,8 +421,12 @@ export function EditorToolbar({
                   sx={{
                     width: 34,
                     height: 34,
-                    bgcolor: activeArrowKey === 'right' ? 'primary.main' : undefined,
-                    color: activeArrowKey === 'right' ? 'primary.contrastText' : undefined,
+                    bgcolor:
+                      activeArrowKey === 'right' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'right'
+                        ? 'primary.contrastText'
+                        : undefined,
                     transition: 'all 0.1s',
                   }}
                 >
@@ -424,8 +440,12 @@ export function EditorToolbar({
                   sx={{
                     width: 34,
                     height: 34,
-                    bgcolor: activeArrowKey === 'down' ? 'primary.main' : undefined,
-                    color: activeArrowKey === 'down' ? 'primary.contrastText' : undefined,
+                    bgcolor:
+                      activeArrowKey === 'down' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'down'
+                        ? 'primary.contrastText'
+                        : undefined,
                     transition: 'all 0.1s',
                   }}
                 >
@@ -437,8 +457,12 @@ export function EditorToolbar({
                   sx={{
                     width: 34,
                     height: 34,
-                    bgcolor: activeArrowKey === 'enter' ? 'primary.main' : undefined,
-                    color: activeArrowKey === 'enter' ? 'primary.contrastText' : undefined,
+                    bgcolor:
+                      activeArrowKey === 'enter' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'enter'
+                        ? 'primary.contrastText'
+                        : undefined,
                     transition: 'all 0.1s',
                   }}
                 >

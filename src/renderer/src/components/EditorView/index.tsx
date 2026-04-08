@@ -63,7 +63,9 @@ interface EditorViewProps {
   activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
   onBoilerplateChange: (key: string, text: string) => void;
   onInsertBoilerplate: (key: string) => void;
-  onSendArrowKey: (direction: 'up' | 'down' | 'left' | 'right' | 'enter') => void;
+  onSendArrowKey: (
+    direction: 'up' | 'down' | 'left' | 'right' | 'enter',
+  ) => void;
   lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   setEditor1Value: (value: string) => void;
   setEditor2Value: (value: string) => void;
@@ -229,6 +231,7 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           browserWidth={browserWidth ?? undefined}
           browserHeight={browserHeight ?? undefined}
           osInfo={osInfo}
+          isTerminalActive={isTerminalActive}
           lastFocusedEditorRef={lastFocusedEditorRef}
         />
 
