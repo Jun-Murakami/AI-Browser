@@ -48,6 +48,7 @@ export const BrowserTab = ({
             onClick={(e) => {
               e.stopPropagation();
             }}
+            sx={{ px: 0 }}
           />
           {hasIcon && IconComponent ? (
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
@@ -100,10 +101,13 @@ export const BrowserTab = ({
         onClick(event, index);
       }}
       sx={{
-        p: 0,
+        px: !isEditingBrowserShow ? 0 : 2,
+        py: 0,
         display: enabled || isEditingBrowserShow ? 'flex' : 'none',
         minWidth:
-          hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
+          hasIcon && !isEditingBrowserShow
+            ? '64px !important'
+            : 'auto !important',
         width: hasIcon && !isEditingBrowserShow ? '64px !important' : undefined,
         opacity: enabled || isEditingBrowserShow ? 1 : 0.7,
       }}

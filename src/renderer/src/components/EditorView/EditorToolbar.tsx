@@ -236,7 +236,7 @@ export function EditorToolbar({
           open={isBoilerplateOpen}
           anchorEl={boilerplateButtonRef.current}
           placement="top"
-          sx={{ zIndex: 1300 }}
+          sx={{ zIndex: 9999 }}
         >
           <Paper
             ref={boilerplatePaperRef}
@@ -273,7 +273,7 @@ export function EditorToolbar({
                 }}
               >
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   size="small"
                   sx={{
                     minWidth: 32,
