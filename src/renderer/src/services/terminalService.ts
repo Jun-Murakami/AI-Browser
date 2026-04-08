@@ -50,6 +50,23 @@ class TerminalService {
     this._clipboardHandlerAttached.add(terminalId);
 
     terminal.attachCustomKeyEventHandler((e) => {
+      // Ctrl+C: 選択範囲があればコピー、なければ SIGINT をそのまま送出
+      if (
+        e.type === 'keydown' &&
+        e.key === 'c' &&
+        e.ctrlKey &&
+        !e.shiftKey &&
+        !e.altKey
+      ) {
+        const selection = terminal.getSelection();
+        if (selection) {
+          navigator.clipboard.writeText(selection);
+          terminal.clearSelection();
+          return false; // xterm のデフォルト処理（SIGINT）を抑制
+        }
+        return true; // 選択なし → 通常の Ctrl+C（SIGINT）
+      }
+
       const isPaste =
         e.type === 'keydown' &&
         e.key === 'v' &&
@@ -123,7 +140,9 @@ class TerminalService {
 
       // アドオンを追加
       const fitAddon = new FitAddon();
-      const webLinksAddon = new WebLinksAddon();
+      const webLinksAddon = new WebLinksAddon((_event, uri) => {
+        window.electron.openExternalLink(uri);
+      });
 
       terminal.loadAddon(fitAddon);
       terminal.loadAddon(webLinksAddon);

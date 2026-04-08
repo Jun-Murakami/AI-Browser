@@ -80,6 +80,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [isLicenseDialogOpen, setIsLicenseDialogOpen] = useState(false);
   const [boilerplates, setBoilerplates] = useState<Record<string, string>>({});
   const [isCtrlHeld, setIsCtrlHeld] = useState(false);
+  const [isAltHeld, setIsAltHeld] = useState(false);
+  const [activeArrowKey, setActiveArrowKey] = useState<'up' | 'down' | 'left' | 'right' | 'enter' | null>(null);
+  const arrowKeyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const boilerplatesRef = useRef<Record<string, string>>({});
   const lastFocusedEditorRef =
     useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -262,6 +265,16 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     };
   }, [checkForUpdates, setDarkMode, setLogs, setEditorValue]);
 
+  // Enterボタンのハイライトフラッシュ
+  const flashEnterKey = useCallback(() => {
+    if (arrowKeyTimerRef.current) clearTimeout(arrowKeyTimerRef.current);
+    setActiveArrowKey('enter');
+    arrowKeyTimerRef.current = setTimeout(() => {
+      setActiveArrowKey(null);
+      arrowKeyTimerRef.current = null;
+    }, 150);
+  }, []);
+
   // テキストを送信
   const handleSendButtonClick = (sendToAll: boolean) => {
     const combinedEditorValue = getCombinedValue(editorIndex);
@@ -270,6 +283,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     // ターミナルアクティブ時は空でもEnterのみ送信を許可
     if (isEmpty && isTerminalActive && !sendToAll && activeTab) {
       actions.sendMessage(activeTab.id, '');
+      flashEnterKey();
       return;
     }
 
@@ -283,6 +297,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     } else if (activeTab) {
       actions.sendMessage(activeTab.id, combinedEditorValue);
     }
+    flashEnterKey();
 
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
@@ -426,6 +441,40 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     editor.focus();
   }, []);
 
+  // アクティブなタブ（ターミナル/ブラウザ）へキーを送出
+  const handleSendArrowKey = useCallback(
+    (direction: 'up' | 'down' | 'left' | 'right' | 'enter') => {
+      if (!activeTab) return;
+      if (isTerminalActive) {
+        const TERMINAL_SEQUENCES: Record<string, string> = {
+          up: '\x1b[A',
+          down: '\x1b[B',
+          right: '\x1b[C',
+          left: '\x1b[D',
+          enter: '\r',
+        };
+        window.api.sendTerminalInput(activeTab.id, TERMINAL_SEQUENCES[direction]);
+      } else {
+        const VIEW_KEYCODES: Record<string, string> = {
+          up: 'Up',
+          down: 'Down',
+          left: 'Left',
+          right: 'Right',
+          enter: 'Return',
+        };
+        window.electron.sendKeyToView(VIEW_KEYCODES[direction]);
+      }
+      // ハイライトフラッシュ
+      if (arrowKeyTimerRef.current) clearTimeout(arrowKeyTimerRef.current);
+      setActiveArrowKey(direction);
+      arrowKeyTimerRef.current = setTimeout(() => {
+        setActiveArrowKey(null);
+        arrowKeyTimerRef.current = null;
+      }, 150);
+    },
+    [isTerminalActive, activeTab],
+  );
+
   // 修飾キーの押下追跡（長押しでポップアップ表示。macはCmd、他はCtrl）
   const ctrlTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const modKey = osInfo === 'darwin' ? 'Meta' : 'Control';
@@ -437,6 +486,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
           ctrlTimerRef.current = null;
         }, 300);
       }
+
+      if (e.key === 'Alt') {
+        setIsAltHeld(true);
+      }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === modKey) {
@@ -446,6 +499,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         }
         setIsCtrlHeld(false);
       }
+
+      if (e.key === 'Alt') {
+        setIsAltHeld(false);
+      }
     };
     const handleBlur = () => {
       if (ctrlTimerRef.current) {
@@ -453,11 +510,30 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         ctrlTimerRef.current = null;
       }
       setIsCtrlHeld(false);
+      setIsAltHeld(false);
     };
+    // Ctrl+Alt+Arrow/Enter をcaptureフェーズでMonacoより先にキャッチ
+    const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> = {
+      ArrowUp: 'up',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      ArrowRight: 'right',
+      Enter: 'enter',
+    };
+    const handleArrowKeyCapture = (e: KeyboardEvent) => {
+      const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
+      if (isMod && e.altKey && KEY_MAP[e.key]) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSendArrowKey(KEY_MAP[e.key]);
+      }
+    };
+    window.addEventListener('keydown', handleArrowKeyCapture, true);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', handleBlur);
     return () => {
+      window.removeEventListener('keydown', handleArrowKeyCapture, true);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleBlur);
@@ -465,7 +541,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         clearTimeout(ctrlTimerRef.current);
       }
     };
-  }, [modKey]);
+  }, [modKey, osInfo, handleSendArrowKey]);
 
   // ボタン押下のリップルエフェクト付きヘルパー
   const triggerButton = useCallback(
@@ -586,8 +662,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             onToggleSendTarget={handleToggleSendTarget}
             boilerplates={boilerplates}
             isCtrlHeld={isCtrlHeld}
+            isAltHeld={isAltHeld}
+            activeArrowKey={activeArrowKey}
             onBoilerplateChange={handleBoilerplateChange}
             onInsertBoilerplate={handleInsertBoilerplate}
+            onSendArrowKey={handleSendArrowKey}
             lastFocusedEditorRef={lastFocusedEditorRef}
             setEditor1Value={(value) => setEditorValue(0, value)}
             setEditor2Value={(value) => setEditorValue(1, value)}

@@ -59,8 +59,11 @@ interface EditorViewProps {
   onToggleSendTarget: (tabId: string) => void;
   boilerplates: Record<string, string>;
   isCtrlHeld: boolean;
+  isAltHeld: boolean;
+  activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
   onBoilerplateChange: (key: string, text: string) => void;
   onInsertBoilerplate: (key: string) => void;
+  onSendArrowKey: (direction: 'up' | 'down' | 'left' | 'right' | 'enter') => void;
   lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   setEditor1Value: (value: string) => void;
   setEditor2Value: (value: string) => void;
@@ -148,8 +151,11 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       osInfo,
       boilerplates,
       isCtrlHeld,
+      isAltHeld,
+      activeArrowKey,
       onBoilerplateChange,
       onInsertBoilerplate,
+      onSendArrowKey,
       lastFocusedEditorRef,
     } = props;
 
@@ -253,8 +259,11 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           sendButtonTouchRippleRef={sendButtonTouchRippleRef}
           boilerplates={boilerplates}
           isCtrlHeld={isCtrlHeld}
+          isAltHeld={isAltHeld}
+          activeArrowKey={activeArrowKey}
           onBoilerplateChange={onBoilerplateChange}
           onInsertBoilerplate={onInsertBoilerplate}
+          onSendArrowKey={onSendArrowKey}
         />
       </Box>
     );

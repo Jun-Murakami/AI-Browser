@@ -11,6 +11,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   sendLogsToMain: (logs: { id: number; text: string }[]) => void;
   getInitialSettings: () => Promise<InitialSettings>;
   openExternalLink: (url: string) => void;
+  sendKeyToView: (keyCode: string, modifiers?: string[]) => void;
   reloadCurrentView: () => void;
   reloadAllViews: () => void;
   onUpdateUrls: (callback: (urls: string[]) => void) => void;

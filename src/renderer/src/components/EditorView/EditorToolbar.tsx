@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { ContentPaste, MenuOpen, Save, Send } from '@mui/icons-material';
+import {
+  ArrowBack,
+  ArrowDownward,
+  ArrowForward,
+  ArrowUpward,
+  ContentPaste,
+  KeyboardReturn,
+  MenuOpen,
+  Save,
+  Send,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -66,8 +76,11 @@ interface EditorToolbarProps {
   onToggleSendTarget: (tabId: string) => void;
   boilerplates: Record<string, string>;
   isCtrlHeld: boolean;
+  isAltHeld: boolean;
+  activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
   onBoilerplateChange: (key: string, text: string) => void;
   onInsertBoilerplate: (key: string) => void;
+  onSendArrowKey: (direction: 'up' | 'down' | 'left' | 'right' | 'enter') => void;
   clearButtonRef: RefObject<HTMLButtonElement | null>;
   saveButtonRef: RefObject<HTMLButtonElement | null>;
   copyButtonRef: RefObject<HTMLButtonElement | null>;
@@ -100,8 +113,11 @@ export function EditorToolbar({
   onToggleSendTarget,
   boilerplates,
   isCtrlHeld,
+  isAltHeld,
+  activeArrowKey,
   onBoilerplateChange,
   onInsertBoilerplate,
+  onSendArrowKey,
   clearButtonRef,
   saveButtonRef,
   copyButtonRef,
@@ -305,6 +321,131 @@ export function EditorToolbar({
                 />
               </Box>
             ))}
+            {/* 矢印キー十字ボタン */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                mt: 1,
+                pt: 1,
+                borderTop: 1,
+                borderColor: 'divider',
+                position: 'relative',
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 'bold',
+                  position: 'absolute',
+                  top: 4,
+                  left: 8,
+                  fontSize: '0.7rem',
+                  userSelect: 'none',
+                }}
+              >
+                Arrow Cursor
+              </Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '34px 34px 34px',
+                  gridTemplateRows: '30px 30px 30px',
+                  gap: 0,
+                  alignItems: 'center',
+                  justifyItems: 'center',
+                }}
+              >
+                {/* 上段: 空 / ↑ / 空 */}
+                <Box />
+                <IconButton
+                  size="small"
+                  onClick={() => onSendArrowKey('up')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: activeArrowKey === 'up' ? 'primary.main' : undefined,
+                    color: activeArrowKey === 'up' ? 'primary.contrastText' : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowUpward fontSize="small" />
+                </IconButton>
+                <Box />
+                {/* 中段: ← / +Alt / → */}
+                <IconButton
+                  size="small"
+                  onClick={() => onSendArrowKey('left')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: activeArrowKey === 'left' ? 'primary.main' : undefined,
+                    color: activeArrowKey === 'left' ? 'primary.contrastText' : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowBack fontSize="small" />
+                </IconButton>
+                <Box
+                  sx={{
+                    fontSize: '0.65rem',
+                    fontWeight: 'bold',
+                    lineHeight: 1,
+                    textAlign: 'center',
+                    userSelect: 'none',
+                    color: isAltHeld ? 'primary.contrastText' : 'text.secondary',
+                    bgcolor: isAltHeld ? 'primary.main' : 'action.hover',
+                    borderRadius: '8px',
+                    px: 0.6,
+                    py: 0.5,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  +Alt
+                </Box>
+                <IconButton
+                  size="small"
+                  onClick={() => onSendArrowKey('right')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: activeArrowKey === 'right' ? 'primary.main' : undefined,
+                    color: activeArrowKey === 'right' ? 'primary.contrastText' : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowForward fontSize="small" />
+                </IconButton>
+                {/* 下段: 空 / ↓ / Enter */}
+                <Box />
+                <IconButton
+                  size="small"
+                  onClick={() => onSendArrowKey('down')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: activeArrowKey === 'down' ? 'primary.main' : undefined,
+                    color: activeArrowKey === 'down' ? 'primary.contrastText' : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowDownward fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => onSendArrowKey('enter')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: activeArrowKey === 'enter' ? 'primary.main' : undefined,
+                    color: activeArrowKey === 'enter' ? 'primary.contrastText' : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <KeyboardReturn fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
           </Paper>
         </Popper>
         <Tooltip title={`Save log (${commandKey} + S)`} arrow>

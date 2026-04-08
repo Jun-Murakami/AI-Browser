@@ -60,6 +60,8 @@ if (process.contextIsolated) {
       getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),
       openExternalLink: (url: string) =>
         ipcRenderer.send('open-external-link', url),
+      sendKeyToView: (keyCode: string, modifiers?: string[]) =>
+        ipcRenderer.send('send-key-to-view', keyCode, modifiers ?? []),
       reloadCurrentView: () => ipcRenderer.send('reload-current-view'),
       reloadAllViews: () => ipcRenderer.send('reload-all-views'),
       onUpdateUrls: (callback: (urls: string[]) => void) =>

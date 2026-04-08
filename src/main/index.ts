@@ -4,6 +4,7 @@ import {
   BrowserWindow,
   ipcMain,
   nativeTheme,
+  Menu,
   shell,
   WebContentsView,
 } from 'electron';
@@ -375,6 +376,28 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
     shell.openExternal(url);
   });
 
+  // アクティブなWebContentsViewにキーイベントを送出
+  ipcMain.on(
+    'send-key-to-view',
+    (_, keyCode: string, modifiers: string[] = []) => {
+      if (tabManager.isTerminalActive) return;
+      const view = tabManager.views[tabManager.currentIndex];
+      if (!view) return;
+      const inputModifiers =
+        modifiers as Electron.InputEvent['modifiers'];
+      view.webContents.sendInputEvent({
+        type: 'keyDown',
+        keyCode,
+        modifiers: inputModifiers,
+      });
+      view.webContents.sendInputEvent({
+        type: 'keyUp',
+        keyCode,
+        modifiers: inputModifiers,
+      });
+    },
+  );
+
   // アップデートダウンロード
   ipcMain.handle(
     'update:download',
@@ -594,6 +617,7 @@ function removeIpcHandlers() {
   ipcMain.removeAllListeners('save-tab-orders');
   ipcMain.removeAllListeners('save-boilerplates');
   ipcMain.removeAllListeners('open-external-link');
+  ipcMain.removeAllListeners('send-key-to-view');
   ipcMain.removeAllListeners('update:cancel-download');
 
   // アクティブなダウンロードを中断
@@ -776,6 +800,9 @@ function createMainWindow(): BrowserWindow {
       console.error('ログの読み込みに失敗しました:', error);
     }
   }
+
+  // メニューバーを無効化（Alt キーでの表示も抑止）
+  Menu.setApplicationMenu(null);
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
