@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 
-export const useResizeObserver = <T extends HTMLElement>() => {
+interface UseResizeObserverOptions {
+  onResize?: (size: { width: number; height: number }) => void;
+}
+
+export const useResizeObserver = <T extends HTMLElement>(
+  options?: UseResizeObserverOptions,
+) => {
   const [size, setSize] = useState<{ width?: number; height?: number }>({});
   const ref = useRef<T>(null);
+  const onResizeRef = useRef(options?.onResize);
+  onResizeRef.current = options?.onResize;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -10,10 +18,9 @@ export const useResizeObserver = <T extends HTMLElement>() => {
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
-        setSize({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height,
-        });
+        const { width, height } = entry.contentRect;
+        setSize({ width, height });
+        onResizeRef.current?.({ width, height });
       }
     });
 

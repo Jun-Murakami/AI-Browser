@@ -16,6 +16,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
+    "devtools": "react-devtools",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "node scripts/fix-pty-module.cjs",
     "postinstall-disabled": "electron-builder install-app-deps",
@@ -37,8 +38,8 @@
     "@fontsource/lato": "^5.2.7",
     "@fontsource/m-plus-1p": "^5.2.9",
     "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
-    "@mui/icons-material": "^7.3.9",
-    "@mui/material": "^7.3.9",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/material": "^9.0.0",
     "@tanstack/react-hotkeys": "^0.9.1",
     "@tanstack/react-virtual": "^3.13.23",
     "@xterm/addon-fit": "^0.11.0",
@@ -51,18 +52,21 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.10",
+    "@biomejs/biome": "2.4.11",
     "@electron-toolkit/tsconfig": "^2.0.0",
-    "@types/node": "^25.5.0",
+    "@rolldown/plugin-babel": "^0.2.2",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
-    "electron": "^41.1.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "electron": "^41.2.0",
     "electron-builder": "^26.8.1",
-    "electron-vite": "^5.0.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "electron-vite": "^6.0.0-beta.0",
+    "react": "^19.2.5",
+    "react-devtools": "^7.0.1",
+    "react-dom": "^19.2.5",
     "typescript": "^6.0.2",
-    "vite": "^8.0.3"
+    "vite": "^8.0.8"
   }
 }

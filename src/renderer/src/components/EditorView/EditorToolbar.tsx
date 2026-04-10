@@ -207,7 +207,11 @@ export function EditorToolbar({
               mx: 1,
             }}
             MenuProps={{
-              PaperProps: { sx: { maxHeight: '30vh' } },
+              slotProps: {
+                paper: {
+                  sx: { maxHeight: '30vh' },
+                },
+              },
             }}
           >
             {fontSizeOptions.map((size) => (

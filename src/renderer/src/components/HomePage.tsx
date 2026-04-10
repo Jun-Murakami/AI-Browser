@@ -92,11 +92,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   const theme = useTheme();
 
-  const {
-    ref: browserRef,
-    width: browserWidth,
-    height: browserHeight,
-  } = useResizeObserver<HTMLDivElement>();
+  const { ref: browserRef } = useResizeObserver<HTMLDivElement>({
+    onResize: ({ width, height }) => {
+      window.electron.sendBrowserSizeToMain({ width, height });
+      editorsRef.current?.layoutAll();
+    },
+  });
 
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const copyButtonRef = useRef<HTMLButtonElement>(null);
@@ -115,18 +116,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const editorSplitRef = useRef<AllotmentHandle | null>(null);
   const editorPaneRef = useRef<HTMLDivElement>(null);
   const editorsRef = useRef<MonacoEditorsHandle>(null);
-
-  // ブラウザのサイズが変更されたらメインプロセスに通知 + エディタレイアウト再計算
-  useEffect(() => {
-    if (!browserWidth || !browserHeight) {
-      return;
-    }
-    window.electron.sendBrowserSizeToMain({
-      width: browserWidth,
-      height: browserHeight,
-    });
-    editorsRef.current?.layoutAll();
-  }, [browserWidth, browserHeight]);
 
   // タブが切り替わったときの処理
   const handleTabChange = useCallback(
@@ -203,6 +192,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         setCurrentVersion(settings.currentVersion);
         // タブの初期化はuseTabManagerで処理される
         setDarkMode(settings.isDarkMode);
+        terminalService.setTheme(settings.isDarkMode ? 'dark' : 'light');
         setEditorIndex(settings.editorMode);
         setPreferredSize(settings.browserWidth);
         setIsInitialized(true);
@@ -405,6 +395,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       language,
       fontSize,
     });
+    terminalService.setTheme(newDarkMode ? 'dark' : 'light');
   };
 
   // 言語変更の処理
@@ -492,7 +483,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             onTabChange={handleTabChange}
             onToggleTabEnabled={handleToggleTabEnabled}
             onTabReorder={handleTabReorder}
-            isDarkMode={darkMode}
           />
         </Allotment.Pane>
         <Allotment.Pane minSize={530}>

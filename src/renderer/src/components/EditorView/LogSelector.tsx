@@ -170,9 +170,11 @@ export function LogSelector({
             isOptionEqualToValue={(a, b) => a.id === b.id}
             size="small"
             disableClearable={true}
-            ListboxComponent={VirtualizedLogListbox}
             slotProps={{
               listbox: {
+                // MUI v9 では `ListboxComponent` が廃止されたため、
+                // `slotProps.listbox.component` で仮想化Listboxを差し込む。
+                component: VirtualizedLogListbox,
                 style: {
                   maxHeight: '60vh',
                   // パディング込みで maxHeight に収めないとスクロールバー下端が見切れる。
@@ -186,9 +188,13 @@ export function LogSelector({
               <TextField
                 {...params}
                 label="Logs"
-                InputLabelProps={{
-                  ...params.InputLabelProps,
-                  sx: { fontSize: 14 },
+                slotProps={{
+                  ...params.slotProps,
+                  // TextField の `InputLabelProps` も v9 で `slotProps.inputLabel` へ移行した。
+                  inputLabel: {
+                    ...params.slotProps.inputLabel,
+                    sx: { fontSize: 14 },
+                  },
                 }}
               />
             )}
@@ -358,7 +364,11 @@ export function LogSelector({
             width: 150,
           }}
           MenuProps={{
-            PaperProps: { sx: { maxHeight: '50vh' } },
+            slotProps: {
+              paper: {
+                sx: { maxHeight: '50vh' },
+              },
+            },
           }}
         >
           {supportedLanguages.map((lang) => (

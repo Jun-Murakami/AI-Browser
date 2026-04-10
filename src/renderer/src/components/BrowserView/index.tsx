@@ -18,7 +18,6 @@ interface BrowserViewProps {
   onTabChange: (tabId: string) => void;
   onToggleTabEnabled: (tabId: string) => void;
   onTabReorder: (tabId: string, newOrder: number) => void;
-  isDarkMode?: boolean;
 }
 
 export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
@@ -33,7 +32,6 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
       onTabChange,
       onToggleTabEnabled,
       onTabReorder,
-      isDarkMode = true,
     },
     ref,
   ) => {
@@ -110,7 +108,6 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
           isTerminalActive={isTerminalActive}
           activeTabId={activeTabId}
           tabs={tabs}
-          isDarkMode={isDarkMode}
         />
       </Box>
     );

@@ -70,23 +70,26 @@ export function useHotkeyActions({
   const arrowKeyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 定型文をMonacoカーソル位置に挿入（ref の .current は呼び出し時に最新値を読む）
-  const handleInsertBoilerplate = useCallback((key: string) => {
-    const text = boilerplatesRef.current[key];
-    if (!text) return;
-    const editors = monaco.editor.getEditors();
-    const editor =
-      editors.find((e) => e.hasTextFocus()) ||
-      lastFocusedEditorRef.current ||
-      editors[0];
-    if (!editor) return;
-    const selection = editor.getSelection();
-    if (selection) {
-      editor.executeEdits('boilerplate', [
-        { range: selection, text, forceMoveMarkers: true },
-      ]);
-    }
-    editor.focus();
-  }, [boilerplatesRef.current, lastFocusedEditorRef.current]);
+  const handleInsertBoilerplate = useCallback(
+    (key: string) => {
+      const text = boilerplatesRef.current[key];
+      if (!text) return;
+      const editors = monaco.editor.getEditors();
+      const editor =
+        editors.find((e) => e.hasTextFocus()) ||
+        lastFocusedEditorRef.current ||
+        editors[0];
+      if (!editor) return;
+      const selection = editor.getSelection();
+      if (selection) {
+        editor.executeEdits('boilerplate', [
+          { range: selection, text, forceMoveMarkers: true },
+        ]);
+      }
+      editor.focus();
+    },
+    [boilerplatesRef.current, lastFocusedEditorRef.current],
+  );
 
   // アクティブなタブ（ターミナル/ブラウザ）へキーを送出
   const handleSendArrowKey = useCallback(
@@ -159,13 +162,13 @@ export function useHotkeyActions({
     };
 
     const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> =
-    {
-      ArrowUp: 'up',
-      ArrowDown: 'down',
-      ArrowLeft: 'left',
-      ArrowRight: 'right',
-      Enter: 'enter',
-    };
+      {
+        ArrowUp: 'up',
+        ArrowDown: 'down',
+        ArrowLeft: 'left',
+        ArrowRight: 'right',
+        Enter: 'enter',
+      };
 
     const handleKeyDownCapture = (e: KeyboardEvent) => {
       if (e.key === modKey) {

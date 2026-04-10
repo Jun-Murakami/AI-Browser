@@ -1,4 +1,5 @@
-import react from '@vitejs/plugin-react';
+import babelPlugin from '@rolldown/plugin-babel';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 
 import { resolve } from 'node:path';
@@ -17,6 +18,11 @@ export default defineConfig({
         '@': resolve('src/renderer/src'),
       },
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      babelPlugin({
+        presets: [reactCompilerPreset()],
+      }),
+    ],
   },
 });
