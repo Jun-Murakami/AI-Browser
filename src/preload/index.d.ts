@@ -25,6 +25,11 @@ interface ExtendedElectronAPI extends ElectronAPI {
   saveTabOrders: (tabOrders: Record<string, number>) => void;
   saveSendTargets: (sendTargets: Record<string, boolean>) => void;
   saveBoilerplatesToMain: (boilerplates: Record<string, string>) => void;
+  saveBoilerplateBankToMain: (bank: 'A' | 'B' | 'C' | 'D' | 'E') => void;
+  onSwitchBoilerplateBank: (
+    callback: (direction: 'prev' | 'next') => void,
+  ) => void;
+  removeSwitchBoilerplateBankListener: () => void;
   onScriptError: (
     callback: (error: { browser: string; error: string }) => void,
   ) => void;
@@ -73,6 +78,7 @@ interface InitialSettings {
   tabOrders?: Record<string, number>;
   sendTargets?: Record<string, boolean>;
   boilerplates?: Record<string, string>;
+  boilerplateBank?: 'A' | 'B' | 'C' | 'D' | 'E';
 }
 
 interface TerminalAPI {

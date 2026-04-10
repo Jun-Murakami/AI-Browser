@@ -16,6 +16,7 @@ export interface AppState {
   tabOrders: Record<string, number>;
   sendTargets: Record<string, boolean>;
   boilerplates: Record<string, string>;
+  boilerplateBank: 'A' | 'B' | 'C' | 'D' | 'E';
 }
 
 export interface Log {

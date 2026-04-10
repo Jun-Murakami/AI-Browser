@@ -1,15 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  ArrowBack,
-  ArrowDownward,
-  ArrowForward,
-  ArrowUpward,
-  ContentPaste,
-  KeyboardReturn,
-  MenuOpen,
-  Save,
-  Send,
-} from '@mui/icons-material';
+import { ContentPaste, MenuOpen, Save, Send } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -24,7 +14,6 @@ import {
   Popper,
   Select,
   SvgIcon,
-  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -32,6 +21,7 @@ import { useTheme } from '@mui/system';
 
 import { BROWSERS } from '../../constants/browsers';
 import { EraseIcon } from '../Icons';
+import { BoilerplatePanel } from './BoilerplatePanel';
 import { MaterialUISwitch } from './DarkModeSwitch';
 
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
@@ -75,6 +65,8 @@ interface EditorToolbarProps {
   onSendClick: (sendToAll: boolean) => void;
   onToggleSendTarget: (tabId: string) => void;
   boilerplates: Record<string, string>;
+  boilerplateBank: 'A' | 'B' | 'C' | 'D' | 'E';
+  onBoilerplateBankChange: (bank: 'A' | 'B' | 'C' | 'D' | 'E') => void;
   isCtrlHeld: boolean;
   isAltHeld: boolean;
   activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
@@ -83,6 +75,7 @@ interface EditorToolbarProps {
   onSendArrowKey: (
     direction: 'up' | 'down' | 'left' | 'right' | 'enter',
   ) => void;
+  onSendControlKey: (key: string) => void;
   clearButtonRef: RefObject<HTMLButtonElement | null>;
   saveButtonRef: RefObject<HTMLButtonElement | null>;
   copyButtonRef: RefObject<HTMLButtonElement | null>;
@@ -114,12 +107,15 @@ export function EditorToolbar({
   onSendClick,
   onToggleSendTarget,
   boilerplates,
+  boilerplateBank,
+  onBoilerplateBankChange,
   isCtrlHeld,
   isAltHeld,
   activeArrowKey,
   onBoilerplateChange,
   onInsertBoilerplate,
   onSendArrowKey,
+  onSendControlKey,
   clearButtonRef,
   saveButtonRef,
   copyButtonRef,
@@ -167,9 +163,6 @@ export function EditorToolbar({
       setPopperOpen(false);
     }, 200);
   };
-
-  // 定型文スロットキー (1-9, 0)
-  const BOILERPLATE_SLOTS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
   const isBoilerplateOpen = isCtrlHeld || boilerplateClickOpen;
 
@@ -240,7 +233,7 @@ export function EditorToolbar({
         </Tooltip>
       </Box>
       <Box>
-        <Tooltip title={`Boilerplate (${commandKey} + 1-0)`} arrow>
+        <Tooltip title={`Boilerplate (${commandKey} + *)`} arrow>
           <IconButton
             ref={boilerplateButtonRef}
             color="primary"
@@ -268,208 +261,20 @@ export function EditorToolbar({
             }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 'bold',
-                display: 'block',
-                mb: 0.5,
-                px: 1,
-              }}
-            >
-              Boilerplate
-            </Typography>
-            {BOILERPLATE_SLOTS.map((slot) => (
-              <Box
-                key={slot}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  mb: 0.5,
-                  px: 0.5,
-                }}
-              >
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    minWidth: 32,
-                    width: 32,
-                    height: 32,
-                    p: 0,
-                    fontWeight: 'bold',
-                    flexShrink: 0,
-                  }}
-                  onClick={() => {
-                    onInsertBoilerplate(slot);
-                    setBoilerplateClickOpen(false);
-                  }}
-                >
-                  {slot}
-                </Button>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  placeholder={`${commandKey}+${slot}`}
-                  value={boilerplates[slot] ?? ''}
-                  onChange={(e) => onBoilerplateChange(slot, e.target.value)}
-                  fullWidth
-                  slotProps={{
-                    input: {
-                      sx: { fontSize: '0.8rem', height: 32 },
-                    },
-                  }}
-                />
-              </Box>
-            ))}
-            {/* 矢印キー十字ボタン */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                mt: 1,
-                pt: 1,
-                borderTop: 1,
-                borderColor: 'divider',
-                position: 'relative',
-              }}
-            >
-              <Typography
-                variant="caption"
-                sx={{
-                  fontWeight: 'bold',
-                  position: 'absolute',
-                  top: 4,
-                  left: 8,
-                  fontSize: '0.7rem',
-                  userSelect: 'none',
-                }}
-              >
-                Arrow Cursor
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '34px 34px 34px',
-                  gridTemplateRows: '30px 30px 30px',
-                  gap: 0,
-                  alignItems: 'center',
-                  justifyItems: 'center',
-                }}
-              >
-                {/* 上段: 空 / ↑ / 空 */}
-                <Box />
-                <IconButton
-                  size="small"
-                  onClick={() => onSendArrowKey('up')}
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor:
-                      activeArrowKey === 'up' ? 'primary.main' : undefined,
-                    color:
-                      activeArrowKey === 'up'
-                        ? 'primary.contrastText'
-                        : undefined,
-                    transition: 'all 0.1s',
-                  }}
-                >
-                  <ArrowUpward fontSize="small" />
-                </IconButton>
-                <Box />
-                {/* 中段: ← / +Alt / → */}
-                <IconButton
-                  size="small"
-                  onClick={() => onSendArrowKey('left')}
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor:
-                      activeArrowKey === 'left' ? 'primary.main' : undefined,
-                    color:
-                      activeArrowKey === 'left'
-                        ? 'primary.contrastText'
-                        : undefined,
-                    transition: 'all 0.1s',
-                  }}
-                >
-                  <ArrowBack fontSize="small" />
-                </IconButton>
-                <Box
-                  sx={{
-                    fontSize: '0.65rem',
-                    fontWeight: 'bold',
-                    lineHeight: 1,
-                    textAlign: 'center',
-                    userSelect: 'none',
-                    color: isAltHeld
-                      ? 'primary.contrastText'
-                      : 'text.secondary',
-                    bgcolor: isAltHeld ? 'primary.main' : 'action.hover',
-                    borderRadius: '8px',
-                    px: 0.6,
-                    py: 0.5,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  +Alt
-                </Box>
-                <IconButton
-                  size="small"
-                  onClick={() => onSendArrowKey('right')}
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor:
-                      activeArrowKey === 'right' ? 'primary.main' : undefined,
-                    color:
-                      activeArrowKey === 'right'
-                        ? 'primary.contrastText'
-                        : undefined,
-                    transition: 'all 0.1s',
-                  }}
-                >
-                  <ArrowForward fontSize="small" />
-                </IconButton>
-                {/* 下段: 空 / ↓ / Enter */}
-                <Box />
-                <IconButton
-                  size="small"
-                  onClick={() => onSendArrowKey('down')}
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor:
-                      activeArrowKey === 'down' ? 'primary.main' : undefined,
-                    color:
-                      activeArrowKey === 'down'
-                        ? 'primary.contrastText'
-                        : undefined,
-                    transition: 'all 0.1s',
-                  }}
-                >
-                  <ArrowDownward fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => onSendArrowKey('enter')}
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor:
-                      activeArrowKey === 'enter' ? 'primary.main' : undefined,
-                    color:
-                      activeArrowKey === 'enter'
-                        ? 'primary.contrastText'
-                        : undefined,
-                    transition: 'all 0.1s',
-                  }}
-                >
-                  <KeyboardReturn fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
+            <BoilerplatePanel
+              commandKey={commandKey}
+              boilerplates={boilerplates}
+              boilerplateBank={boilerplateBank}
+              isTerminalActive={isTerminalActive}
+              isAltHeld={isAltHeld}
+              activeArrowKey={activeArrowKey}
+              onBoilerplateBankChange={onBoilerplateBankChange}
+              onBoilerplateChange={onBoilerplateChange}
+              onInsertBoilerplate={onInsertBoilerplate}
+              onClosePanel={() => setBoilerplateClickOpen(false)}
+              onSendArrowKey={onSendArrowKey}
+              onSendControlKey={onSendControlKey}
+            />
           </Paper>
         </Popper>
         <Tooltip title={`Save log (${commandKey} + S)`} arrow>

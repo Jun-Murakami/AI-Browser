@@ -79,6 +79,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [isChipVisible, setIsChipVisible] = useState(false);
   const [isLicenseDialogOpen, setIsLicenseDialogOpen] = useState(false);
   const [boilerplates, setBoilerplates] = useState<Record<string, string>>({});
+  const [boilerplateBank, setBoilerplateBank] = useState<
+    'A' | 'B' | 'C' | 'D' | 'E'
+  >('A');
+  const boilerplateBankRef = useRef<'A' | 'B' | 'C' | 'D' | 'E'>('A');
   const [isCtrlHeld, setIsCtrlHeld] = useState(false);
   const [isAltHeld, setIsAltHeld] = useState(false);
   const [activeArrowKey, setActiveArrowKey] = useState<
@@ -209,6 +213,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       toast.error(`${error.browser}: ${error.error}`);
     });
 
+    // Mod+Minus/Plus によるバンク切替（メインプロセスからのIPC）
+    const BANKS: ('A' | 'B' | 'C' | 'D' | 'E')[] = ['A', 'B', 'C', 'D', 'E'];
+    window.electron.onSwitchBoilerplateBank((direction) => {
+      const cur = BANKS.indexOf(boilerplateBankRef.current);
+      const next =
+        direction === 'prev'
+          ? (cur - 1 + BANKS.length) % BANKS.length
+          : (cur + 1) % BANKS.length;
+      setBoilerplateBank(BANKS[next]);
+      boilerplateBankRef.current = BANKS[next];
+      window.electron.saveBoilerplateBankToMain(BANKS[next]);
+    });
+
     window.electron
       .getInitialSettings()
       .then(async (settings) => {
@@ -242,6 +259,10 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
           setBoilerplates(settings.boilerplates);
           boilerplatesRef.current = settings.boilerplates;
         }
+        if (settings.boilerplateBank) {
+          setBoilerplateBank(settings.boilerplateBank);
+          boilerplateBankRef.current = settings.boilerplateBank;
+        }
         // OS情報に基づいてコマンドキーを設定
         const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
         setCommandKey(commandKey);
@@ -264,6 +285,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
       window.electron.removeScriptErrorListener();
+      window.electron.removeSwitchBoilerplateBankListener();
     };
   }, [checkForUpdates, setDarkMode, setLogs, setEditorValue]);
 
@@ -411,8 +433,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     window.electron.sendLanguageToMain(newLanguage);
   };
 
-  // boilerplatesRefを常に最新に保つ
+  // refを常に最新に保つ
   boilerplatesRef.current = boilerplates;
+  boilerplateBankRef.current = boilerplateBank;
+
+  // バンク変更ハンドラ
+  const handleBoilerplateBankChange = useCallback(
+    (bank: 'A' | 'B' | 'C' | 'D' | 'E') => {
+      setBoilerplateBank(bank);
+      boilerplateBankRef.current = bank;
+      window.electron.saveBoilerplateBankToMain(bank);
+    },
+    [],
+  );
 
   // 定型文の変更ハンドラ
   const handleBoilerplateChange = useCallback((key: string, text: string) => {
@@ -480,16 +513,45 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     [isTerminalActive, activeTab],
   );
 
+  // Ctrl+キーをアクティブなタブ/ターミナルへ送出
+  const handleSendControlKey = useCallback(
+    (key: string) => {
+      if (!activeTab) return;
+      if (isTerminalActive) {
+        // 制御文字を送出（Ctrl+C=0x03, Ctrl+E=0x05, Ctrl+O=0x0F ...）
+        const charCode = key.toUpperCase().charCodeAt(0) - 64;
+        window.api.sendTerminalInput(
+          activeTab.id,
+          String.fromCharCode(charCode),
+        );
+      } else {
+        window.electron.sendKeyToView(key, ['control']);
+      }
+    },
+    [isTerminalActive, activeTab],
+  );
+
   // 修飾キーの押下追跡（長押しでポップアップ表示。macはCmd、他はCtrl）
   const ctrlTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const modKey = osInfo === 'darwin' ? 'Meta' : 'Control';
   useEffect(() => {
+    const startModTimer = () => {
+      if (ctrlTimerRef.current) return;
+      ctrlTimerRef.current = setTimeout(() => {
+        setIsCtrlHeld(true);
+        ctrlTimerRef.current = null;
+      }, 300);
+    };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === modKey && !ctrlTimerRef.current) {
-        ctrlTimerRef.current = setTimeout(() => {
-          setIsCtrlHeld(true);
-          ctrlTimerRef.current = null;
-        }, 300);
+      const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
+
+      if (e.key === modKey) {
+        startModTimer();
+      }
+
+      // Alt+Mod 同時押し（Alt が後から押された場合もパネル表示）
+      if (e.key === 'Alt' && isMod) {
+        startModTimer();
       }
 
       if (e.key === 'Alt') {
@@ -526,20 +588,24 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         ArrowRight: 'right',
         Enter: 'enter',
       };
-    const handleArrowKeyCapture = (e: KeyboardEvent) => {
+    const handleModAltCapture = (e: KeyboardEvent) => {
       const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
-      if (isMod && e.altKey && KEY_MAP[e.key]) {
+      if (!isMod || !e.altKey) return;
+
+      // 矢印キー / Enter
+      if (KEY_MAP[e.key]) {
         e.preventDefault();
         e.stopPropagation();
         handleSendArrowKey(KEY_MAP[e.key]);
+        return;
       }
     };
-    window.addEventListener('keydown', handleArrowKeyCapture, true);
+    window.addEventListener('keydown', handleModAltCapture, true);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', handleBlur);
     return () => {
-      window.removeEventListener('keydown', handleArrowKeyCapture, true);
+      window.removeEventListener('keydown', handleModAltCapture, true);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleBlur);
@@ -602,7 +668,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     ...(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const).map(
       (key) => ({
         hotkey: `Mod+${key}` as const,
-        callback: () => handleInsertBoilerplate(key),
+        callback: () =>
+          handleInsertBoilerplate(`${boilerplateBankRef.current}${key}`),
       }),
     ),
   ]);
@@ -667,12 +734,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             browserLoadings={browserLoadings}
             onToggleSendTarget={handleToggleSendTarget}
             boilerplates={boilerplates}
+            boilerplateBank={boilerplateBank}
+            onBoilerplateBankChange={handleBoilerplateBankChange}
             isCtrlHeld={isCtrlHeld}
             isAltHeld={isAltHeld}
             activeArrowKey={activeArrowKey}
             onBoilerplateChange={handleBoilerplateChange}
             onInsertBoilerplate={handleInsertBoilerplate}
             onSendArrowKey={handleSendArrowKey}
+            onSendControlKey={handleSendControlKey}
             lastFocusedEditorRef={lastFocusedEditorRef}
             setEditor1Value={(value) => setEditorValue(0, value)}
             setEditor2Value={(value) => setEditorValue(1, value)}

@@ -1,4 +1,4 @@
-import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { electronApp, is } from '@electron-toolkit/utils';
 import {
   app,
   BrowserWindow,
@@ -50,6 +50,7 @@ let appState: AppState = {
     BROWSERS.map((browser) => [browser.id, browser.id !== 'NANI']),
   ),
   boilerplates: {},
+  boilerplateBank: 'A',
 };
 
 let logs: Log[] = [];
@@ -298,6 +299,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       tabOrders: appState.tabOrders,
       sendTargets: appState.sendTargets,
       boilerplates: appState.boilerplates,
+      boilerplateBank: appState.boilerplateBank,
     };
   });
 
@@ -329,6 +331,13 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.on('save-boilerplates', (_, boilerplates: Record<string, string>) => {
     appState.boilerplates = boilerplates;
   });
+
+  ipcMain.on(
+    'save-boilerplate-bank',
+    (_, bank: 'A' | 'B' | 'C' | 'D' | 'E') => {
+      appState.boilerplateBank = bank;
+    },
+  );
 
   ipcMain.on('text', (_, text: string, sendToAll: boolean) => {
     if (tabManager.views.length === 0) {
@@ -732,6 +741,23 @@ function createMainWindow(): BrowserWindow {
         appState.boilerplates = {};
       }
 
+      // 旧キー("1"-"0")をバンクA("A1"-"A0")に移行
+      const oldSlots = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+      for (const slot of oldSlots) {
+        if (appState.boilerplates[slot] !== undefined) {
+          const newKey = `A${slot}`;
+          if (!appState.boilerplates[newKey]) {
+            appState.boilerplates[newKey] = appState.boilerplates[slot];
+          }
+          delete appState.boilerplates[slot];
+        }
+      }
+
+      // boilerplateBank のバリデーション
+      if (!['A', 'B', 'C', 'D', 'E'].includes(appState.boilerplateBank)) {
+        appState.boilerplateBank = 'A';
+      }
+
       // enabledTerminals の検証とガード処理
       const isValidEnabledTerminals =
         appState.enabledTerminals &&
@@ -892,6 +918,7 @@ function createMainWindow(): BrowserWindow {
         tabOrders: appState.tabOrders,
         sendTargets: appState.sendTargets,
         boilerplates: appState.boilerplates,
+        boilerplateBank: appState.boilerplateBank,
       };
 
       // ファイルに保存（fsモジュールを使用）
@@ -928,9 +955,42 @@ app.whenReady().then(() => {
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+  // optimizer.watchWindowShortcuts のカスタム版:
+  // Ctrl+Alt+Minus/Equal（バンク切替）はブロックせずレンダラーへ通す
   app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window);
+    window.webContents.on('before-input-event', (event, input) => {
+      if (input.type !== 'keyDown') return;
+      const mod = input.control || input.meta;
+      if (!is.dev) {
+        if (input.code === 'KeyR' && mod) event.preventDefault();
+        if (
+          input.code === 'KeyI' &&
+          ((input.alt && input.meta) || (input.control && input.shift))
+        )
+          event.preventDefault();
+      } else {
+        if (input.code === 'F12') {
+          if (window.webContents.isDevToolsOpened()) {
+            window.webContents.closeDevTools();
+          } else {
+            window.webContents.openDevTools({ mode: 'undocked' });
+          }
+        }
+      }
+      // ズーム抑制 + バンク切替（Mod+Minus/Plus）
+      if (mod) {
+        const isPrev =
+          input.code === 'Minus' || input.code === 'NumpadSubtract';
+        const isNext = input.code === 'Equal' || input.code === 'NumpadAdd';
+        if (isPrev || isNext) {
+          event.preventDefault();
+          window.webContents.send(
+            'switch-boilerplate-bank',
+            isPrev ? 'prev' : 'next',
+          );
+        }
+      }
+    });
   });
 
   createMainWindow();

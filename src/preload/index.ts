@@ -88,6 +88,16 @@ if (process.contextIsolated) {
         ipcRenderer.send('save-send-targets', sendTargets),
       saveBoilerplatesToMain: (boilerplates: Record<string, string>) =>
         ipcRenderer.send('save-boilerplates', boilerplates),
+      saveBoilerplateBankToMain: (bank: 'A' | 'B' | 'C' | 'D' | 'E') =>
+        ipcRenderer.send('save-boilerplate-bank', bank),
+      onSwitchBoilerplateBank: (
+        callback: (direction: 'prev' | 'next') => void,
+      ) =>
+        ipcRenderer.on('switch-boilerplate-bank', (_, direction) =>
+          callback(direction),
+        ),
+      removeSwitchBoilerplateBankListener: () =>
+        ipcRenderer.removeAllListeners('switch-boilerplate-bank'),
       onScriptError: (
         callback: (error: { browser: string; error: string }) => void,
       ) =>

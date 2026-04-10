@@ -58,6 +58,8 @@ interface EditorViewProps {
   browserLoadings: Record<string, boolean>;
   onToggleSendTarget: (tabId: string) => void;
   boilerplates: Record<string, string>;
+  boilerplateBank: 'A' | 'B' | 'C' | 'D' | 'E';
+  onBoilerplateBankChange: (bank: 'A' | 'B' | 'C' | 'D' | 'E') => void;
   isCtrlHeld: boolean;
   isAltHeld: boolean;
   activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
@@ -66,6 +68,7 @@ interface EditorViewProps {
   onSendArrowKey: (
     direction: 'up' | 'down' | 'left' | 'right' | 'enter',
   ) => void;
+  onSendControlKey: (key: string) => void;
   lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   setEditor1Value: (value: string) => void;
   setEditor2Value: (value: string) => void;
@@ -152,12 +155,15 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       browserHeight,
       osInfo,
       boilerplates,
+      boilerplateBank,
+      onBoilerplateBankChange,
       isCtrlHeld,
       isAltHeld,
       activeArrowKey,
       onBoilerplateChange,
       onInsertBoilerplate,
       onSendArrowKey,
+      onSendControlKey,
       lastFocusedEditorRef,
     } = props;
 
@@ -261,12 +267,15 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           copyButtonTouchRippleRef={copyButtonTouchRippleRef}
           sendButtonTouchRippleRef={sendButtonTouchRippleRef}
           boilerplates={boilerplates}
+          boilerplateBank={boilerplateBank}
+          onBoilerplateBankChange={onBoilerplateBankChange}
           isCtrlHeld={isCtrlHeld}
           isAltHeld={isAltHeld}
           activeArrowKey={activeArrowKey}
           onBoilerplateChange={onBoilerplateChange}
           onInsertBoilerplate={onInsertBoilerplate}
           onSendArrowKey={onSendArrowKey}
+          onSendControlKey={onSendControlKey}
         />
       </Box>
     );
