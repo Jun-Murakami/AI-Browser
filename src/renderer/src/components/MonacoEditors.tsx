@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useImperativeHandle, useRef } from 'react';
 import { Allotment } from 'allotment';
 
 import type * as monaco from 'monaco-editor';
@@ -6,15 +6,33 @@ import 'allotment/dist/style.css';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { MonacoEditor, type MonacoEditorProps } from './MonacoEditor';
+import {
+  MonacoEditor,
+  type MonacoEditorHandle,
+  type MonacoEditorProps,
+} from './MonacoEditor';
+
+/** 親コンポーネントから全エディタを一括操作するためのハンドル */
+export interface MonacoEditorsHandle {
+  /** darkMode / language / fontSize を全エディタに反映 */
+  syncSettings: (settings: {
+    darkMode: boolean;
+    language: string;
+    fontSize: number;
+  }) => void;
+  /** 全エディタの値を一括設定 */
+  setAllValues: (values: string[]) => void;
+  /** 指定インデックスのエディタの値を設定 */
+  setEditorValue: (index: number, value: string) => void;
+  /** 全エディタのレイアウトを再計算 */
+  layoutAll: () => void;
+}
 
 interface MonacoEditorsProps {
   darkMode: boolean;
   language: string;
   fontSize: number;
   editorIndex: number;
-  browserWidth?: number;
-  browserHeight?: number;
   sendButtonRef: React.RefObject<HTMLButtonElement | null>;
   copyButtonRef: React.RefObject<HTMLButtonElement | null>;
   clearButtonRef: React.RefObject<HTMLButtonElement | null>;
@@ -34,6 +52,7 @@ interface MonacoEditorsProps {
   setEditor5Value: (value: string) => void;
   osInfo: string;
   isTerminalActive?: boolean;
+  ref?: React.Ref<MonacoEditorsHandle>;
 }
 
 export const MonacoEditors = ({
@@ -41,8 +60,6 @@ export const MonacoEditors = ({
   language,
   fontSize,
   editorIndex,
-  browserWidth,
-  browserHeight,
   sendButtonRef,
   copyButtonRef,
   clearButtonRef,
@@ -62,6 +79,7 @@ export const MonacoEditors = ({
   setEditor5Value,
   osInfo,
   isTerminalActive,
+  ref,
 }: MonacoEditorsProps) => {
   const handleEditor1Change = (value: string | undefined) => {
     setEditor1Value(value ?? '');
@@ -83,20 +101,50 @@ export const MonacoEditors = ({
     setEditor5Value(value ?? '');
   };
 
-  const editor1Ref = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-  const editor2Ref = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-  const editor3Ref = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-  const editor4Ref = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-  const editor5Ref = useRef<monaco.editor.IStandaloneCodeEditor>(null);
+  const editor1Ref = useRef<MonacoEditorHandle>(null);
+  const editor2Ref = useRef<MonacoEditorHandle>(null);
+  const editor3Ref = useRef<MonacoEditorHandle>(null);
+  const editor4Ref = useRef<MonacoEditorHandle>(null);
+  const editor5Ref = useRef<MonacoEditorHandle>(null);
+
+  // 親コンポーネントに一括操作ハンドルを公開
+  useImperativeHandle(ref, () => ({
+    syncSettings: (settings) => {
+      editor1Ref.current?.syncSettings(settings);
+      editor2Ref.current?.syncSettings(settings);
+      editor3Ref.current?.syncSettings(settings);
+      editor4Ref.current?.syncSettings(settings);
+      editor5Ref.current?.syncSettings(settings);
+    },
+    setAllValues: (values) => {
+      editor1Ref.current?.setValue(values[0] ?? '');
+      editor2Ref.current?.setValue(values[1] ?? '');
+      editor3Ref.current?.setValue(values[2] ?? '');
+      editor4Ref.current?.setValue(values[3] ?? '');
+      editor5Ref.current?.setValue(values[4] ?? '');
+    },
+    setEditorValue: (index, value) => {
+      const refs = [editor1Ref, editor2Ref, editor3Ref, editor4Ref, editor5Ref];
+      refs[index]?.current?.setValue(value);
+    },
+    layoutAll: () => {
+      editor1Ref.current?.layout();
+      editor2Ref.current?.layout();
+      editor3Ref.current?.layout();
+      editor4Ref.current?.layout();
+      editor5Ref.current?.layout();
+    },
+  }));
 
   const theme = useTheme();
 
-  const editorProps: MonacoEditorProps = {
+  const editorProps: Omit<
+    MonacoEditorProps,
+    'ref' | 'value' | 'onChange' | 'placeholder'
+  > = {
     darkMode,
     language,
     fontSize,
-    browserWidth,
-    browserHeight,
     sendButtonRef,
     copyButtonRef,
     clearButtonRef,

@@ -6,8 +6,8 @@ interface UseEditorValuesReturn {
   getEditorValue: (index: number) => string;
   getCombinedValue: (editorCount: number) => string;
   setAllValues: (values: string[]) => void;
-  clearAllValues: () => void;
-  setValuesFromLog: (logText: string, editorCount: number) => void;
+  clearAllValues: () => string[];
+  setValuesFromLog: (logText: string, editorCount: number) => string[];
 }
 
 export function useEditorValues(): UseEditorValuesReturn {
@@ -57,14 +57,16 @@ export function useEditorValues(): UseEditorValuesReturn {
     setEditorValues(values.concat(['', '', '', '', '']).slice(0, 5));
   }, []);
 
-  // 全ての値をクリア
-  const clearAllValues = useCallback(() => {
-    setEditorValues(['', '', '', '', '']);
+  // 全ての値をクリア（新しい値配列を返す）
+  const clearAllValues = useCallback((): string[] => {
+    const newValues = ['', '', '', '', ''];
+    setEditorValues(newValues);
+    return newValues;
   }, []);
 
-  // ログから値を設定
+  // ログから値を設定（新しい値配列を返す）
   const setValuesFromLog = useCallback(
-    (logText: string, editorCount: number) => {
+    (logText: string, editorCount: number): string[] => {
       const parts = logText.split('\n----\n');
       const newValues = ['', '', '', '', ''];
 
@@ -79,6 +81,7 @@ export function useEditorValues(): UseEditorValuesReturn {
       }
 
       setEditorValues(newValues);
+      return newValues;
     },
     [],
   );

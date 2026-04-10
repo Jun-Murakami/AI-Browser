@@ -2,7 +2,7 @@ import { forwardRef, type RefObject } from 'react';
 import { Box, Chip } from '@mui/material';
 
 import { getSupportedLanguages } from '../MonacoEditor';
-import { MonacoEditors } from '../MonacoEditors';
+import { MonacoEditors, type MonacoEditorsHandle } from '../MonacoEditors';
 import { EditorTabs } from './EditorTabs';
 import { EditorToolbar } from './EditorToolbar';
 import { LogSelector } from './LogSelector';
@@ -70,6 +70,7 @@ interface EditorViewProps {
   ) => void;
   onSendControlKey: (key: string) => void;
   lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
+  editorsRef: RefObject<MonacoEditorsHandle | null>;
   setEditor1Value: (value: string) => void;
   setEditor2Value: (value: string) => void;
   setEditor3Value: (value: string) => void;
@@ -90,9 +91,7 @@ interface EditorViewProps {
   newerLogButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
   olderLogButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
 
-  // サイズ情報
-  browserWidth: number | null;
-  browserHeight: number | null;
+  // その他
   osInfo: string;
 }
 
@@ -151,9 +150,8 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       saveButtonTouchRippleRef,
       newerLogButtonTouchRippleRef,
       olderLogButtonTouchRippleRef,
-      browserWidth,
-      browserHeight,
       osInfo,
+      editorsRef,
       boilerplates,
       boilerplateBank,
       onBoilerplateBankChange,
@@ -234,11 +232,10 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           saveButtonRef={saveButtonRef}
           newerLogButtonRef={newerLogButtonRef}
           olderLogButtonRef={olderLogButtonRef}
-          browserWidth={browserWidth ?? undefined}
-          browserHeight={browserHeight ?? undefined}
           osInfo={osInfo}
           isTerminalActive={isTerminalActive}
           lastFocusedEditorRef={lastFocusedEditorRef}
+          ref={editorsRef}
         />
 
         <EditorToolbar

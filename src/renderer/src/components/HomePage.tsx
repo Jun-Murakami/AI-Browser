@@ -3,12 +3,12 @@ import { Allotment, type AllotmentHandle } from 'allotment';
 import 'allotment/dist/style.css';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/system';
-import { useHotkeys } from '@tanstack/react-hotkeys';
 import * as monaco from 'monaco-editor';
 import { toast } from 'sonner';
 
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useEditorValues } from '../hooks/useEditorValues';
+import { useHotkeyActions } from '../hooks/useHotkeyActions';
 import { useLogManager } from '../hooks/useLogManager';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useTabManager } from '../hooks/useTabManager';
@@ -20,6 +20,7 @@ import { cleanupAllTerminals } from './TerminalView';
 import { UpdateDialog } from './UpdateDialog';
 
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
+import type { MonacoEditorsHandle } from './MonacoEditors';
 
 interface HomePageProps {
   darkMode: boolean;
@@ -83,12 +84,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     'A' | 'B' | 'C' | 'D' | 'E'
   >('A');
   const boilerplateBankRef = useRef<'A' | 'B' | 'C' | 'D' | 'E'>('A');
-  const [isCtrlHeld, setIsCtrlHeld] = useState(false);
-  const [isAltHeld, setIsAltHeld] = useState(false);
-  const [activeArrowKey, setActiveArrowKey] = useState<
-    'up' | 'down' | 'left' | 'right' | 'enter' | null
-  >(null);
-  const arrowKeyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const boilerplatesRef = useRef<Record<string, string>>({});
   const lastFocusedEditorRef =
     useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -119,8 +114,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   const editorSplitRef = useRef<AllotmentHandle | null>(null);
   const editorPaneRef = useRef<HTMLDivElement>(null);
+  const editorsRef = useRef<MonacoEditorsHandle>(null);
 
-  // ブラウザのサイズが変更されたらメインプロセスに通知
+  // ブラウザのサイズが変更されたらメインプロセスに通知 + エディタレイアウト再計算
   useEffect(() => {
     if (!browserWidth || !browserHeight) {
       return;
@@ -129,6 +125,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       width: browserWidth,
       height: browserHeight,
     });
+    editorsRef.current?.layoutAll();
   }, [browserWidth, browserHeight]);
 
   // タブが切り替わったときの処理
@@ -161,32 +158,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       actions.reorderTab(tabId, newOrder);
     },
     [actions],
-  );
-
-  // Ctrl+Tabでタブを切り替える
-  const handleTabSwitch = useCallback(
-    (direction: 'next' | 'prev') => {
-      const currentIndex = visibleTabs.findIndex(
-        (tab) => tab.id === activeTabId,
-      );
-      if (currentIndex === -1) return;
-
-      let nextIndex: number;
-      if (direction === 'next') {
-        // 次のタブのインデックス（最後のタブの場合は最初に戻る）
-        nextIndex = (currentIndex + 1) % visibleTabs.length;
-      } else {
-        // 前のタブのインデックス（最初のタブの場合は最後に行く）
-        nextIndex =
-          currentIndex === 0 ? visibleTabs.length - 1 : currentIndex - 1;
-      }
-
-      const nextTab = visibleTabs[nextIndex];
-      if (nextTab) {
-        actions.selectTab(nextTab.id);
-      }
-    },
-    [visibleTabs, activeTabId, actions],
   );
 
   // エディタのタブが切り替わったらメインプロセスに通知
@@ -252,9 +223,15 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         );
         if (settings.logs.length === 0) {
           setEditorValue(0, 'Type your message here.');
+          editorsRef.current?.setEditorValue(0, 'Type your message here.');
         }
         setLanguage(settings.language);
         setFontSize(settings.fontSize);
+        editorsRef.current?.syncSettings({
+          darkMode: settings.isDarkMode,
+          language: settings.language,
+          fontSize: settings.fontSize,
+        });
         if (settings.boilerplates) {
           setBoilerplates(settings.boilerplates);
           boilerplatesRef.current = settings.boilerplates;
@@ -289,16 +266,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     };
   }, [checkForUpdates, setDarkMode, setLogs, setEditorValue]);
 
-  // Enterボタンのハイライトフラッシュ
-  const flashEnterKey = useCallback(() => {
-    if (arrowKeyTimerRef.current) clearTimeout(arrowKeyTimerRef.current);
-    setActiveArrowKey('enter');
-    arrowKeyTimerRef.current = setTimeout(() => {
-      setActiveArrowKey(null);
-      arrowKeyTimerRef.current = null;
-    }, 150);
-  }, []);
-
   // テキストを送信
   const handleSendButtonClick = (sendToAll: boolean) => {
     const combinedEditorValue = getCombinedValue(editorIndex);
@@ -307,7 +274,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     // ターミナルアクティブ時は空でもEnterのみ送信を許可
     if (isEmpty && isTerminalActive && !sendToAll && activeTab) {
       actions.sendMessage(activeTab.id, '');
-      flashEnterKey();
+      handleSendArrowKey('enter');
       return;
     }
 
@@ -321,7 +288,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     } else if (activeTab) {
       actions.sendMessage(activeTab.id, combinedEditorValue);
     }
-    flashEnterKey();
+    handleSendArrowKey('enter');
 
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
@@ -349,7 +316,8 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     selectLog(selectedId);
     const selected = logs.find((log) => log.id === selectedId);
     if (selected) {
-      setValuesFromLog(selected.text, editorIndex);
+      const values = setValuesFromLog(selected.text, editorIndex);
+      editorsRef.current?.setAllValues(values);
     }
   };
 
@@ -361,10 +329,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       const index = logs.indexOf(selectedLog);
       if (index > 0) {
         const nextLog = logs[index - 1];
-        setValuesFromLog(nextLog.text, editorIndex);
+        const values = setValuesFromLog(nextLog.text, editorIndex);
+        editorsRef.current?.setAllValues(values);
       }
     } else if (logs.length > 0) {
-      setValuesFromLog(logs[0].text, editorIndex);
+      const values = setValuesFromLog(logs[0].text, editorIndex);
+      editorsRef.current?.setAllValues(values);
     }
   };
 
@@ -376,16 +346,19 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       const index = logs.indexOf(selectedLog);
       if (index < logs.length - 1) {
         const prevLog = logs[index + 1];
-        setValuesFromLog(prevLog.text, editorIndex);
+        const values = setValuesFromLog(prevLog.text, editorIndex);
+        editorsRef.current?.setAllValues(values);
       }
     } else if (logs.length > 0) {
-      setValuesFromLog(logs[0].text, editorIndex);
+      const values = setValuesFromLog(logs[0].text, editorIndex);
+      editorsRef.current?.setAllValues(values);
     }
   };
 
   // クリアボタンがクリックされたらエディターをクリア
   const handleClearButtonClick = () => {
-    clearAllValues();
+    const values = clearAllValues();
+    editorsRef.current?.setAllValues(values);
     clearSelection();
     toast('Editor cleared.');
   };
@@ -419,18 +392,30 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleFontSizeChange = (size: number) => {
     setFontSize(size);
     window.electron.sendFontSizeToMain(size);
+    editorsRef.current?.syncSettings({ darkMode, language, fontSize: size });
   };
 
   // ダークモード切り替えの処理
   const handleDarkModeToggle = () => {
-    setDarkMode(!darkMode);
-    window.electron.sendIsDarkModeToMain(!darkMode);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    window.electron.sendIsDarkModeToMain(newDarkMode);
+    editorsRef.current?.syncSettings({
+      darkMode: newDarkMode,
+      language,
+      fontSize,
+    });
   };
 
   // 言語変更の処理
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
     window.electron.sendLanguageToMain(newLanguage);
+    editorsRef.current?.syncSettings({
+      darkMode,
+      language: newLanguage,
+      fontSize,
+    });
   };
 
   // refを常に最新に保つ
@@ -457,222 +442,37 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     });
   }, []);
 
-  // 定型文をMonacoカーソル位置に挿入
-  const handleInsertBoilerplate = useCallback((key: string) => {
-    const text = boilerplatesRef.current[key];
-    if (!text) return;
-    const editors = monaco.editor.getEditors();
-    const editor =
-      editors.find((e) => e.hasTextFocus()) ||
-      lastFocusedEditorRef.current ||
-      editors[0];
-    if (!editor) return;
-    const selection = editor.getSelection();
-    if (selection) {
-      editor.executeEdits('boilerplate', [
-        { range: selection, text, forceMoveMarkers: true },
-      ]);
-    }
-    editor.focus();
-  }, []);
-
-  // アクティブなタブ（ターミナル/ブラウザ）へキーを送出
-  const handleSendArrowKey = useCallback(
-    (direction: 'up' | 'down' | 'left' | 'right' | 'enter') => {
-      if (!activeTab) return;
-      if (isTerminalActive) {
-        const TERMINAL_SEQUENCES: Record<string, string> = {
-          up: '\x1b[A',
-          down: '\x1b[B',
-          right: '\x1b[C',
-          left: '\x1b[D',
-          enter: '\r',
-        };
-        window.api.sendTerminalInput(
-          activeTab.id,
-          TERMINAL_SEQUENCES[direction],
-        );
-      } else {
-        const VIEW_KEYCODES: Record<string, string> = {
-          up: 'Up',
-          down: 'Down',
-          left: 'Left',
-          right: 'Right',
-          enter: 'Return',
-        };
-        window.electron.sendKeyToView(VIEW_KEYCODES[direction]);
-      }
-      // ハイライトフラッシュ
-      if (arrowKeyTimerRef.current) clearTimeout(arrowKeyTimerRef.current);
-      setActiveArrowKey(direction);
-      arrowKeyTimerRef.current = setTimeout(() => {
-        setActiveArrowKey(null);
-        arrowKeyTimerRef.current = null;
-      }, 150);
-    },
-    [isTerminalActive, activeTab],
-  );
-
-  // Ctrl+キーをアクティブなタブ/ターミナルへ送出
-  const handleSendControlKey = useCallback(
-    (key: string) => {
-      if (!activeTab) return;
-      if (isTerminalActive) {
-        // 制御文字を送出（Ctrl+C=0x03, Ctrl+E=0x05, Ctrl+O=0x0F ...）
-        const charCode = key.toUpperCase().charCodeAt(0) - 64;
-        window.api.sendTerminalInput(
-          activeTab.id,
-          String.fromCharCode(charCode),
-        );
-      } else {
-        window.electron.sendKeyToView(key, ['control']);
-      }
-    },
-    [isTerminalActive, activeTab],
-  );
-
-  // 修飾キーの押下追跡（長押しでポップアップ表示。macはCmd、他はCtrl）
-  const ctrlTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Windows AltGr 対策: Alt keydown 直後の合成 keyup を無視するためのタイムスタンプ
-  const altKeyDownAtRef = useRef(0);
-  // useEffect 内で最新のコールバックを参照するための ref（依存配列を安定させる）
-  const sendArrowKeyRef = useRef(handleSendArrowKey);
-  sendArrowKeyRef.current = handleSendArrowKey;
-  const modKey = osInfo === 'darwin' ? 'Meta' : 'Control';
-  useEffect(() => {
-    const startModTimer = () => {
-      if (ctrlTimerRef.current) return;
-      ctrlTimerRef.current = setTimeout(() => {
-        setIsCtrlHeld(true);
-        ctrlTimerRef.current = null;
-      }, 300);
-    };
-    // capture フェーズで Monaco より先にキャッチ
-    const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> =
-      {
-        ArrowUp: 'up',
-        ArrowDown: 'down',
-        ArrowLeft: 'left',
-        ArrowRight: 'right',
-        Enter: 'enter',
-      };
-    const handleKeyDownCapture = (e: KeyboardEvent) => {
-      if (e.key === modKey) {
-        startModTimer();
-      }
-      if (e.key === 'Alt' || e.key === 'AltGraph') {
-        altKeyDownAtRef.current = Date.now();
-        setIsAltHeld(true);
-      }
-
-      // --- Ctrl+Alt+Arrow/Enter 送出 ---
-      const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
-      if (isMod && e.altKey && KEY_MAP[e.key]) {
-        e.preventDefault();
-        e.stopPropagation();
-        sendArrowKeyRef.current(KEY_MAP[e.key]);
-      }
-    };
-    const handleKeyUpCapture = (e: KeyboardEvent) => {
-      if (e.key === modKey) {
-        // AltGr 対策: Alt keydown の直後（100ms以内）に発火する Ctrl keyup は
-        // 合成イベントなのでタイマーをキャンセルしない
-        const isAltGrSynthetic = Date.now() - altKeyDownAtRef.current < 100;
-        if (!isAltGrSynthetic) {
-          if (ctrlTimerRef.current) {
-            clearTimeout(ctrlTimerRef.current);
-            ctrlTimerRef.current = null;
-          }
-          setIsCtrlHeld(false);
-        }
-      }
-      if (e.key === 'Alt' || e.key === 'AltGraph') {
-        // AltGr 対策: Alt keydown の直後（100ms以内）の keyup は合成なので無視
-        const isAltGrSynthetic = Date.now() - altKeyDownAtRef.current < 100;
-        if (!isAltGrSynthetic) {
-          setIsAltHeld(false);
-        }
-      }
-    };
-    const handleBlur = () => {
-      if (ctrlTimerRef.current) {
-        clearTimeout(ctrlTimerRef.current);
-        ctrlTimerRef.current = null;
-      }
-      setIsCtrlHeld(false);
-      setIsAltHeld(false);
-    };
-    window.addEventListener('keydown', handleKeyDownCapture, true);
-    window.addEventListener('keyup', handleKeyUpCapture, true);
-    window.addEventListener('blur', handleBlur);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDownCapture, true);
-      window.removeEventListener('keyup', handleKeyUpCapture, true);
-      window.removeEventListener('blur', handleBlur);
-      if (ctrlTimerRef.current) {
-        clearTimeout(ctrlTimerRef.current);
-      }
-    };
-  }, [modKey, osInfo]);
-
-  // ボタン押下のリップルエフェクト付きヘルパー
-  const triggerButton = useCallback(
-    (
-      ref: React.RefObject<HTMLButtonElement | null>,
-      ripple: React.RefObject<TouchRippleActions | null>,
-    ) => {
-      ref.current?.focus();
-      ripple.current?.start();
-      ref.current?.click();
-      setTimeout(() => ripple.current?.stop(), 200);
-    },
-    [],
-  );
-
-  // グローバルショートカットの設定
-  useHotkeys([
-    {
-      hotkey: 'Mod+Enter',
-      callback: () => triggerButton(sendButtonRef, sendButtonTouchRippleRef),
-    },
-    {
-      hotkey: 'Mod+S',
-      callback: () => triggerButton(saveButtonRef, saveButtonTouchRippleRef),
-    },
-    {
-      hotkey: 'Mod+Shift+C',
-      callback: () => triggerButton(copyButtonRef, copyButtonTouchRippleRef),
-    },
-    {
-      hotkey: 'Mod+Backspace',
-      callback: () => triggerButton(clearButtonRef, clearButtonTouchRippleRef),
-    },
-    {
-      hotkey: 'Mod+ArrowUp',
-      callback: () =>
-        triggerButton(newerLogButtonRef, newerLogButtonTouchRippleRef),
-    },
-    {
-      hotkey: 'Mod+ArrowDown',
-      callback: () =>
-        triggerButton(olderLogButtonRef, olderLogButtonTouchRippleRef),
-    },
-    {
-      hotkey: 'Mod+Tab',
-      callback: () => handleTabSwitch('next'),
-    },
-    {
-      hotkey: 'Mod+Shift+Tab',
-      callback: () => handleTabSwitch('prev'),
-    },
-    ...(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const).map(
-      (key) => ({
-        hotkey: `Mod+${key}` as const,
-        callback: () =>
-          handleInsertBoilerplate(`${boilerplateBankRef.current}${key}`),
-      }),
-    ),
-  ]);
+  // ホットキー・修飾キー追跡・キー送出
+  const {
+    isCtrlHeld,
+    isAltHeld,
+    activeArrowKey,
+    handleSendArrowKey,
+    handleSendControlKey,
+    handleInsertBoilerplate,
+  } = useHotkeyActions({
+    osInfo,
+    activeTab,
+    isTerminalActive,
+    visibleTabs,
+    activeTabId,
+    selectTab: actions.selectTab,
+    boilerplatesRef,
+    boilerplateBankRef,
+    lastFocusedEditorRef,
+    sendButtonRef,
+    copyButtonRef,
+    clearButtonRef,
+    saveButtonRef,
+    newerLogButtonRef,
+    olderLogButtonRef,
+    sendButtonTouchRippleRef,
+    copyButtonTouchRippleRef,
+    clearButtonTouchRippleRef,
+    saveButtonTouchRippleRef,
+    newerLogButtonTouchRippleRef,
+    olderLogButtonTouchRippleRef,
+  });
 
   return (
     <Box
@@ -761,8 +561,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             saveButtonTouchRippleRef={saveButtonTouchRippleRef}
             newerLogButtonTouchRippleRef={newerLogButtonTouchRippleRef}
             olderLogButtonTouchRippleRef={olderLogButtonTouchRippleRef}
-            browserWidth={browserWidth ?? null}
-            browserHeight={browserHeight ?? null}
+            editorsRef={editorsRef}
             osInfo={osInfo}
           />
           <LicenseDialog
