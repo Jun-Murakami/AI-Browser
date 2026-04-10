@@ -62,15 +62,18 @@ export function TerminalView({
     }, 100);
   }, [terminalId]);
 
-  // リサイズ監視
+  // リサイズ監視（handleResize を ref 経由で参照し依存配列を安定化）
+  const handleResizeRef = useRef(handleResize);
+  handleResizeRef.current = handleResize;
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    const resizeObserver = new ResizeObserver(handleResize);
+    const onResize = () => handleResizeRef.current();
+    const resizeObserver = new ResizeObserver(onResize);
     resizeObserver.observe(terminalRef.current);
 
     // 初回のリサイズを実行
-    handleResize();
+    onResize();
 
     return () => {
       resizeObserver.disconnect();
@@ -78,7 +81,7 @@ export function TerminalView({
         clearTimeout(resizeTimeoutRef.current);
       }
     };
-  }, [handleResize]);
+  }, []);
 
   return (
     <Box

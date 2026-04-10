@@ -533,6 +533,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   // 修飾キーの押下追跡（長押しでポップアップ表示。macはCmd、他はCtrl）
   const ctrlTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Windows AltGr 対策: Alt keydown 直後の合成 keyup を無視するためのタイムスタンプ
+  const altKeyDownAtRef = useRef(0);
+  // useEffect 内で最新のコールバックを参照するための ref（依存配列を安定させる）
+  const sendArrowKeyRef = useRef(handleSendArrowKey);
+  sendArrowKeyRef.current = handleSendArrowKey;
   const modKey = osInfo === 'darwin' ? 'Meta' : 'Control';
   useEffect(() => {
     const startModTimer = () => {
@@ -542,33 +547,51 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         ctrlTimerRef.current = null;
       }, 300);
     };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
-
+    // capture フェーズで Monaco より先にキャッチ
+    const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> =
+      {
+        ArrowUp: 'up',
+        ArrowDown: 'down',
+        ArrowLeft: 'left',
+        ArrowRight: 'right',
+        Enter: 'enter',
+      };
+    const handleKeyDownCapture = (e: KeyboardEvent) => {
       if (e.key === modKey) {
         startModTimer();
       }
-
-      // Alt+Mod 同時押し（Alt が後から押された場合もパネル表示）
-      if (e.key === 'Alt' && isMod) {
-        startModTimer();
-      }
-
-      if (e.key === 'Alt') {
+      if (e.key === 'Alt' || e.key === 'AltGraph') {
+        altKeyDownAtRef.current = Date.now();
         setIsAltHeld(true);
       }
-    };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === modKey) {
-        if (ctrlTimerRef.current) {
-          clearTimeout(ctrlTimerRef.current);
-          ctrlTimerRef.current = null;
-        }
-        setIsCtrlHeld(false);
-      }
 
-      if (e.key === 'Alt') {
-        setIsAltHeld(false);
+      // --- Ctrl+Alt+Arrow/Enter 送出 ---
+      const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
+      if (isMod && e.altKey && KEY_MAP[e.key]) {
+        e.preventDefault();
+        e.stopPropagation();
+        sendArrowKeyRef.current(KEY_MAP[e.key]);
+      }
+    };
+    const handleKeyUpCapture = (e: KeyboardEvent) => {
+      if (e.key === modKey) {
+        // AltGr 対策: Alt keydown の直後（100ms以内）に発火する Ctrl keyup は
+        // 合成イベントなのでタイマーをキャンセルしない
+        const isAltGrSynthetic = Date.now() - altKeyDownAtRef.current < 100;
+        if (!isAltGrSynthetic) {
+          if (ctrlTimerRef.current) {
+            clearTimeout(ctrlTimerRef.current);
+            ctrlTimerRef.current = null;
+          }
+          setIsCtrlHeld(false);
+        }
+      }
+      if (e.key === 'Alt' || e.key === 'AltGraph') {
+        // AltGr 対策: Alt keydown の直後（100ms以内）の keyup は合成なので無視
+        const isAltGrSynthetic = Date.now() - altKeyDownAtRef.current < 100;
+        if (!isAltGrSynthetic) {
+          setIsAltHeld(false);
+        }
       }
     };
     const handleBlur = () => {
@@ -579,41 +602,18 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       setIsCtrlHeld(false);
       setIsAltHeld(false);
     };
-    // Ctrl+Alt+Arrow/Enter をcaptureフェーズでMonacoより先にキャッチ
-    const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> =
-      {
-        ArrowUp: 'up',
-        ArrowDown: 'down',
-        ArrowLeft: 'left',
-        ArrowRight: 'right',
-        Enter: 'enter',
-      };
-    const handleModAltCapture = (e: KeyboardEvent) => {
-      const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
-      if (!isMod || !e.altKey) return;
-
-      // 矢印キー / Enter
-      if (KEY_MAP[e.key]) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSendArrowKey(KEY_MAP[e.key]);
-        return;
-      }
-    };
-    window.addEventListener('keydown', handleModAltCapture, true);
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('keydown', handleKeyDownCapture, true);
+    window.addEventListener('keyup', handleKeyUpCapture, true);
     window.addEventListener('blur', handleBlur);
     return () => {
-      window.removeEventListener('keydown', handleModAltCapture, true);
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDownCapture, true);
+      window.removeEventListener('keyup', handleKeyUpCapture, true);
       window.removeEventListener('blur', handleBlur);
       if (ctrlTimerRef.current) {
         clearTimeout(ctrlTimerRef.current);
       }
     };
-  }, [modKey, osInfo, handleSendArrowKey]);
+  }, [modKey, osInfo]);
 
   // ボタン押下のリップルエフェクト付きヘルパー
   const triggerButton = useCallback(

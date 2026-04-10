@@ -90,14 +90,13 @@ export const UpdateDialog = ({
     };
   }, [open]);
 
-  // ダイアログを閉じたときのリセット
-  useEffect(() => {
-    if (!open) {
-      setDownloadState('idle');
-      setProgress({ receivedBytes: 0, totalBytes: 0, percent: 0 });
-      setErrorMessage('');
-    }
-  }, [open]);
+  // ダイアログを閉じるときに状態をリセット
+  const handleClose = useCallback(() => {
+    onClose();
+    setDownloadState('idle');
+    setProgress({ receivedBytes: 0, totalBytes: 0, percent: 0 });
+    setErrorMessage('');
+  }, [onClose]);
 
   const handleDownload = useCallback(async () => {
     if (!asset) return;
@@ -143,7 +142,7 @@ export const UpdateDialog = ({
         bgcolor: 'rgba(0, 0, 0, 0.5)',
         zIndex: 1300,
       }}
-      onClick={isBlocking ? undefined : onClose}
+      onClick={isBlocking ? undefined : handleClose}
     >
       <Paper
         sx={{
@@ -173,7 +172,7 @@ export const UpdateDialog = ({
           </Typography>
           <IconButton
             aria-label="close"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isBlocking}
             sx={{ color: (theme) => theme.palette.grey[500] }}
           >
@@ -279,7 +278,7 @@ export const UpdateDialog = ({
               <>
                 {canDownload && (
                   <>
-                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={handleClose}>Cancel</Button>
                     <Button
                       variant="contained"
                       startIcon={
@@ -308,7 +307,7 @@ export const UpdateDialog = ({
               </>
             ) : (
               <>
-                <Button onClick={onClose}>Close</Button>
+                <Button onClick={handleClose}>Close</Button>
                 <Button
                   variant="contained"
                   startIcon={<FolderOpen />}

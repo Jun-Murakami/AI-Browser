@@ -66,7 +66,12 @@ export const MonacoEditor = ({
   const [editorInstance, setEditorInstance] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const initialValue = useRef(value);
+  const initialDarkMode = useRef(darkMode);
+  const initialLanguage = useRef(language);
   const memoizedValue = useMemo(() => value, [value]);
+  // ref 経由で最新のコールバック・props を参照（useEffect 依存配列の安定化）
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   // refを通じてエディターインスタンスを親コンポーネントに渡す
   useEffect(() => {
@@ -77,12 +82,13 @@ export const MonacoEditor = ({
     }
   }, [ref, editorInstance]);
 
+  // エディタ作成（isBoxReady 時のみ。darkMode/language 変更では再作成しない）
   useEffect(() => {
     if (editorRef.current && isBoxReady) {
       const editor = monaco.editor.create(editorRef.current, {
         value: initialValue.current,
-        language: language,
-        theme: darkMode ? 'vs-dark' : 'light',
+        language: initialLanguage.current,
+        theme: initialDarkMode.current ? 'vs-dark' : 'light',
         minimap: { enabled: false },
         renderWhitespace: 'all',
         fontFamily: '"Migu 1M", Consolas, "Courier New", monospace',
@@ -108,7 +114,25 @@ export const MonacoEditor = ({
       };
     }
     return () => {};
-  }, [darkMode, language, isBoxReady, placeholder]);
+  }, [isBoxReady, placeholder]);
+
+  // darkMode / language 変更時はエディタを再作成せず、オプション更新で対応
+  useEffect(() => {
+    if (!editorInstance) return;
+    editorInstance.updateOptions({
+      theme: darkMode ? 'vs-dark' : 'light',
+    });
+    // グローバルテーマも切り替え
+    monaco.editor.setTheme(darkMode ? 'vs-dark' : 'light');
+  }, [editorInstance, darkMode]);
+
+  useEffect(() => {
+    if (!editorInstance) return;
+    const model = editorInstance.getModel();
+    if (model) {
+      monaco.editor.setModelLanguage(model, language);
+    }
+  }, [editorInstance, language]);
 
   // フォーカス時に最後にフォーカスしたエディタを記録
   useEffect(() => {
@@ -178,21 +202,19 @@ export const MonacoEditor = ({
     };
   }, [editorInstance, isTerminalActive, osInfo]);
 
-  // モデル変更のハンドラーを別のuseEffectで管理
+  // モデル変更のハンドラーを別のuseEffectで管理（onChange は ref 経由で参照）
   useEffect(() => {
     if (!editorInstance) return;
 
     const disposable = editorInstance.onDidChangeModelContent(() => {
       const newValue = editorInstance.getValue();
-      if (onChange) {
-        onChange(newValue);
-      }
+      onChangeRef.current?.(newValue);
     });
 
     return () => {
       disposable.dispose();
     };
-  }, [editorInstance, onChange]);
+  }, [editorInstance]);
 
   // 外部からの値の変更を反映（初期値以外）
   useEffect(() => {
@@ -213,7 +235,7 @@ export const MonacoEditor = ({
     }
   }, [editorInstance, memoizedValue]);
 
-  // コマンドの登録を別のuseEffectで行う
+  // コマンドの登録を別のuseEffectで行う（ref は安定なので依存配列から除外）
   useEffect(() => {
     if (!editorInstance) return;
 
@@ -272,12 +294,12 @@ export const MonacoEditor = ({
     };
   }, [
     editorInstance,
-    sendButtonRef,
-    saveButtonRef,
-    copyButtonRef,
-    clearButtonRef,
-    newerLogButtonRef,
-    olderLogButtonRef,
+    sendButtonRef.current,
+    saveButtonRef.current,
+    copyButtonRef.current,
+    clearButtonRef.current,
+    newerLogButtonRef.current,
+    olderLogButtonRef.current,
   ]);
 
   // ウィンドウのリサイズ時にエディターのレイアウトを更新
