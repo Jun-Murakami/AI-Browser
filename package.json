@@ -16,7 +16,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "devtools": "react-devtools",
+    "devtools": "npx react-devtools",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "node scripts/fix-pty-module.cjs",
     "postinstall-disabled": "electron-builder install-app-deps",
@@ -65,7 +65,6 @@
     "electron-builder": "^26.8.1",
     "electron-vite": "^6.0.0-beta.0",
     "react": "^19.2.5",
-    "react-devtools": "^7.0.1",
     "react-dom": "^19.2.5",
     "typescript": "^6.0.2",
     "vite": "^8.0.8"
