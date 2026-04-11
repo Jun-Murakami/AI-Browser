@@ -1,11 +1,11 @@
-import { spawn } from '@homebridge/node-pty-prebuilt-multiarch';
 import { app, BrowserWindow, clipboard, ipcMain } from 'electron';
+import { spawn } from 'node-pty';
 
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { platform } from 'node:os';
 import { join as pathJoin } from 'node:path';
 
-import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch';
+import type { IPty } from 'node-pty';
 import type { TerminalSession } from '../types/interfaces';
 
 class TerminalManager {
@@ -232,7 +232,8 @@ class TerminalManager {
           ptyProcess.write('cls\r\n');
         }, 200);
       }
-    } catch (_error) {
+    } catch (error) {
+      console.error('Terminal session creation error:', error);
       this.sendOutput(terminalId, `\r\nError creating terminal session.\r\n`);
     }
   }

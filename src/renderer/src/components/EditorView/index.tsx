@@ -33,13 +33,6 @@ interface EditorViewProps {
   logs: Log[];
   selectedLog: Log | null;
 
-  // エディタ値
-  editor1Value: string;
-  editor2Value: string;
-  editor3Value: string;
-  editor4Value: string;
-  editor5Value: string;
-
   // イベントハンドラ
   onEditorTabChange: (event: React.SyntheticEvent, index: number) => void;
   onLicenseClick: () => void;
@@ -55,7 +48,6 @@ interface EditorViewProps {
   onCopyClick: () => void;
   onSendClick: (sendToAll: boolean) => void;
   sendTargets: Record<string, boolean>;
-  browserLoadings: Record<string, boolean>;
   onToggleSendTarget: (tabId: string) => void;
   boilerplates: Record<string, string>;
   boilerplateBank: 'A' | 'B' | 'C' | 'D' | 'E';
@@ -71,11 +63,6 @@ interface EditorViewProps {
   onSendControlKey: (key: string) => void;
   lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   editorsRef: RefObject<MonacoEditorsHandle | null>;
-  setEditor1Value: (value: string) => void;
-  setEditor2Value: (value: string) => void;
-  setEditor3Value: (value: string) => void;
-  setEditor4Value: (value: string) => void;
-  setEditor5Value: (value: string) => void;
 
   // Refs
   sendButtonRef: RefObject<HTMLButtonElement | null>;
@@ -112,11 +99,6 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       isTerminalActive,
       logs,
       selectedLog,
-      editor1Value,
-      editor2Value,
-      editor3Value,
-      editor4Value,
-      editor5Value,
       onEditorTabChange,
       onLicenseClick,
       onSelectLog,
@@ -131,13 +113,7 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       onCopyClick,
       onSendClick,
       sendTargets,
-      browserLoadings,
       onToggleSendTarget,
-      setEditor1Value,
-      setEditor2Value,
-      setEditor3Value,
-      setEditor4Value,
-      setEditor5Value,
       sendButtonRef,
       copyButtonRef,
       clearButtonRef,
@@ -216,16 +192,6 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           editorIndex={editorIndex}
           language={language}
           fontSize={fontSize}
-          editor1Value={editor1Value}
-          setEditor1Value={setEditor1Value}
-          editor2Value={editor2Value}
-          setEditor2Value={setEditor2Value}
-          editor3Value={editor3Value}
-          setEditor3Value={setEditor3Value}
-          editor4Value={editor4Value}
-          setEditor4Value={setEditor4Value}
-          editor5Value={editor5Value}
-          setEditor5Value={setEditor5Value}
           sendButtonRef={sendButtonRef}
           copyButtonRef={copyButtonRef}
           clearButtonRef={clearButtonRef}
@@ -253,7 +219,6 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           onCopyClick={onCopyClick}
           onSendClick={onSendClick}
           sendTargets={sendTargets}
-          browserLoadings={browserLoadings}
           onToggleSendTarget={onToggleSendTarget}
           clearButtonRef={clearButtonRef}
           saveButtonRef={saveButtonRef}

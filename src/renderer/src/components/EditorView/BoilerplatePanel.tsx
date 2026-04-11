@@ -199,23 +199,26 @@ export function BoilerplatePanel({
               placement="top"
               slotProps={TOOLTIP_Z}
             >
-              <IconButton
-                size="small"
-                disabled={!isTerminalActive}
-                onClick={() => onSendArrowKey('up')}
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor: activeArrowKey === 'up' ? 'primary.main' : undefined,
-                  color:
-                    activeArrowKey === 'up'
-                      ? 'primary.contrastText'
-                      : undefined,
-                  transition: 'all 0.1s',
-                }}
-              >
-                <ArrowUpward fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!isTerminalActive}
+                  onClick={() => onSendArrowKey('up')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor:
+                      activeArrowKey === 'up' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'up'
+                        ? 'primary.contrastText'
+                        : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowUpward fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
             <Box />
             {/* 中段: ← / +Alt / → */}
@@ -225,24 +228,26 @@ export function BoilerplatePanel({
               placement="left"
               slotProps={TOOLTIP_Z}
             >
-              <IconButton
-                size="small"
-                disabled={!isTerminalActive}
-                onClick={() => onSendArrowKey('left')}
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor:
-                    activeArrowKey === 'left' ? 'primary.main' : undefined,
-                  color:
-                    activeArrowKey === 'left'
-                      ? 'primary.contrastText'
-                      : undefined,
-                  transition: 'all 0.1s',
-                }}
-              >
-                <ArrowBack fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!isTerminalActive}
+                  onClick={() => onSendArrowKey('left')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor:
+                      activeArrowKey === 'left' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'left'
+                        ? 'primary.contrastText'
+                        : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowBack fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
             <Box
               sx={{
@@ -267,24 +272,26 @@ export function BoilerplatePanel({
               placement="right"
               slotProps={TOOLTIP_Z}
             >
-              <IconButton
-                size="small"
-                disabled={!isTerminalActive}
-                onClick={() => onSendArrowKey('right')}
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor:
-                    activeArrowKey === 'right' ? 'primary.main' : undefined,
-                  color:
-                    activeArrowKey === 'right'
-                      ? 'primary.contrastText'
-                      : undefined,
-                  transition: 'all 0.1s',
-                }}
-              >
-                <ArrowForward fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!isTerminalActive}
+                  onClick={() => onSendArrowKey('right')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor:
+                      activeArrowKey === 'right' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'right'
+                        ? 'primary.contrastText'
+                        : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowForward fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
             {/* 下段: 空 / ↓ / Enter */}
             <Box />
@@ -294,24 +301,26 @@ export function BoilerplatePanel({
               placement="bottom"
               slotProps={TOOLTIP_Z}
             >
-              <IconButton
-                size="small"
-                disabled={!isTerminalActive}
-                onClick={() => onSendArrowKey('down')}
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor:
-                    activeArrowKey === 'down' ? 'primary.main' : undefined,
-                  color:
-                    activeArrowKey === 'down'
-                      ? 'primary.contrastText'
-                      : undefined,
-                  transition: 'all 0.1s',
-                }}
-              >
-                <ArrowDownward fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!isTerminalActive}
+                  onClick={() => onSendArrowKey('down')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor:
+                      activeArrowKey === 'down' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'down'
+                        ? 'primary.contrastText'
+                        : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <ArrowDownward fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip
               title={`Enter (${commandKey} + Alt + Enter)`}
@@ -319,24 +328,26 @@ export function BoilerplatePanel({
               placement="bottom"
               slotProps={TOOLTIP_Z}
             >
-              <IconButton
-                size="small"
-                disabled={!isTerminalActive}
-                onClick={() => onSendArrowKey('enter')}
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor:
-                    activeArrowKey === 'enter' ? 'primary.main' : undefined,
-                  color:
-                    activeArrowKey === 'enter'
-                      ? 'primary.contrastText'
-                      : undefined,
-                  transition: 'all 0.1s',
-                }}
-              >
-                <KeyboardReturn fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!isTerminalActive}
+                  onClick={() => onSendArrowKey('enter')}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor:
+                      activeArrowKey === 'enter' ? 'primary.main' : undefined,
+                    color:
+                      activeArrowKey === 'enter'
+                        ? 'primary.contrastText'
+                        : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <KeyboardReturn fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         </Box>
@@ -375,22 +386,24 @@ export function BoilerplatePanel({
                       placement={col === 0 ? 'left' : 'right'}
                       slotProps={TOOLTIP_Z}
                     >
-                      <Button
-                        variant="contained"
-                        size="small"
-                        sx={{
-                          fontSize: '0.65rem',
-                          fontWeight: 'bold',
-                          height: 26,
-                          minWidth: 0,
-                          width: '100%',
-                          px: 0.5,
-                        }}
-                        disabled={!isTerminalActive}
-                        onClick={() => onSendControlKey(key)}
-                      >
-                        {label}
-                      </Button>
+                      <span>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            fontSize: '0.65rem',
+                            fontWeight: 'bold',
+                            height: 26,
+                            minWidth: 0,
+                            width: '100%',
+                            px: 0.5,
+                          }}
+                          disabled={!isTerminalActive}
+                          onClick={() => onSendControlKey(key)}
+                        >
+                          {label}
+                        </Button>
+                      </span>
                     </Tooltip>
                   ),
                 )}

@@ -6,11 +6,9 @@ import 'allotment/dist/style.css';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import {
-  MonacoEditor,
-  type MonacoEditorHandle,
-  type MonacoEditorProps,
-} from './MonacoEditor';
+import { ConnectedMonacoEditor } from './ConnectedMonacoEditor';
+
+import type { MonacoEditorHandle } from './MonacoEditor';
 
 /** 親コンポーネントから全エディタを一括操作するためのハンドル */
 export interface MonacoEditorsHandle {
@@ -40,16 +38,6 @@ interface MonacoEditorsProps {
   newerLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   olderLogButtonRef: React.RefObject<HTMLButtonElement | null>;
   lastFocusedEditorRef: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>;
-  editor1Value: string;
-  editor2Value: string;
-  editor3Value: string;
-  editor4Value: string;
-  editor5Value: string;
-  setEditor1Value: (value: string) => void;
-  setEditor2Value: (value: string) => void;
-  setEditor3Value: (value: string) => void;
-  setEditor4Value: (value: string) => void;
-  setEditor5Value: (value: string) => void;
   osInfo: string;
   isTerminalActive?: boolean;
   ref?: React.Ref<MonacoEditorsHandle>;
@@ -63,44 +51,14 @@ export const MonacoEditors = ({
   sendButtonRef,
   copyButtonRef,
   clearButtonRef,
+  saveButtonRef,
   newerLogButtonRef,
   olderLogButtonRef,
-  saveButtonRef,
   lastFocusedEditorRef,
-  editor1Value,
-  editor2Value,
-  editor3Value,
-  editor4Value,
-  editor5Value,
-  setEditor1Value,
-  setEditor2Value,
-  setEditor3Value,
-  setEditor4Value,
-  setEditor5Value,
   osInfo,
   isTerminalActive,
   ref,
 }: MonacoEditorsProps) => {
-  const handleEditor1Change = (value: string | undefined) => {
-    setEditor1Value(value ?? '');
-  };
-
-  const handleEditor2Change = (value: string | undefined) => {
-    setEditor2Value(value ?? '');
-  };
-
-  const handleEditor3Change = (value: string | undefined) => {
-    setEditor3Value(value ?? '');
-  };
-
-  const handleEditor4Change = (value: string | undefined) => {
-    setEditor4Value(value ?? '');
-  };
-
-  const handleEditor5Change = (value: string | undefined) => {
-    setEditor5Value(value ?? '');
-  };
-
   const editor1Ref = useRef<MonacoEditorHandle>(null);
   const editor2Ref = useRef<MonacoEditorHandle>(null);
   const editor3Ref = useRef<MonacoEditorHandle>(null);
@@ -138,10 +96,7 @@ export const MonacoEditors = ({
 
   const theme = useTheme();
 
-  const editorProps: Omit<
-    MonacoEditorProps,
-    'ref' | 'value' | 'onChange' | 'placeholder'
-  > = {
+  const commonProps = {
     darkMode,
     language,
     fontSize,
@@ -171,11 +126,10 @@ export const MonacoEditors = ({
       >
         {editorIndex === 0 && (
           <Box sx={{ pt: 1, height: '100%' }}>
-            <MonacoEditor
-              {...editorProps}
-              value={editor1Value}
-              onChange={handleEditor1Change}
-              ref={editor1Ref}
+            <ConnectedMonacoEditor
+              {...commonProps}
+              index={0}
+              editorRef={editor1Ref}
               placeholder={placeholderText}
             />
           </Box>
@@ -190,22 +144,20 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={200}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor1Value}
-                  onChange={handleEditor1Change}
-                  ref={editor1Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={0}
+                  editorRef={editor1Ref}
                   placeholder={placeholderText}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor2Value}
-                  onChange={handleEditor2Change}
-                  ref={editor2Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={1}
+                  editorRef={editor2Ref}
                 />
               </Box>
             </Allotment.Pane>
@@ -222,32 +174,29 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor1Value}
-                  onChange={handleEditor1Change}
-                  ref={editor1Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={0}
+                  editorRef={editor1Ref}
                   placeholder={placeholderText}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor2Value}
-                  onChange={handleEditor2Change}
-                  ref={editor2Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={1}
+                  editorRef={editor2Ref}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor3Value}
-                  onChange={handleEditor3Change}
-                  ref={editor3Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={2}
+                  editorRef={editor3Ref}
                 />
               </Box>
             </Allotment.Pane>
@@ -265,42 +214,38 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor1Value}
-                  onChange={handleEditor1Change}
-                  ref={editor1Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={0}
+                  editorRef={editor1Ref}
                   placeholder={placeholderText}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor2Value}
-                  onChange={handleEditor2Change}
-                  ref={editor2Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={1}
+                  editorRef={editor2Ref}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor3Value}
-                  onChange={handleEditor3Change}
-                  ref={editor3Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={2}
+                  editorRef={editor3Ref}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor4Value}
-                  onChange={handleEditor4Change}
-                  ref={editor4Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={3}
+                  editorRef={editor4Ref}
                 />
               </Box>
             </Allotment.Pane>
@@ -318,52 +263,47 @@ export const MonacoEditors = ({
           >
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor1Value}
-                  onChange={handleEditor1Change}
-                  ref={editor1Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={0}
+                  editorRef={editor1Ref}
                   placeholder={placeholderText}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor2Value}
-                  onChange={handleEditor2Change}
-                  ref={editor2Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={1}
+                  editorRef={editor2Ref}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor3Value}
-                  onChange={handleEditor3Change}
-                  ref={editor3Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={2}
+                  editorRef={editor3Ref}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor4Value}
-                  onChange={handleEditor4Change}
-                  ref={editor4Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={3}
+                  editorRef={editor4Ref}
                 />
               </Box>
             </Allotment.Pane>
             <Allotment.Pane minSize={20}>
               <Box sx={{ pt: 1, height: '100%' }}>
-                <MonacoEditor
-                  {...editorProps}
-                  value={editor5Value}
-                  onChange={handleEditor5Change}
-                  ref={editor5Ref}
+                <ConnectedMonacoEditor
+                  {...commonProps}
+                  index={4}
+                  editorRef={editor5Ref}
                 />
               </Box>
             </Allotment.Pane>

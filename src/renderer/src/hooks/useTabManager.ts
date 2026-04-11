@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { BROWSERS } from '../constants/browsers';
 import { TERMINALS } from '../constants/terminals';
 import { terminalService } from '../services/terminalService';
+import { useBrowserLoadingStore } from '../stores/useBrowserLoadingStore';
 
 import type {
   BrowserTab,
@@ -18,7 +19,6 @@ interface UseTabManagerReturn {
   isTerminalActive: boolean;
   visibleTabs: Tab[];
   sendTargets: Record<string, boolean>;
-  browserLoadings: Record<string, boolean>;
   actions: TabActions;
 }
 
@@ -60,11 +60,9 @@ export function useTabManager(): UseTabManagerReturn {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [enabledTabs, setEnabledTabs] = useState<Record<string, boolean>>({});
   const [sendTargets, setSendTargets] = useState<Record<string, boolean>>({});
-  const [browserLoadings, setBrowserLoadings] = useState<
-    Record<string, boolean>
-  >({});
+  const setBrowserLoading = useBrowserLoadingStore((s) => s.setBrowserLoading);
 
-  // ローディング状態の監視
+  // ローディング状態の監視（ストアに直接書き込み）
   useEffect(() => {
     const handleLoadingStatus = (status: {
       index: number;
@@ -72,17 +70,14 @@ export function useTabManager(): UseTabManagerReturn {
     }) => {
       const browser = BROWSERS[status.index];
       if (browser) {
-        setBrowserLoadings((prev) => ({
-          ...prev,
-          [browser.id]: status.isLoading,
-        }));
+        setBrowserLoading(browser.id, status.isLoading);
       }
     };
     window.electron.onUpdateLoadingStatus(handleLoadingStatus);
     return () => {
       window.electron.removeUpdateLoadingStatusListener();
     };
-  }, []);
+  }, [setBrowserLoading]);
 
   // 初期化
   useEffect(() => {
@@ -311,7 +306,6 @@ export function useTabManager(): UseTabManagerReturn {
     isTerminalActive,
     visibleTabs,
     sendTargets,
-    browserLoadings,
     actions,
   };
 }

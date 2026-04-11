@@ -20,6 +20,7 @@ import {
 import { useTheme } from '@mui/system';
 
 import { BROWSERS } from '../../constants/browsers';
+import { useBrowserLoadingStore } from '../../stores/useBrowserLoadingStore';
 import { EraseIcon } from '../Icons';
 import { BoilerplatePanel } from './BoilerplatePanel';
 import { MaterialUISwitch } from './DarkModeSwitch';
@@ -56,7 +57,6 @@ interface EditorToolbarProps {
   isTerminalActive: boolean;
   fontSizeOptions: number[];
   sendTargets: Record<string, boolean>;
-  browserLoadings: Record<string, boolean>;
   onFontSizeChange: (size: number) => void;
   onDarkModeToggle: () => void;
   onClearClick: () => void;
@@ -98,7 +98,6 @@ export function EditorToolbar({
   isTerminalActive,
   fontSizeOptions,
   sendTargets,
-  browserLoadings,
   onFontSizeChange,
   onDarkModeToggle,
   onClearClick,
@@ -125,6 +124,7 @@ export function EditorToolbar({
   copyButtonTouchRippleRef,
   sendButtonTouchRippleRef,
 }: EditorToolbarProps) {
+  const browserLoadings = useBrowserLoadingStore((s) => s.browserLoadings);
   const theme = useTheme();
   const [popperOpen, setPopperOpen] = useState(false);
   const [boilerplateClickOpen, setBoilerplateClickOpen] = useState(false);

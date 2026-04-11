@@ -7,12 +7,12 @@ import * as monaco from 'monaco-editor';
 import { toast } from 'sonner';
 
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
-import { useEditorValues } from '../hooks/useEditorValues';
 import { useHotkeyActions } from '../hooks/useHotkeyActions';
 import { useLogManager } from '../hooks/useLogManager';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useTabManager } from '../hooks/useTabManager';
 import { terminalService } from '../services/terminalService';
+import { useEditorStore } from '../stores/useEditorStore';
 import { BrowserView } from './BrowserView';
 import { EditorView } from './EditorView';
 import { LicenseDialog } from './EditorView/LicenseDialog';
@@ -36,7 +36,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     isTerminalActive,
     visibleTabs,
     sendTargets,
-    browserLoadings,
     actions,
   } = useTabManager();
 
@@ -53,14 +52,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     setLogs,
   } = useLogManager();
 
-  // エディタ値管理システム
-  const {
-    setEditorValue,
-    getEditorValue,
-    getCombinedValue,
-    clearAllValues,
-    setValuesFromLog,
-  } = useEditorValues();
+  // エディタ値管理システム（Zustand ストア）
+  const setEditorValue = useEditorStore((s) => s.setEditorValue);
+  const getCombinedValue = useEditorStore((s) => s.getCombinedValue);
+  const clearAllValues = useEditorStore((s) => s.clearAllValues);
+  const setValuesFromLog = useEditorStore((s) => s.setValuesFromLog);
 
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [updateInfo, setUpdateInfo] = useState<{
@@ -479,7 +475,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             isTerminalActive={isTerminalActive}
             visibleTabs={visibleTabs}
             isInitialized={isInitialized}
-            browserLoadings={browserLoadings}
             onTabChange={handleTabChange}
             onToggleTabEnabled={handleToggleTabEnabled}
             onTabReorder={handleTabReorder}
@@ -502,11 +497,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             isTerminalActive={isTerminalActive}
             logs={logs}
             selectedLog={selectedLog}
-            editor1Value={getEditorValue(0)}
-            editor2Value={getEditorValue(1)}
-            editor3Value={getEditorValue(2)}
-            editor4Value={getEditorValue(3)}
-            editor5Value={getEditorValue(4)}
             onEditorTabChange={handleEditorTabChange}
             onLicenseClick={() => setIsLicenseDialogOpen(true)}
             onSelectLog={handleSelectedLogChange}
@@ -521,7 +511,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             onCopyClick={handleCopyButtonClick}
             onSendClick={handleSendButtonClick}
             sendTargets={sendTargets}
-            browserLoadings={browserLoadings}
             onToggleSendTarget={handleToggleSendTarget}
             boilerplates={boilerplates}
             boilerplateBank={boilerplateBank}
@@ -534,11 +523,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             onSendArrowKey={handleSendArrowKey}
             onSendControlKey={handleSendControlKey}
             lastFocusedEditorRef={lastFocusedEditorRef}
-            setEditor1Value={(value) => setEditorValue(0, value)}
-            setEditor2Value={(value) => setEditorValue(1, value)}
-            setEditor3Value={(value) => setEditorValue(2, value)}
-            setEditor4Value={(value) => setEditorValue(3, value)}
-            setEditor5Value={(value) => setEditorValue(4, value)}
             sendButtonRef={sendButtonRef}
             copyButtonRef={copyButtonRef}
             clearButtonRef={clearButtonRef}

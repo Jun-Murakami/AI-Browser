@@ -14,7 +14,6 @@ interface BrowserViewProps {
   isTerminalActive: boolean;
   visibleTabs: Tab[];
   isInitialized: boolean;
-  browserLoadings: Record<string, boolean>;
   onTabChange: (tabId: string) => void;
   onToggleTabEnabled: (tabId: string) => void;
   onTabReorder: (tabId: string, newOrder: number) => void;
@@ -28,7 +27,6 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
       isTerminalActive,
       visibleTabs,
       isInitialized,
-      browserLoadings,
       onTabChange,
       onToggleTabEnabled,
       onTabReorder,
@@ -91,7 +89,6 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
           }
           activeTabId={activeTabId}
           isEditingBrowserShow={isEditingBrowserShow}
-          browserLoadings={browserLoadings}
           onTabChange={handleBrowserTabChange}
           onToggleEditMode={handleToggleEditMode}
           onToggleTabEnabled={onToggleTabEnabled}

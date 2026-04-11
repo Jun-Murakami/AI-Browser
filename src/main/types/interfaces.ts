@@ -1,5 +1,5 @@
-import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch';
 import type { WebContentsView } from 'electron';
+import type { IPty } from 'node-pty';
 
 export interface AppState {
   bounds: Electron.Rectangle;
