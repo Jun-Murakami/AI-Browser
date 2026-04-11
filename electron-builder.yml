@@ -31,15 +31,15 @@ mac:
   icon: build/icon.icns
   # NOTE:
   # macOS universal (x64+arm64) ビルドの合体工程（@electron/universal）で、
-  # node-pty-prebuilt-multiarch 配下のバイナリが「両アーキで同一ファイル
+  # node-pty の prebuilds 配下のバイナリが「両アーキで同一ファイル
   # （= 既にuniversal/lipo済み相当）」として検出され、例外ルール未指定だと
-  # "Detected file ... not covered by the x64ArchFiles rule" で停止することがあります。
+  # “Detected file ... not covered by the x64ArchFiles rule” で停止することがあります。
   #
-  # `x64ArchFiles` は、そのような“既にマージ済み扱いで再lipoしない”ファイルを
+  # `x64ArchFiles` は、そのような”既にマージ済み扱いで再lipoしない”ファイルを
   # minimatch で明示するための設定です。
   #
-  # ここでは node-pty の Release 配下（pty.node / spawn-helper など）をまとめて許可します。
-  x64ArchFiles: Contents/Resources/app.asar.unpacked/node_modules/@homebridge/node-pty-prebuilt-multiarch/build/Release/**
+  # ここでは node-pty の prebuilds 配下（pty.node / spawn-helper など）をまとめて許可します。
+  x64ArchFiles: Contents/Resources/app.asar.unpacked/node_modules/node-pty/prebuilds/**
   target:
     - target: dmg
       arch: universal
