@@ -54,11 +54,18 @@ interface EditorViewProps {
   onBoilerplateBankChange: (bank: 'A' | 'B' | 'C' | 'D' | 'E') => void;
   isCtrlHeld: boolean;
   isAltHeld: boolean;
-  activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
+  activeArrowKey:
+    | 'up'
+    | 'down'
+    | 'left'
+    | 'right'
+    | 'enter'
+    | 'backspace'
+    | null;
   onBoilerplateChange: (key: string, text: string) => void;
   onInsertBoilerplate: (key: string) => void;
   onSendArrowKey: (
-    direction: 'up' | 'down' | 'left' | 'right' | 'enter',
+    direction: 'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace',
   ) => void;
   onSendControlKey: (key: string) => void;
   lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;

@@ -33,13 +33,20 @@ interface BoilerplatePanelProps {
   boilerplateBank: 'A' | 'B' | 'C' | 'D' | 'E';
   isTerminalActive: boolean;
   isAltHeld: boolean;
-  activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
+  activeArrowKey:
+    | 'up'
+    | 'down'
+    | 'left'
+    | 'right'
+    | 'enter'
+    | 'backspace'
+    | null;
   onBoilerplateBankChange: (bank: 'A' | 'B' | 'C' | 'D' | 'E') => void;
   onBoilerplateChange: (key: string, text: string) => void;
+  onBoilerplateFieldFocus: () => void;
   onInsertBoilerplate: (key: string) => void;
-  onClosePanel: () => void;
   onSendArrowKey: (
-    direction: 'up' | 'down' | 'left' | 'right' | 'enter',
+    direction: 'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace',
   ) => void;
   onSendControlKey: (key: string) => void;
 }
@@ -55,8 +62,8 @@ export function BoilerplatePanel({
   activeArrowKey,
   onBoilerplateBankChange,
   onBoilerplateChange,
+  onBoilerplateFieldFocus,
   onInsertBoilerplate,
-  onClosePanel,
   onSendArrowKey,
   onSendControlKey,
 }: BoilerplatePanelProps) {
@@ -133,7 +140,6 @@ export function BoilerplatePanel({
               }}
               onClick={() => {
                 onInsertBoilerplate(key);
-                onClosePanel();
               }}
             >
               {slot}
@@ -143,6 +149,7 @@ export function BoilerplatePanel({
               variant="outlined"
               placeholder={`${commandKey}+${slot}`}
               value={boilerplates[key] ?? ''}
+              onFocus={onBoilerplateFieldFocus}
               onChange={(e) => onBoilerplateChange(key, e.target.value)}
               fullWidth
               slotProps={{
@@ -193,7 +200,7 @@ export function BoilerplatePanel({
               alignContent: 'center',
             }}
           >
-            {/* 上段: 空 / ↑ / 空 */}
+            {/* 上段: 空 / ↑ / BS */}
             <Box />
             <Tooltip
               title={`Up (${commandKey} + ${altKey} + ↑)`}
@@ -205,7 +212,9 @@ export function BoilerplatePanel({
                 <IconButton
                   size="small"
                   disabled={!isTerminalActive}
-                  onClick={() => onSendArrowKey('up')}
+                  onClick={() => {
+                    onSendArrowKey('up');
+                  }}
                   sx={{
                     width: 34,
                     height: 34,
@@ -222,7 +231,46 @@ export function BoilerplatePanel({
                 </IconButton>
               </span>
             </Tooltip>
-            <Box />
+            <Tooltip
+              title={`Backspace (${commandKey} + ${altKey} + BS)`}
+              arrow
+              placement="top"
+              slotProps={TOOLTIP_Z}
+            >
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!isTerminalActive}
+                  onClick={() => {
+                    onSendArrowKey('backspace');
+                  }}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor:
+                      activeArrowKey === 'backspace'
+                        ? 'primary.main'
+                        : undefined,
+                    color:
+                      activeArrowKey === 'backspace'
+                        ? 'primary.contrastText'
+                        : undefined,
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <Box
+                    component="span"
+                    sx={{
+                      fontSize: '0.62rem',
+                      fontWeight: 'bold',
+                      lineHeight: 1,
+                    }}
+                  >
+                    BS
+                  </Box>
+                </IconButton>
+              </span>
+            </Tooltip>
             {/* 中段: ← / +Alt(Opt) / → */}
             <Tooltip
               title={`Left (${commandKey} + ${altKey} + ←)`}
@@ -234,7 +282,9 @@ export function BoilerplatePanel({
                 <IconButton
                   size="small"
                   disabled={!isTerminalActive}
-                  onClick={() => onSendArrowKey('left')}
+                  onClick={() => {
+                    onSendArrowKey('left');
+                  }}
                   sx={{
                     width: 34,
                     height: 34,
@@ -278,7 +328,9 @@ export function BoilerplatePanel({
                 <IconButton
                   size="small"
                   disabled={!isTerminalActive}
-                  onClick={() => onSendArrowKey('right')}
+                  onClick={() => {
+                    onSendArrowKey('right');
+                  }}
                   sx={{
                     width: 34,
                     height: 34,
@@ -307,7 +359,9 @@ export function BoilerplatePanel({
                 <IconButton
                   size="small"
                   disabled={!isTerminalActive}
-                  onClick={() => onSendArrowKey('down')}
+                  onClick={() => {
+                    onSendArrowKey('down');
+                  }}
                   sx={{
                     width: 34,
                     height: 34,
@@ -334,7 +388,9 @@ export function BoilerplatePanel({
                 <IconButton
                   size="small"
                   disabled={!isTerminalActive}
-                  onClick={() => onSendArrowKey('enter')}
+                  onClick={() => {
+                    onSendArrowKey('enter');
+                  }}
                   sx={{
                     width: 34,
                     height: 34,
@@ -401,7 +457,9 @@ export function BoilerplatePanel({
                             px: 0.5,
                           }}
                           disabled={!isTerminalActive}
-                          onClick={() => onSendControlKey(key)}
+                          onClick={() => {
+                            onSendControlKey(key);
+                          }}
                         >
                           {label}
                         </Button>

@@ -202,12 +202,13 @@ export const MonacoEditor = ({
       propsRef.current.olderLogButtonRef.current?.click(),
     );
 
-    // --- クリップボード画像ペースト（Windows + ターミナルモード）---
+    // --- クリップボード画像ペースト（Windows/macOS + ターミナルモード）---
     const container = editor.getDomNode();
     const handleKeyDown = (e: KeyboardEvent) => {
+      const os = propsRef.current.osInfo;
       if (
         !propsRef.current.isTerminalActive ||
-        propsRef.current.osInfo !== 'win32'
+        (os !== 'win32' && os !== 'darwin')
       )
         return;
       const isPaste =

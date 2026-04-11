@@ -12,7 +12,8 @@ interface UseHotkeyActionsProps {
   activeTabId: string | null;
   selectTab: (tabId: string) => void;
   boilerplatesRef: React.RefObject<Record<string, string>>;
-  boilerplateBankRef: React.RefObject<string>;
+  boilerplateBankRef: React.RefObject<'A' | 'B' | 'C' | 'D' | 'E'>;
+  switchBoilerplateBank: (direction: 'prev' | 'next') => void;
   lastFocusedEditorRef: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   sendButtonRef: React.RefObject<HTMLButtonElement | null>;
   copyButtonRef: React.RefObject<HTMLButtonElement | null>;
@@ -31,9 +32,16 @@ interface UseHotkeyActionsProps {
 interface UseHotkeyActionsReturn {
   isCtrlHeld: boolean;
   isAltHeld: boolean;
-  activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
+  activeArrowKey:
+    | 'up'
+    | 'down'
+    | 'left'
+    | 'right'
+    | 'enter'
+    | 'backspace'
+    | null;
   handleSendArrowKey: (
-    direction: 'up' | 'down' | 'left' | 'right' | 'enter',
+    direction: 'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace',
   ) => void;
   handleSendControlKey: (key: string) => void;
   handleInsertBoilerplate: (key: string) => void;
@@ -48,6 +56,7 @@ export function useHotkeyActions({
   selectTab,
   boilerplatesRef,
   boilerplateBankRef,
+  switchBoilerplateBank,
   lastFocusedEditorRef,
   sendButtonRef,
   copyButtonRef,
@@ -65,7 +74,7 @@ export function useHotkeyActions({
   const [isCtrlHeld, setIsCtrlHeld] = useState(false);
   const [isAltHeld, setIsAltHeld] = useState(false);
   const [activeArrowKey, setActiveArrowKey] = useState<
-    'up' | 'down' | 'left' | 'right' | 'enter' | null
+    'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace' | null
   >(null);
   const arrowKeyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -93,7 +102,7 @@ export function useHotkeyActions({
 
   // アクティブなタブ（ターミナル/ブラウザ）へキーを送出
   const handleSendArrowKey = useCallback(
-    (direction: 'up' | 'down' | 'left' | 'right' | 'enter') => {
+    (direction: 'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace') => {
       if (!activeTab) return;
       if (isTerminalActive) {
         const TERMINAL_SEQUENCES: Record<string, string> = {
@@ -102,6 +111,7 @@ export function useHotkeyActions({
           right: '\x1b[C',
           left: '\x1b[D',
           enter: '\r',
+          backspace: '\x7f',
         };
         window.api.sendTerminalInput(
           activeTab.id,
@@ -114,6 +124,7 @@ export function useHotkeyActions({
           left: 'Left',
           right: 'Right',
           enter: 'Return',
+          backspace: 'Backspace',
         };
         window.electron.sendKeyToView(VIEW_KEYCODES[direction]);
       }
@@ -147,39 +158,78 @@ export function useHotkeyActions({
 
   // --- 修飾キー追跡 (Ctrl/Cmd 長押し、Alt 追跡、Ctrl+Alt+Arrow 送出) ---
   const ctrlTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isCtrlHeldRef = useRef(false);
   const altKeyDownAtRef = useRef(0);
   const sendArrowKeyRef = useRef(handleSendArrowKey);
   sendArrowKeyRef.current = handleSendArrowKey;
   const modKey = osInfo === 'darwin' ? 'Meta' : 'Control';
 
   useEffect(() => {
+    const clearModState = () => {
+      if (ctrlTimerRef.current) {
+        clearTimeout(ctrlTimerRef.current);
+        ctrlTimerRef.current = null;
+      }
+      if (isCtrlHeldRef.current) {
+        isCtrlHeldRef.current = false;
+        setIsCtrlHeld(false);
+      }
+    };
+
     const startModTimer = () => {
       if (ctrlTimerRef.current) return;
       ctrlTimerRef.current = setTimeout(() => {
+        isCtrlHeldRef.current = true;
         setIsCtrlHeld(true);
         ctrlTimerRef.current = null;
       }, 300);
     };
 
-    const KEY_MAP: Record<string, 'up' | 'down' | 'left' | 'right' | 'enter'> =
-      {
-        ArrowUp: 'up',
-        ArrowDown: 'down',
-        ArrowLeft: 'left',
-        ArrowRight: 'right',
-        Enter: 'enter',
-      };
+    // イベントオブジェクトの metaKey/ctrlKey で Mod の物理状態を確認する。
+    // メインプロセスの before-input-event で preventDefault された後に
+    // Mod keyup がレンダラーに届かないケースへのフォールバック。
+    // keydown / keyup / mousedown いずれのイベントでも確認できる。
+    const checkModPhysical = (e: KeyboardEvent | MouseEvent) => {
+      if (!isCtrlHeldRef.current) return;
+      const isModDown = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
+      if (!isModDown) {
+        clearModState();
+      }
+    };
+
+    const KEY_MAP: Record<
+      string,
+      'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace'
+    > = {
+      ArrowUp: 'up',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      ArrowRight: 'right',
+      Enter: 'enter',
+      Backspace: 'backspace',
+    };
 
     const handleKeyDownCapture = (e: KeyboardEvent) => {
       if (e.key === modKey) {
         startModTimer();
+      } else {
+        // Mod 以外のキーが押された時に Mod の物理状態を確認
+        checkModPhysical(e);
       }
       if (e.key === 'Alt' || e.key === 'AltGraph') {
         altKeyDownAtRef.current = Date.now();
         setIsAltHeld(true);
       }
-      // Ctrl+Alt+Arrow/Enter 送出
       const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
+      // テンキー + と JIS の ;/+ キーは hotkey 側で拾えない環境があるため
+      // 物理キー code で next バンク切替を補完する
+      if (isMod && (e.code === 'NumpadAdd' || e.code === 'Semicolon')) {
+        e.preventDefault();
+        e.stopPropagation();
+        switchBoilerplateBank('next');
+        return;
+      }
+      // Ctrl+Alt+Arrow/Enter/Backspace 送出
       if (isMod && e.altKey && KEY_MAP[e.key]) {
         e.preventDefault();
         e.stopPropagation();
@@ -191,13 +241,10 @@ export function useHotkeyActions({
       if (e.key === modKey) {
         const isAltGrSynthetic = Date.now() - altKeyDownAtRef.current < 100;
         if (!isAltGrSynthetic) {
-          if (ctrlTimerRef.current) {
-            clearTimeout(ctrlTimerRef.current);
-            ctrlTimerRef.current = null;
-          }
-          setIsCtrlHeld(false);
+          clearModState();
         }
       }
+      checkModPhysical(e);
       if (e.key === 'Alt' || e.key === 'AltGraph') {
         const isAltGrSynthetic = Date.now() - altKeyDownAtRef.current < 100;
         if (!isAltGrSynthetic) {
@@ -206,27 +253,38 @@ export function useHotkeyActions({
       }
     };
 
+    // クリック時にも Mod の物理状態を確認する
+    const handleMouseDownCapture = (e: MouseEvent) => {
+      checkModPhysical(e);
+    };
+
     const handleBlur = () => {
-      if (ctrlTimerRef.current) {
-        clearTimeout(ctrlTimerRef.current);
-        ctrlTimerRef.current = null;
-      }
-      setIsCtrlHeld(false);
+      clearModState();
       setIsAltHeld(false);
     };
 
     window.addEventListener('keydown', handleKeyDownCapture, true);
     window.addEventListener('keyup', handleKeyUpCapture, true);
+    window.addEventListener('mousedown', handleMouseDownCapture, true);
     window.addEventListener('blur', handleBlur);
+
+    // メインプロセスの before-input-event 経由で Mod keyUp を受け取る。
+    // before-input-event の keyUp が発火するプラットフォームへの追加フォールバック。
+    window.electron.onModKeyUp(() => {
+      clearModState();
+    });
+
     return () => {
       window.removeEventListener('keydown', handleKeyDownCapture, true);
       window.removeEventListener('keyup', handleKeyUpCapture, true);
+      window.removeEventListener('mousedown', handleMouseDownCapture, true);
       window.removeEventListener('blur', handleBlur);
+      window.electron.removeModKeyUpListener();
       if (ctrlTimerRef.current) {
         clearTimeout(ctrlTimerRef.current);
       }
     };
-  }, [modKey, osInfo]);
+  }, [modKey, osInfo, switchBoilerplateBank]);
 
   // --- ボタンリップル付きトリガー ---
   const triggerButton = useCallback(
@@ -301,6 +359,21 @@ export function useHotkeyActions({
     {
       hotkey: 'Mod+Shift+Tab',
       callback: () => handleTabSwitch('prev'),
+    },
+    {
+      hotkey: { mod: true, key: '-' },
+      callback: () => switchBoilerplateBank('prev'),
+      options: { preventDefault: true },
+    },
+    {
+      hotkey: { mod: true, key: '=' },
+      callback: () => switchBoilerplateBank('next'),
+      options: { preventDefault: true },
+    },
+    {
+      hotkey: { mod: true, key: '+' },
+      callback: () => switchBoilerplateBank('next'),
+      options: { preventDefault: true },
     },
     ...(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const).map(
       (key) => ({

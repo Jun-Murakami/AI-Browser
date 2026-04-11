@@ -143,6 +143,9 @@ function setupView(
 
   // 初期ロード時のURLを取得するために追加
   view.webContents.on('did-finish-load', () => {
+    // 各 WebContentsView のズームレベルもリセット
+    view.webContents.setZoomLevel(0);
+    view.webContents.setZoomFactor(1);
     urls[index] = view.webContents.getURL();
     mainWindow.webContents.send('update-urls', urls);
   });
@@ -841,8 +844,13 @@ function createMainWindow(): BrowserWindow {
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
+      zoomFactor: 1,
     },
   });
+
+  // Electron が前回のズームレベルを永続化するのを防止
+  mainWindow.webContents.setZoomLevel(0);
+  mainWindow.webContents.setZoomFactor(1);
 
   // 保存された状態が最大化なら最大化する
   if (appState.isMaximized) {
@@ -863,6 +871,9 @@ function createMainWindow(): BrowserWindow {
   registerIpcHandlers(mainWindow);
 
   mainWindow.on('ready-to-show', () => {
+    // Electron が Preferences に保存したズームレベルを確実にリセット
+    mainWindow.webContents.setZoomLevel(0);
+    mainWindow.webContents.setZoomFactor(1);
     mainWindow.show();
   });
 
@@ -955,10 +966,18 @@ app.whenReady().then(() => {
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
-  // optimizer.watchWindowShortcuts のカスタム版:
-  // Ctrl+Alt+Minus/Equal（バンク切替）はブロックせずレンダラーへ通す
+  // optimizer.watchWindowShortcuts のカスタム版
   app.on('browser-window-created', (_, window) => {
     window.webContents.on('before-input-event', (event, input) => {
+      // Mod キーの keyUp を IPC で通知する。
+      // before-input-event で keyDown を preventDefault すると、
+      // レンダラー側の keyup イベントが届かなくなるケースがあるため。
+      if (
+        input.type === 'keyUp' &&
+        (input.key === 'Meta' || input.key === 'Control')
+      ) {
+        window.webContents.send('mod-key-up');
+      }
       if (input.type !== 'keyDown') return;
       const mod = input.control || input.meta;
       if (!is.dev) {
@@ -975,19 +994,6 @@ app.whenReady().then(() => {
           } else {
             window.webContents.openDevTools({ mode: 'undocked' });
           }
-        }
-      }
-      // ズーム抑制 + バンク切替（Mod+Minus/Plus）
-      if (mod) {
-        const isPrev =
-          input.code === 'Minus' || input.code === 'NumpadSubtract';
-        const isNext = input.code === 'Equal' || input.code === 'NumpadAdd';
-        if (isPrev || isNext) {
-          event.preventDefault();
-          window.webContents.send(
-            'switch-boilerplate-bank',
-            isPrev ? 'prev' : 'next',
-          );
         }
       }
     });

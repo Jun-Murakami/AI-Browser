@@ -27,6 +27,14 @@ interface HomePageProps {
   setDarkMode: (darkMode: boolean) => void;
 }
 
+const BOILERPLATE_BANKS: ('A' | 'B' | 'C' | 'D' | 'E')[] = [
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+];
+
 export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // タブ管理システム
   const {
@@ -169,19 +177,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       toast.error(`${error.browser}: ${error.error}`);
     });
 
-    // Mod+Minus/Plus によるバンク切替（メインプロセスからのIPC）
-    const BANKS: ('A' | 'B' | 'C' | 'D' | 'E')[] = ['A', 'B', 'C', 'D', 'E'];
-    window.electron.onSwitchBoilerplateBank((direction) => {
-      const cur = BANKS.indexOf(boilerplateBankRef.current);
-      const next =
-        direction === 'prev'
-          ? (cur - 1 + BANKS.length) % BANKS.length
-          : (cur + 1) % BANKS.length;
-      setBoilerplateBank(BANKS[next]);
-      boilerplateBankRef.current = BANKS[next];
-      window.electron.saveBoilerplateBankToMain(BANKS[next]);
-    });
-
     window.electron
       .getInitialSettings()
       .then(async (settings) => {
@@ -248,7 +243,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
       window.electron.removeScriptErrorListener();
-      window.electron.removeSwitchBoilerplateBankListener();
     };
   }, [checkForUpdates, setDarkMode, setLogs, setEditorValue]);
 
@@ -419,6 +413,21 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     [],
   );
 
+  const handleSwitchBoilerplateBank = useCallback(
+    (direction: 'prev' | 'next') => {
+      const currentIndex = BOILERPLATE_BANKS.indexOf(
+        boilerplateBankRef.current,
+      );
+      const nextIndex =
+        direction === 'prev'
+          ? (currentIndex - 1 + BOILERPLATE_BANKS.length) %
+            BOILERPLATE_BANKS.length
+          : (currentIndex + 1) % BOILERPLATE_BANKS.length;
+      handleBoilerplateBankChange(BOILERPLATE_BANKS[nextIndex]);
+    },
+    [handleBoilerplateBankChange],
+  );
+
   // 定型文の変更ハンドラ
   const handleBoilerplateChange = useCallback((key: string, text: string) => {
     setBoilerplates((prev) => {
@@ -446,6 +455,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     selectTab: actions.selectTab,
     boilerplatesRef,
     boilerplateBankRef,
+    switchBoilerplateBank: handleSwitchBoilerplateBank,
     lastFocusedEditorRef,
     sendButtonRef,
     copyButtonRef,

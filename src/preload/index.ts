@@ -90,14 +90,10 @@ if (process.contextIsolated) {
         ipcRenderer.send('save-boilerplates', boilerplates),
       saveBoilerplateBankToMain: (bank: 'A' | 'B' | 'C' | 'D' | 'E') =>
         ipcRenderer.send('save-boilerplate-bank', bank),
-      onSwitchBoilerplateBank: (
-        callback: (direction: 'prev' | 'next') => void,
-      ) =>
-        ipcRenderer.on('switch-boilerplate-bank', (_, direction) =>
-          callback(direction),
-        ),
-      removeSwitchBoilerplateBankListener: () =>
-        ipcRenderer.removeAllListeners('switch-boilerplate-bank'),
+      onModKeyUp: (callback: () => void) =>
+        ipcRenderer.on('mod-key-up', () => callback()),
+      removeModKeyUpListener: () =>
+        ipcRenderer.removeAllListeners('mod-key-up'),
       onScriptError: (
         callback: (error: { browser: string; error: string }) => void,
       ) =>

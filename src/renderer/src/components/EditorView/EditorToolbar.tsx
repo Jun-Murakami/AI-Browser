@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ContentPaste, MenuOpen, Save, Send } from '@mui/icons-material';
 import {
   Box,
@@ -69,11 +69,18 @@ interface EditorToolbarProps {
   onBoilerplateBankChange: (bank: 'A' | 'B' | 'C' | 'D' | 'E') => void;
   isCtrlHeld: boolean;
   isAltHeld: boolean;
-  activeArrowKey: 'up' | 'down' | 'left' | 'right' | 'enter' | null;
+  activeArrowKey:
+    | 'up'
+    | 'down'
+    | 'left'
+    | 'right'
+    | 'enter'
+    | 'backspace'
+    | null;
   onBoilerplateChange: (key: string, text: string) => void;
   onInsertBoilerplate: (key: string) => void;
   onSendArrowKey: (
-    direction: 'up' | 'down' | 'left' | 'right' | 'enter',
+    direction: 'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace',
   ) => void;
   onSendControlKey: (key: string) => void;
   clearButtonRef: RefObject<HTMLButtonElement | null>;
@@ -132,9 +139,25 @@ export function EditorToolbar({
   const boilerplateButtonRef = useRef<HTMLButtonElement>(null);
   const boilerplatePaperRef = useRef<HTMLDivElement>(null);
 
+  const isCtrlHeldRef = useRef(isCtrlHeld);
+  isCtrlHeldRef.current = isCtrlHeld;
+
+  const closeBoilerplate = useCallback(() => {
+    // Mod キー押下中は閉じない
+    if (isCtrlHeldRef.current) return;
+    setBoilerplateClickOpen(false);
+  }, []);
+
+  const pinBoilerplateOnFieldFocus = useCallback(() => {
+    if (!isCtrlHeldRef.current) return;
+    setBoilerplateClickOpen(true);
+  }, []);
+
   // ポップアップ外クリックで閉じる
+  const isBoilerplateOpen = isCtrlHeld || boilerplateClickOpen;
+
   useEffect(() => {
-    if (!boilerplateClickOpen) return;
+    if (!isBoilerplateOpen) return;
     const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as Node;
       if (
@@ -143,11 +166,11 @@ export function EditorToolbar({
       ) {
         return;
       }
-      setBoilerplateClickOpen(false);
+      closeBoilerplate();
     };
     document.addEventListener('mousedown', handleMouseDown);
     return () => document.removeEventListener('mousedown', handleMouseDown);
-  }, [boilerplateClickOpen]);
+  }, [isBoilerplateOpen, closeBoilerplate]);
   const popperTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleMouseEnter = () => {
@@ -163,8 +186,6 @@ export function EditorToolbar({
       setPopperOpen(false);
     }, 200);
   };
-
-  const isBoilerplateOpen = isCtrlHeld || boilerplateClickOpen;
 
   // 一括送信対象のブラウザタブ（ターミナルとNANIを除外）
   const sendTargetBrowsers = BROWSERS.filter(
@@ -242,7 +263,11 @@ export function EditorToolbar({
             ref={boilerplateButtonRef}
             color="primary"
             size="small"
-            onClick={() => setBoilerplateClickOpen((prev) => !prev)}
+            onClick={() =>
+              isBoilerplateOpen
+                ? closeBoilerplate()
+                : setBoilerplateClickOpen(true)
+            }
           >
             <MenuOpen />
           </IconButton>
@@ -274,8 +299,8 @@ export function EditorToolbar({
               activeArrowKey={activeArrowKey}
               onBoilerplateBankChange={onBoilerplateBankChange}
               onBoilerplateChange={onBoilerplateChange}
+              onBoilerplateFieldFocus={pinBoilerplateOnFieldFocus}
               onInsertBoilerplate={onInsertBoilerplate}
-              onClosePanel={() => setBoilerplateClickOpen(false)}
               onSendArrowKey={onSendArrowKey}
               onSendControlKey={onSendControlKey}
             />
