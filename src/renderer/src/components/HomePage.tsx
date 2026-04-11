@@ -250,11 +250,12 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleSendButtonClick = (sendToAll: boolean) => {
     const combinedEditorValue = getCombinedValue(editorIndex);
     const isEmpty = combinedEditorValue.trim() === '';
+    const shouldAutoSubmitTerminal =
+      isTerminalActive && !sendToAll && activeTab;
 
     // ターミナルアクティブ時は空でもEnterのみ送信を許可
-    if (isEmpty && isTerminalActive && !sendToAll && activeTab) {
+    if (isEmpty && shouldAutoSubmitTerminal) {
       actions.sendMessage(activeTab.id, '');
-      handleSendArrowKey('enter');
       return;
     }
 
@@ -268,7 +269,9 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     } else if (activeTab) {
       actions.sendMessage(activeTab.id, combinedEditorValue);
     }
-    handleSendArrowKey('enter');
+    if (!shouldAutoSubmitTerminal) {
+      handleSendArrowKey('enter');
+    }
 
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
