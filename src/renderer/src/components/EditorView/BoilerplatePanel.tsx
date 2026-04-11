@@ -60,6 +60,8 @@ export function BoilerplatePanel({
   onSendArrowKey,
   onSendControlKey,
 }: BoilerplatePanelProps) {
+  const altKey = commandKey === 'Cmd' ? 'Opt' : 'Alt';
+
   return (
     <>
       {/* ヘッダー: タイトル + バンク切替 */}
@@ -194,7 +196,7 @@ export function BoilerplatePanel({
             {/* 上段: 空 / ↑ / 空 */}
             <Box />
             <Tooltip
-              title={`Up (${commandKey} + Alt + ↑)`}
+              title={`Up (${commandKey} + ${altKey} + ↑)`}
               arrow
               placement="top"
               slotProps={TOOLTIP_Z}
@@ -221,9 +223,9 @@ export function BoilerplatePanel({
               </span>
             </Tooltip>
             <Box />
-            {/* 中段: ← / +Alt / → */}
+            {/* 中段: ← / +Alt(Opt) / → */}
             <Tooltip
-              title={`Left (${commandKey} + Alt + ←)`}
+              title={`Left (${commandKey} + ${altKey} + ←)`}
               arrow
               placement="left"
               slotProps={TOOLTIP_Z}
@@ -264,10 +266,10 @@ export function BoilerplatePanel({
                 transition: 'all 0.15s',
               }}
             >
-              +Alt
+              +{altKey}
             </Box>
             <Tooltip
-              title={`Right (${commandKey} + Alt + →)`}
+              title={`Right (${commandKey} + ${altKey} + →)`}
               arrow
               placement="right"
               slotProps={TOOLTIP_Z}
@@ -296,7 +298,7 @@ export function BoilerplatePanel({
             {/* 下段: 空 / ↓ / Enter */}
             <Box />
             <Tooltip
-              title={`Down (${commandKey} + Alt + ↓)`}
+              title={`Down (${commandKey} + ${altKey} + ↓)`}
               arrow
               placement="bottom"
               slotProps={TOOLTIP_Z}
@@ -323,7 +325,7 @@ export function BoilerplatePanel({
               </span>
             </Tooltip>
             <Tooltip
-              title={`Enter (${commandKey} + Alt + Enter)`}
+              title={`Enter (${commandKey} + ${altKey} + Enter)`}
               arrow
               placement="bottom"
               slotProps={TOOLTIP_Z}
