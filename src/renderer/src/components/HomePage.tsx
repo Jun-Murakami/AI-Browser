@@ -277,7 +277,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     if (newLogs) {
       window.electron.sendLogsToMain(newLogs);
     }
-    handleClearButtonClick();
+    handleClearButtonClick(false);
   };
 
   // ログを保存
@@ -339,11 +339,13 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   };
 
   // クリアボタンがクリックされたらエディターをクリア
-  const handleClearButtonClick = () => {
+  const handleClearButtonClick = (showToast = true) => {
     const values = clearAllValues();
     editorsRef.current?.setAllValues(values);
     clearSelection();
-    toast('Editor cleared.');
+    if (showToast) {
+      toast('Editor cleared.');
+    }
   };
 
   // コピーボタンがクリックされたらエディターの内容をクリップボードにコピー
