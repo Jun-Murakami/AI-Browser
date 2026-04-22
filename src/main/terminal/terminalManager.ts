@@ -14,6 +14,8 @@ class TerminalManager {
   // ターミナルごとの出力バッファとフラッシュ状態
   private outputBuffers: Map<string, string> = new Map();
   private isFlushScheduled: Map<string, boolean> = new Map();
+  // リロード時に onExit の「Process exited...」メッセージを出さないための抑制フラグ
+  private suppressExitMessage: Set<string> = new Set();
 
   constructor() {
     this.registerIpcHandlers();
@@ -111,6 +113,10 @@ class TerminalManager {
       return this.destroySession(terminalId);
     });
 
+    ipcMain.handle('terminal:reload', async (_event, terminalId: string) => {
+      return this.reloadSession(terminalId);
+    });
+
     ipcMain.on('terminal:input', (_event, terminalId: string, data: string) => {
       this.sendInput(terminalId, data);
     });
@@ -201,17 +207,29 @@ class TerminalManager {
 
       // 終了ハンドラー
       ptyProcess.onExit(({ exitCode, signal }) => {
-        // 残りのバッファをフラッシュ
-        const remaining = this.outputBuffers.get(terminalId);
-        if (remaining && remaining.length > 0) {
-          this.sendOutput(terminalId, remaining);
-          this.outputBuffers.set(terminalId, '');
+        // リロードなどで既に別の PTY が同じ ID で再生成されている場合は
+        // 古いプロセスの終了で map を触らない（新しい PTY を壊さないため）
+        const isCurrent = this.ptyProcesses.get(terminalId) === ptyProcess;
+        const suppressed = this.suppressExitMessage.has(terminalId);
+        if (suppressed) {
+          this.suppressExitMessage.delete(terminalId);
         }
-        const message = signal
-          ? `\r\nProcess terminated with signal ${signal}\r\n`
-          : `\r\nProcess exited with code ${exitCode}\r\n`;
-        this.sendOutput(terminalId, message);
-        this.destroySession(terminalId);
+
+        if (isCurrent) {
+          // 残りのバッファをフラッシュ
+          const remaining = this.outputBuffers.get(terminalId);
+          if (remaining && remaining.length > 0) {
+            this.sendOutput(terminalId, remaining);
+            this.outputBuffers.set(terminalId, '');
+          }
+          if (!suppressed) {
+            const message = signal
+              ? `\r\nProcess terminated with signal ${signal}\r\n`
+              : `\r\nProcess exited with code ${exitCode}\r\n`;
+            this.sendOutput(terminalId, message);
+          }
+          this.destroySession(terminalId);
+        }
       });
 
       // セッション情報を保存
@@ -238,7 +256,10 @@ class TerminalManager {
     }
   }
 
-  destroySession(terminalId: string): void {
+  destroySession(terminalId: string, options?: { silentExit?: boolean }): void {
+    if (options?.silentExit) {
+      this.suppressExitMessage.add(terminalId);
+    }
     const ptyProcess = this.ptyProcesses.get(terminalId);
     if (ptyProcess) {
       try {
@@ -250,6 +271,12 @@ class TerminalManager {
     this.outputBuffers.delete(terminalId);
     this.isFlushScheduled.delete(terminalId);
     this.sessions.delete(terminalId);
+  }
+
+  reloadSession(terminalId: string): void {
+    if (!this.sessions.has(terminalId)) return;
+    this.destroySession(terminalId, { silentExit: true });
+    this.createSession(terminalId);
   }
 
   sendInput(terminalId: string, data: string): void {

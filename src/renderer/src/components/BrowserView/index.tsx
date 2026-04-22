@@ -98,6 +98,7 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
         <UrlBar
           browserUrl={currentBrowserUrl}
           isTerminalActive={isTerminalActive}
+          activeTabId={activeTabId}
         />
 
         <ContentArea

@@ -9,13 +9,40 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 
+import { terminalService } from '../../services/terminalService';
+
 interface UrlBarProps {
   browserUrl: string;
   isTerminalActive: boolean;
+  activeTabId: string | null;
 }
 
-export function UrlBar({ browserUrl, isTerminalActive }: UrlBarProps) {
+export function UrlBar({
+  browserUrl,
+  isTerminalActive,
+  activeTabId,
+}: UrlBarProps) {
   const theme = useTheme();
+
+  const handleReloadCurrent = () => {
+    if (isTerminalActive) {
+      if (activeTabId) {
+        void terminalService.reloadInstance(activeTabId);
+      }
+    } else {
+      window.electron.reloadCurrentView();
+    }
+  };
+
+  const handleReloadAll = () => {
+    if (isTerminalActive) {
+      terminalService.reloadAllInstances();
+    } else {
+      window.electron.reloadAllViews();
+    }
+  };
+
+  const reloadCurrentDisabled = isTerminalActive && !activeTabId;
 
   return (
     <Box sx={{ height: 57 }}>
@@ -31,13 +58,13 @@ export function UrlBar({ browserUrl, isTerminalActive }: UrlBarProps) {
         <Tooltip title="Reload" placement="top" arrow>
           <span>
             <IconButton
-              onClick={() => window.electron.reloadCurrentView()}
-              disabled={isTerminalActive}
+              onClick={handleReloadCurrent}
+              disabled={reloadCurrentDisabled}
             >
               <ReplayOutlined
                 sx={{
                   transform: 'scaleX(-1)',
-                  color: isTerminalActive
+                  color: reloadCurrentDisabled
                     ? theme.palette.action.disabled
                     : theme.palette.text.secondary,
                 }}
@@ -47,27 +74,14 @@ export function UrlBar({ browserUrl, isTerminalActive }: UrlBarProps) {
         </Tooltip>
         <Tooltip title="Reload all tabs" placement="top" arrow>
           <span>
-            <IconButton
-              onClick={() => window.electron.reloadAllViews()}
-              sx={{ mr: 1 }}
-              disabled={isTerminalActive}
-            >
+            <IconButton onClick={handleReloadAll} sx={{ mr: 1 }}>
               <ReplayOutlined
                 sx={{
                   transform: 'scaleX(-1)',
-                  color: isTerminalActive
-                    ? theme.palette.action.disabled
-                    : theme.palette.text.secondary,
+                  color: theme.palette.text.secondary,
                 }}
               />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: isTerminalActive
-                    ? theme.palette.action.disabled
-                    : 'inherit',
-                }}
-              >
+              <Typography variant="subtitle2" sx={{ color: 'inherit' }}>
                 all
               </Typography>
             </IconButton>

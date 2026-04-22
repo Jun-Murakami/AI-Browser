@@ -287,6 +287,34 @@ class TerminalService {
     this._clipboardHandlerAttached.clear();
   }
 
+  /**
+   * 対象ターミナルの PTY セッションを再生成し、xterm の画面をリセットする。
+   * 既存の xterm インスタンスと IPC リスナーは使い回す。
+   */
+  async reloadInstance(terminalId: string): Promise<void> {
+    const instance = this.instances.get(terminalId);
+    if (!instance?.isSessionCreated) return;
+
+    instance.isSessionCreated = false;
+    instance.terminal.reset();
+
+    try {
+      await window.api.reloadTerminalSession(terminalId);
+      instance.isSessionCreated = true;
+      // 新しい PTY を現在の xterm サイズに合わせる
+      this.resize(terminalId);
+    } catch (_error) {
+      // 失敗時は次回の getOrCreateInstance で再作成される
+    }
+  }
+
+  /** 生成済みの全ターミナルインスタンスを一括でリロードする */
+  reloadAllInstances(): void {
+    for (const terminalId of this.instances.keys()) {
+      void this.reloadInstance(terminalId);
+    }
+  }
+
   cleanupInstance(terminalId: string): void {
     const instance = this.instances.get(terminalId);
     if (instance) {

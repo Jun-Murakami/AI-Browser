@@ -82,6 +82,7 @@ interface InitialSettings {
 interface TerminalAPI {
   createTerminalSession: (terminalId: string) => Promise<void>;
   destroyTerminalSession: (terminalId: string) => Promise<void>;
+  reloadTerminalSession: (terminalId: string) => Promise<void>;
   sendTerminalInput: (terminalId: string, data: string) => void;
   onTerminalOutput: (
     callback: (

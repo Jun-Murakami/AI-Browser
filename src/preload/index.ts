@@ -8,6 +8,8 @@ const api = {
     ipcRenderer.invoke('terminal:create', terminalId),
   destroyTerminalSession: (terminalId: string) =>
     ipcRenderer.invoke('terminal:destroy', terminalId),
+  reloadTerminalSession: (terminalId: string) =>
+    ipcRenderer.invoke('terminal:reload', terminalId),
   sendTerminalInput: (terminalId: string, data: string) =>
     ipcRenderer.send('terminal:input', terminalId, data),
   onTerminalOutput: (
