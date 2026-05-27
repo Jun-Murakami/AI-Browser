@@ -81,6 +81,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [preferredSize, setPreferredSize] = useState(500);
   const [commandKey, setCommandKey] = useState('Ctrl');
   const [osInfo, setOsInfo] = useState('');
+  const [isAppImage, setIsAppImage] = useState(false);
   const [isChipVisible, setIsChipVisible] = useState(false);
   const [isLicenseDialogOpen, setIsLicenseDialogOpen] = useState(false);
   const [boilerplates, setBoilerplates] = useState<Record<string, string>>({});
@@ -225,6 +226,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
         const commandKey = settings.osInfo === 'darwin' ? 'Cmd' : 'Ctrl';
         setCommandKey(commandKey);
         setOsInfo(settings.osInfo);
+        setIsAppImage(settings.isAppImage);
         terminalService.setPlatform(settings.osInfo);
         const result = await checkForUpdates(settings.currentVersion);
         if (result) {
@@ -566,6 +568,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             releaseAssets={updateInfo?.releaseAssets ?? []}
             releasePageUrl={updateInfo?.releasePageUrl ?? ''}
             osInfo={osInfo}
+            isAppImage={isAppImage}
           />
         </Allotment.Pane>
       </Allotment>

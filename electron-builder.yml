@@ -1,5 +1,7 @@
 appId: com.aibrowser.app
 productName: AI-Browser
+# 全成果物のビルド後に SHA256SUMS と GPG 署名(.asc)を生成する
+afterAllArtifactBuild: scripts/sign-artifacts.cjs
 directories:
   buildResources: build
 files:
@@ -48,10 +50,13 @@ dmg:
 linux:
   target:
     - AppImage
+    - deb
   maintainer: electronjs.org
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
+deb:
+  artifactName: ${name}-${version}_amd64.${ext}
 npmRebuild: false
 publish:
   provider: generic

@@ -284,6 +284,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
       language: appState.language,
       fontSize: appState.fontSize,
       osInfo: process.platform,
+      // AppImage 実行時のみ環境変数 APPIMAGE がセットされる。
+      // deb/rpm 等のシステムインストールでは未設定 → アプリ内更新は非対応
+      isAppImage: !!process.env.APPIMAGE,
       enabledBrowsers: appState.enabledBrowsers,
       // レンダラー初期化用にターミナルの有効状態も返す
       enabledTerminals: appState.enabledTerminals,

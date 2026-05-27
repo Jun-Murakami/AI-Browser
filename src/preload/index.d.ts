@@ -69,6 +69,7 @@ interface InitialSettings {
   language: string;
   fontSize: number;
   osInfo: string;
+  isAppImage: boolean;
   enabledBrowsers: Record<string, boolean>;
   enabledTerminals: Record<string, boolean>;
   browsers: Browser[];

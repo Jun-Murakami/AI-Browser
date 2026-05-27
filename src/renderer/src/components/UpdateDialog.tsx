@@ -30,7 +30,12 @@ interface UpdateDialogProps {
   releaseAssets: ReleaseAsset[];
   releasePageUrl: string;
   osInfo: string;
+  isAppImage: boolean;
 }
+
+// deb/rpm 等（AppImage 以外の Linux）はアプリ内更新に非対応のため、
+// ダウンロード処理を行わずこのページへ誘導する
+const LINUX_DOWNLOAD_PAGE_URL = 'https://jun-murakami.web.app/apps/ai-browser';
 
 const formatBytes = (bytes: number): string => {
   if (bytes === 0) return '0 B';
@@ -62,6 +67,7 @@ export const UpdateDialog = ({
   releaseAssets,
   releasePageUrl,
   osInfo,
+  isAppImage,
 }: UpdateDialogProps) => {
   const [downloadState, setDownloadState] = useState<DownloadState>('idle');
   const [progress, setProgress] = useState<DownloadProgress>({
@@ -71,7 +77,15 @@ export const UpdateDialog = ({
   });
   const [errorMessage, setErrorMessage] = useState('');
 
-  const asset = findAssetForPlatform(releaseAssets, osInfo);
+  // Linux の deb/rpm 等（AppImage 以外）はアプリ内更新ができないため、
+  // ダウンロードは行わずダウンロードページへ誘導する
+  const isLinuxNonAppImage = osInfo === 'linux' && !isAppImage;
+  const asset = isLinuxNonAppImage
+    ? null
+    : findAssetForPlatform(releaseAssets, osInfo);
+  const externalPageUrl = isLinuxNonAppImage
+    ? LINUX_DOWNLOAD_PAGE_URL
+    : releasePageUrl;
   const canDownload = downloadState === 'idle' || downloadState === 'error';
   const isBlocking =
     downloadState === 'downloading' || downloadState === 'installing';
@@ -123,8 +137,8 @@ export const UpdateDialog = ({
   }, []);
 
   const handleOpenReleasePage = useCallback(() => {
-    window.electron.openExternalLink(releasePageUrl);
-  }, [releasePageUrl]);
+    window.electron.openExternalLink(externalPageUrl);
+  }, [externalPageUrl]);
 
   if (!open) return null;
 
@@ -272,6 +286,14 @@ export const UpdateDialog = ({
             </Typography>
           )}
 
+          {/* deb/rpm 版はアプリ内更新非対応の案内 */}
+          {isLinuxNonAppImage && (
+            <Typography variant="body2" color="text.secondary">
+              This installation does not support in-app updates. Please download
+              the latest version from the download page.
+            </Typography>
+          )}
+
           {/* ボタン */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
             {asset ? (
@@ -313,7 +335,9 @@ export const UpdateDialog = ({
                   startIcon={<FolderOpen />}
                   onClick={handleOpenReleasePage}
                 >
-                  Open Release Page
+                  {isLinuxNonAppImage
+                    ? 'Open Download Page'
+                    : 'Open Release Page'}
                 </Button>
               </>
             )}
