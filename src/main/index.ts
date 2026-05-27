@@ -554,6 +554,18 @@ rm -f "${scriptPath}"
                 }).unref();
                 setTimeout(() => app.quit(), 500);
               } else {
+                // Linux: ダウンロードした AppImage に実行権限を付与してから
+                // フォルダを開く（ユーザーが手動で chmod する手間を省く）
+                if (process.platform === 'linux') {
+                  try {
+                    fs.chmodSync(fullPath, 0o755);
+                  } catch (chmodError) {
+                    console.error(
+                      'AppImage への実行権限付与に失敗しました:',
+                      chmodError,
+                    );
+                  }
+                }
                 shell.showItemInFolder(fullPath);
               }
               resolve({ success: true });

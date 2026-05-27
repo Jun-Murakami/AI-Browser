@@ -28,7 +28,8 @@ class TerminalService {
   setPlatform(platform: string): void {
     this._platform = platform;
     // 既に作成済みのインスタンスにもクリップボード画像ハンドラーを適用
-    if (platform === 'win32') {
+    // （macOS はネイティブで対応済みのため除外）
+    if (platform === 'win32' || platform === 'linux') {
       for (const [terminalId, instance] of this.instances) {
         this._attachClipboardImageHandler(terminalId, instance.terminal);
       }
@@ -168,9 +169,9 @@ class TerminalService {
         });
       };
 
-      // Windows でのクリップボード画像ペースト対応（macOS はネイティブで対応済み）
+      // Windows/Linux でのクリップボード画像ペースト対応（macOS はネイティブで対応済み）
       // setPlatform が先に呼ばれていれば即登録、まだなら setPlatform 側で後から登録
-      if (this._platform === 'win32') {
+      if (this._platform === 'win32' || this._platform === 'linux') {
         this._attachClipboardImageHandler(terminalId, terminal);
       }
 
