@@ -162,6 +162,12 @@ export function useHotkeyActions({
   const altKeyDownAtRef = useRef(0);
   const sendArrowKeyRef = useRef(handleSendArrowKey);
   sendArrowKeyRef.current = handleSendArrowKey;
+  const insertBoilerplateRef = useRef(handleInsertBoilerplate);
+  insertBoilerplateRef.current = handleInsertBoilerplate;
+  // prop の ref を effect 内で直接読むと exhaustive-deps の誤検知になるため
+  // ローカル ref に最新のバンクを退避して参照する
+  const bankValueRef = useRef(boilerplateBankRef.current);
+  bankValueRef.current = boilerplateBankRef.current;
   const modKey = osInfo === 'darwin' ? 'Meta' : 'Control';
 
   useEffect(() => {
@@ -221,6 +227,22 @@ export function useHotkeyActions({
         setIsAltHeld(true);
       }
       const isMod = osInfo === 'darwin' ? e.metaKey : e.ctrlKey;
+      // テンキーの数字は Linux/Chromium で Ctrl 併用時に event.key='Unidentified'
+      // となり hotkey ライブラリが拾えない（code='Numpad2' 等は照合対象外）。
+      // 物理キー code (Numpad0-9) で定型句挿入を直接補完する。
+      if (
+        isMod &&
+        !e.altKey &&
+        !e.shiftKey &&
+        e.key === 'Unidentified' &&
+        /^Numpad[0-9]$/.test(e.code)
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        const digit = e.code.slice(6); // 'Numpad2' -> '2'
+        insertBoilerplateRef.current(`${bankValueRef.current}${digit}`);
+        return;
+      }
       // テンキー + と JIS の ;/+ キーは hotkey 側で拾えない環境があるため
       // 物理キー code で next バンク切替を補完する
       if (isMod && (e.code === 'NumpadAdd' || e.code === 'Semicolon')) {

@@ -67,6 +67,30 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
 2. Install the application following the standard installation process for your operating system
 3. Launch the application
 
+### Verifying Downloads (Linux)
+
+Linux releases are published with a SHA-256 checksum file (`SHA256SUMS`) and a detached GPG signature (`SHA256SUMS.asc`) on the [Releases](https://github.com/Jun-Murakami/AI-Browser/releases) page. The signing key's public part is included in this repository as [`ai-browser-public-key.asc`](ai-browser-public-key.asc).
+
+```bash
+# Import the public key (first time only)
+gpg --import ai-browser-public-key.asc
+
+# Verify SHA256SUMS is genuinely signed by the developer (authenticity)
+gpg --verify SHA256SUMS.asc SHA256SUMS
+
+# Verify the downloaded files are intact (integrity)
+sha256sum -c SHA256SUMS
+```
+
+Signing key fingerprint:
+
+```
+ABDB E9E8 3A2E 98A3 2988  69EB E8C7 A338 F858 A18F
+Jun Takahashi (Jun Murakami App Factory) <app@bucketrelay.com>
+```
+
+> **Note for `.deb` users:** the `.deb` package does not support in-app auto-updates. Get newer versions from the [download page](https://jun-murakami.web.app/apps/ai-browser) or the Releases page. The portable `.AppImage` supports in-app updates.
+
 ## Usage
 
 1. **Editor Management**:

@@ -40,7 +40,7 @@ let appState: AppState = {
   editorMode: 0,
   browserWidth: 550,
   browserTabIndex: 0,
-  language: 'text',
+  language: 'plaintext',
   fontSize: 16,
   enabledBrowsers: initialEnabledBrowsers,
   // 既定では全ターミナル有効
@@ -774,6 +774,13 @@ function createMainWindow(): BrowserWindow {
       // boilerplateBank のバリデーション
       if (!['A', 'B', 'C', 'D', 'E'].includes(appState.boilerplateBank)) {
         appState.boilerplateBank = 'A';
+      }
+
+      // language のマイグレーション
+      // 旧デフォルト 'text' は Monaco の正規 ID では 'plaintext'。
+      // 不正値のままだと言語セレクトが out-of-range 警告を出すため正規化する。
+      if (!appState.language || appState.language === 'text') {
+        appState.language = 'plaintext';
       }
 
       // enabledTerminals の検証とガード処理
