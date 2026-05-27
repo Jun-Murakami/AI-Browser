@@ -182,6 +182,13 @@ class TerminalManager {
       const shellArgs: string[] = [];
       if (shell.includes('powershell') || shell.includes('pwsh')) {
         shellArgs.push('-NoLogo'); // ロゴを表示しない
+      } else if (platform() !== 'win32') {
+        // macOS/Linux ではログインシェルとして起動する。
+        // GUI（AppImage/ランチャー）起動時は OS セッションの最小 PATH しか
+        // 継承されず、~/.profile・~/.bashrc 等で追加される PATH
+        // (~/.local/bin・volta 等) が無いため、claude のようなユーザー導入
+        // コマンドが「コマンドが見つかりません」になる。-l でこれらを読み込む。
+        shellArgs.push('-l');
       }
 
       // node-ptyを使用してPTYプロセスを作成
