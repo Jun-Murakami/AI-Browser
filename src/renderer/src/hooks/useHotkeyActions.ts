@@ -162,6 +162,8 @@ export function useHotkeyActions({
   const altKeyDownAtRef = useRef(0);
   const sendArrowKeyRef = useRef(handleSendArrowKey);
   sendArrowKeyRef.current = handleSendArrowKey;
+  const isTerminalActiveRef = useRef(isTerminalActive);
+  isTerminalActiveRef.current = isTerminalActive;
   const insertBoilerplateRef = useRef(handleInsertBoilerplate);
   insertBoilerplateRef.current = handleInsertBoilerplate;
   // prop の ref を effect 内で直接読むと exhaustive-deps の誤検知になるため
@@ -251,11 +253,35 @@ export function useHotkeyActions({
         switchBoilerplateBank('next');
         return;
       }
-      // Ctrl+Alt+Arrow/Enter/Backspace 送出
-      if (isMod && e.altKey && KEY_MAP[e.key]) {
+      // Linux: Ctrl+Alt+矢印はデスクトップ環境（GNOME 等）にワークスペース
+      // 切替として奪われアプリに届かない。代替として、ターミナルがアクティブな
+      // 間のみ Ctrl+↑/↓ をターミナルへの矢印送出に充てる（その間はログ履歴
+      // ナビを犠牲にする）。Ctrl+矢印（Alt なし）は WM に奪われない。
+      // e.key が 'Unidentified' になる環境に備え e.code で判定する。
+      if (
+        osInfo === 'linux' &&
+        isMod &&
+        !e.altKey &&
+        !e.shiftKey &&
+        isTerminalActiveRef.current &&
+        (e.code === 'ArrowUp' || e.code === 'ArrowDown')
+      ) {
         e.preventDefault();
         e.stopPropagation();
-        sendArrowKeyRef.current(KEY_MAP[e.key]);
+        sendArrowKeyRef.current(e.code === 'ArrowUp' ? 'up' : 'down');
+        return;
+      }
+      // Ctrl+Alt+Arrow/Enter/Backspace 送出
+      // Linux/Chromium では Ctrl+Alt+矢印で e.key='Unidentified' になることが
+      // あるため e.code もフォールバックに使う（矢印/Enter/Backspace は code 名が
+      // key 名と同一なので同じ KEY_MAP で引ける）。
+      if (isMod && e.altKey) {
+        const arrowDir = KEY_MAP[e.key] ?? KEY_MAP[e.code];
+        if (arrowDir) {
+          e.preventDefault();
+          e.stopPropagation();
+          sendArrowKeyRef.current(arrowDir);
+        }
       }
     };
 
