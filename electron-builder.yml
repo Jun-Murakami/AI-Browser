@@ -63,9 +63,9 @@ linux:
   maintainer: electronjs.org
   category: Utility
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${version}_linux_amd64.${ext}
 deb:
-  artifactName: ${name}-${version}_amd64.${ext}
+  artifactName: ${name}-${version}_linux_amd64.${ext}
 npmRebuild: false
 publish:
   provider: generic
