@@ -34,6 +34,7 @@ interface ExtendedElectronAPI extends ElectronAPI {
   removeScriptErrorListener: () => void;
   startUpdateDownload: (
     downloadUrl: string,
+    checksumUrl: string | null,
   ) => Promise<{ success: boolean; error?: string }>;
   cancelUpdateDownload: () => void;
   onUpdateDownloadProgress: (

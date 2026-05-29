@@ -61,7 +61,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   } = useLogManager();
 
   // エディタ値管理システム（Zustand ストア）
-  const setEditorValue = useEditorStore((s) => s.setEditorValue);
   const getCombinedValue = useEditorStore((s) => s.getCombinedValue);
   const clearAllValues = useEditorStore((s) => s.clearAllValues);
   const setValuesFromLog = useEditorStore((s) => s.setValuesFromLog);
@@ -203,10 +202,6 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             return { ...log, displayText: preview };
           }),
         );
-        if (settings.logs.length === 0) {
-          setEditorValue(0, 'Type your message here.');
-          editorsRef.current?.setEditorValue(0, 'Type your message here.');
-        }
         setLanguage(settings.language);
         setFontSize(settings.fontSize);
         editorsRef.current?.syncSettings({
@@ -246,7 +241,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
       window.removeEventListener('beforeunload', cleanup);
       window.electron.removeScriptErrorListener();
     };
-  }, [checkForUpdates, setDarkMode, setLogs, setEditorValue]);
+  }, [checkForUpdates, setDarkMode, setLogs]);
 
   // テキストを送信
   const handleSendButtonClick = (sendToAll: boolean) => {

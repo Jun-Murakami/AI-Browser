@@ -83,6 +83,11 @@ export const UpdateDialog = ({
   const asset = isLinuxNonAppImage
     ? null
     : findAssetForPlatform(releaseAssets, osInfo);
+  // 整合性検証用のチェックサムアセット（成果物ごとの <バイナリ名>.sha256）。
+  // 存在しない場合は更新を中止させる。
+  const checksumAsset = asset
+    ? (releaseAssets.find((a) => a.name === `${asset.name}.sha256`) ?? null)
+    : null;
   const externalPageUrl = isLinuxNonAppImage
     ? LINUX_DOWNLOAD_PAGE_URL
     : releasePageUrl;
@@ -120,6 +125,7 @@ export const UpdateDialog = ({
 
     const result = await window.electron.startUpdateDownload(
       asset.browserDownloadUrl,
+      checksumAsset?.browserDownloadUrl ?? null,
     );
 
     if (result.success) {
@@ -130,7 +136,7 @@ export const UpdateDialog = ({
       setDownloadState('error');
       setErrorMessage(result.error ?? 'Unknown error');
     }
-  }, [asset]);
+  }, [asset, checksumAsset]);
 
   const handleCancel = useCallback(() => {
     window.electron.cancelUpdateDownload();

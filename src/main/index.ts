@@ -15,18 +15,241 @@ import { BROWSERS, URL_PATTERNS } from './constants/browsers';
 import { TERMINALS } from './constants/terminals';
 import { terminalManager } from './terminal/terminalManager';
 
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
-import * as http from 'node:http';
 import * as https from 'node:https';
 import * as path from 'node:path';
 import { join } from 'node:path';
 
+import type { ClientRequest } from 'node:http';
 import type { AppState, Log, TabManager } from './types/interfaces';
 
 // アップデートダウンロード用
-let activeDownloadRequest: http.ClientRequest | null = null;
+let activeDownloadRequest: ClientRequest | null = null;
 let activeDownloadPath: string | null = null;
+
+// ───────────────────────────────────────────────────────────
+// セキュリティ用ヘルパー
+// ───────────────────────────────────────────────────────────
+
+/**
+ * 更新ファイルのダウンロードを許可するホスト。
+ * GitHub Releases 本体（github.com）とそのアセット配信元
+ * （*.githubusercontent.com）のみを許可する。
+ */
+function isAllowedUpdateHost(hostname: string): boolean {
+  return (
+    hostname === 'github.com' ||
+    hostname === 'api.github.com' ||
+    hostname.endsWith('.githubusercontent.com')
+  );
+}
+
+/**
+ * 更新用 URL を検証する。https かつ許可ホストのみ通す。
+ * 不正な URL・スキーム・ホストの場合は例外を投げる。
+ * リダイレクト先も毎ホップでこの関数を通すことでダウングレード/逸脱を防ぐ。
+ */
+function assertSafeUpdateUrl(rawUrl: string): URL {
+  const u = new URL(rawUrl);
+  if (u.protocol !== 'https:') {
+    throw new Error(`Insecure update URL (https required): ${u.protocol}`);
+  }
+  if (!isAllowedUpdateHost(u.hostname)) {
+    throw new Error(`Disallowed update host: ${u.hostname}`);
+  }
+  return u;
+}
+
+/**
+ * 外部リンクを開く前にスキームを検証する。
+ * http / https / mailto のみ許可し、file: や独自スキーム等はブロックする。
+ */
+function openExternalSafe(rawUrl: string): void {
+  try {
+    const u = new URL(rawUrl);
+    const allowed = ['https:', 'http:', 'mailto:'];
+    if (!allowed.includes(u.protocol)) {
+      console.warn(`Blocked openExternal for disallowed scheme: ${u.protocol}`);
+      return;
+    }
+    shell.openExternal(rawUrl);
+  } catch (error) {
+    console.warn('Blocked openExternal for invalid URL:', error);
+  }
+}
+
+/**
+ * 許可ホストかつ https に限定して GET し、本文をテキストとして返す。
+ * チェックサムファイル（<バイナリ名>.sha256）の取得に使用。
+ * リダイレクトは最大5回まで追跡し、各ホップを検証する。
+ */
+function httpsGetText(rawUrl: string, redirectCount = 0): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let u: URL;
+    try {
+      u = assertSafeUpdateUrl(rawUrl);
+    } catch (error) {
+      reject(error);
+      return;
+    }
+    if (redirectCount > 5) {
+      reject(new Error('Too many redirects'));
+      return;
+    }
+    https
+      .get(u, (res) => {
+        const status = res.statusCode ?? 0;
+        if (
+          (status === 301 ||
+            status === 302 ||
+            status === 307 ||
+            status === 308) &&
+          res.headers.location
+        ) {
+          res.resume();
+          httpsGetText(
+            new URL(res.headers.location, u).toString(),
+            redirectCount + 1,
+          ).then(resolve, reject);
+          return;
+        }
+        if (status !== 200) {
+          res.resume();
+          reject(new Error(`HTTP ${status}`));
+          return;
+        }
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (c) => {
+          body += c;
+        });
+        res.on('end', () => resolve(body));
+      })
+      .on('error', reject);
+  });
+}
+
+/**
+ * チェックサムテキスト（"<hash>  <filename>" 形式、sha256sum -c 互換）から、
+ * 指定ファイル名の期待ハッシュ（小文字16進）を探す。見つからなければ null。
+ * 成果物ごとの .sha256（1行）でも、複数行まとめ形式でも動作する。
+ */
+function findExpectedHash(sumsText: string, fileName: string): string | null {
+  for (const line of sumsText.split('\n')) {
+    const m = line.trim().match(/^([a-fA-F0-9]{64})\s+\*?(.+)$/);
+    if (m && m[2].trim() === fileName) {
+      return m[1].toLowerCase();
+    }
+  }
+  return null;
+}
+
+/**
+ * Windows: ダウンロードした実行ファイル(NSISインストーラ)の Authenticode 署名を
+ * 検証する。Status が 'Valid' のときのみ ok。
+ * パスは引用符問題を避けるため環境変数経由で PowerShell に渡す。
+ */
+function verifyWindowsSignature(filePath: string): {
+  ok: boolean;
+  error?: string;
+} {
+  try {
+    const out = execFileSync(
+      'powershell',
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        '(Get-AuthenticodeSignature -LiteralPath $env:AIB_VERIFY_PATH).Status',
+      ],
+      {
+        encoding: 'utf8',
+        env: { ...process.env, AIB_VERIFY_PATH: filePath },
+      },
+    ).trim();
+    if (out === 'Valid') {
+      return { ok: true };
+    }
+    return { ok: false, error: `Authenticode status: ${out || 'unknown'}` };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'signature check failed',
+    };
+  }
+}
+
+/**
+ * macOS: ダウンロードした DMG をマウントし、内部の .app に対して
+ *   - codesign --verify（署名整合性 / 改ざん検知）
+ *   - spctl --assess（公証 / Gatekeeper 受許）
+ * の両方を実行する。いずれか失敗で ok=false。検証後は必ずアンマウントする。
+ */
+function verifyMacSignature(dmgPath: string): { ok: boolean; error?: string } {
+  let mountPoint: string | null = null;
+  try {
+    const out = execFileSync(
+      'hdiutil',
+      ['attach', dmgPath, '-nobrowse', '-noautoopen'],
+      { encoding: 'utf8' },
+    );
+    const m = out.match(/\/Volumes\/.*/);
+    if (!m) {
+      return { ok: false, error: 'failed to mount dmg' };
+    }
+    mountPoint = m[0].trim();
+    const appName = fs.readdirSync(mountPoint).find((e) => e.endsWith('.app'));
+    if (!appName) {
+      return { ok: false, error: 'no .app found in dmg' };
+    }
+    const appPath = path.join(mountPoint, appName);
+    // 署名整合性（--deep --strict）
+    execFileSync(
+      'codesign',
+      ['--verify', '--deep', '--strict', '--verbose=2', appPath],
+      { stdio: 'ignore' },
+    );
+    // 公証 / Gatekeeper（Developer ID + notarization ticket）
+    execFileSync(
+      'spctl',
+      ['--assess', '--type', 'execute', '--verbose=2', appPath],
+      { stdio: 'ignore' },
+    );
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'signature check failed',
+    };
+  } finally {
+    if (mountPoint) {
+      try {
+        execFileSync('hdiutil', ['detach', mountPoint, '-quiet']);
+      } catch {}
+    }
+  }
+}
+
+/**
+ * ダウンロード物のコード署名を検証する（SHA256 照合とは別の真正性レイヤ）。
+ * Windows: Authenticode、macOS: codesign + Gatekeeper。
+ * Linux は OS 強制の署名関門が無いため、ここでは検証しない
+ * （完全性は SHA256、真正性は配布物の GPG 署名で担保）。
+ */
+function verifyDownloadedSignature(filePath: string): {
+  ok: boolean;
+  error?: string;
+} {
+  if (process.platform === 'win32') {
+    return verifyWindowsSignature(filePath);
+  }
+  if (process.platform === 'darwin') {
+    return verifyMacSignature(filePath);
+  }
+  return { ok: true };
+}
 
 // 初期のenabledBrowsersを生成
 const initialEnabledBrowsers = Object.fromEntries(
@@ -388,7 +611,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.on('open-external-link', (_, url) => {
-    shell.openExternal(url);
+    openExternalSafe(url);
   });
 
   // アクティブなWebContentsViewにキーイベントを送出
@@ -413,24 +636,88 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
   );
 
   // アップデートダウンロード
+  // セキュリティ:
+  //  - downloadUrl / checksumUrl は https かつ GitHub 系ホストのみ許可（毎ホップ検証）
+  //  - 成果物ごとの <バイナリ名>.sha256 でハッシュを照合し、一致時のみ実行
+  //  - 検証材料（.sha256 / 該当エントリ）が無い場合は更新を中止
   ipcMain.handle(
     'update:download',
     async (
       event,
       downloadUrl: string,
+      checksumUrl: string | null,
     ): Promise<{ success: boolean; error?: string }> => {
+      // 1) URL 検証（https + 許可ホスト）
+      let installerUrl: URL;
+      try {
+        installerUrl = assertSafeUpdateUrl(downloadUrl);
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Invalid URL',
+        };
+      }
+
+      if (!checksumUrl) {
+        return {
+          success: false,
+          error:
+            'Checksum file (.sha256) not found in this release. Update aborted for safety.',
+        };
+      }
+
       const savePath =
         process.platform === 'linux'
           ? app.getPath('downloads')
           : app.getPath('temp');
-      const fileName = decodeURIComponent(
-        downloadUrl.split('/').pop() || 'update-installer',
+      // パストラバーサル対策: URL パス末尾を decode した上で basename のみ採用
+      const rawFileName = decodeURIComponent(
+        installerUrl.pathname.split('/').pop() || 'update-installer',
       );
+      const fileName = path.basename(rawFileName).replace(/[\r\n]/g, '');
       const fullPath = path.join(savePath, fileName);
       activeDownloadPath = fullPath;
 
+      // 2) 期待ハッシュを取得（失敗・該当なしは中止）
+      let expectedHash: string | null;
+      try {
+        const sumsText = await httpsGetText(checksumUrl);
+        expectedHash = findExpectedHash(sumsText, fileName);
+      } catch (error) {
+        activeDownloadPath = null;
+        return {
+          success: false,
+          error: `Failed to fetch checksums: ${
+            error instanceof Error ? error.message : 'error'
+          }`,
+        };
+      }
+      if (!expectedHash) {
+        activeDownloadPath = null;
+        return {
+          success: false,
+          error: `No checksum entry found for ${fileName}. Update aborted for safety.`,
+        };
+      }
+
       return new Promise((resolve) => {
-        const doDownload = (url: string, redirectCount = 0): void => {
+        const hash = createHash('sha256');
+
+        const doDownload = (rawUrl: string, redirectCount = 0): void => {
+          // 各ホップで https + 許可ホストを再検証（ダウングレード/逸脱防止）
+          let u: URL;
+          try {
+            u = assertSafeUpdateUrl(rawUrl);
+          } catch (error) {
+            activeDownloadRequest = null;
+            activeDownloadPath = null;
+            resolve({
+              success: false,
+              error: error instanceof Error ? error.message : 'Invalid URL',
+            });
+            return;
+          }
+
           if (redirectCount > 5) {
             activeDownloadRequest = null;
             activeDownloadPath = null;
@@ -438,24 +725,30 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
             return;
           }
 
-          const lib = url.startsWith('https') ? https : http;
-          const req = lib.get(url, (response) => {
-            // リダイレクト対応
+          const req = https.get(u, (response) => {
+            const status = response.statusCode ?? 0;
+            // リダイレクト対応（リダイレクト先も次ホップで検証される）
             if (
-              (response.statusCode === 301 || response.statusCode === 302) &&
+              (status === 301 ||
+                status === 302 ||
+                status === 307 ||
+                status === 308) &&
               response.headers.location
             ) {
               response.resume();
-              doDownload(response.headers.location, redirectCount + 1);
+              doDownload(
+                new URL(response.headers.location, u).toString(),
+                redirectCount + 1,
+              );
               return;
             }
 
-            if (response.statusCode !== 200) {
+            if (status !== 200) {
               activeDownloadRequest = null;
               activeDownloadPath = null;
               resolve({
                 success: false,
-                error: `HTTP ${response.statusCode}`,
+                error: `HTTP ${status}`,
               });
               return;
             }
@@ -470,6 +763,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
             response.on('data', (chunk: Buffer) => {
               receivedBytes += chunk.length;
+              hash.update(chunk);
               const percent =
                 totalBytes > 0
                   ? Math.round((receivedBytes / totalBytes) * 100)
@@ -487,8 +781,43 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
             fileStream.on('finish', async () => {
               activeDownloadRequest = null;
+
+              // 3) ハッシュ照合（不一致ならファイルを削除して中止）
+              const actualHash = hash.digest('hex').toLowerCase();
+              if (actualHash !== expectedHash) {
+                try {
+                  fs.unlinkSync(fullPath);
+                } catch {}
+                activeDownloadPath = null;
+                resolve({
+                  success: false,
+                  error:
+                    'Checksum verification failed (file may be corrupted or tampered). Update aborted.',
+                });
+                return;
+              }
               activeDownloadPath = null;
 
+              // 4) コード署名検証（SHA256 とは別の真正性レイヤ）
+              //    Windows: Authenticode / macOS: codesign + Gatekeeper。
+              //    dev はローカル/未署名ビルドを許容するためスキップ（SHA256 は常に実施）。
+              if (!is.dev) {
+                const sig = verifyDownloadedSignature(fullPath);
+                if (!sig.ok) {
+                  try {
+                    fs.unlinkSync(fullPath);
+                  } catch {}
+                  resolve({
+                    success: false,
+                    error: `Signature verification failed: ${
+                      sig.error ?? 'invalid signature'
+                    }. Update aborted.`,
+                  });
+                  return;
+                }
+              }
+
+              // 5) 検証通過 → プラットフォーム別にインストール
               if (process.platform === 'win32') {
                 const errorMsg = await shell.openPath(fullPath);
                 if (errorMsg) {
@@ -497,7 +826,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                 }
                 setTimeout(() => app.quit(), 500);
               } else if (process.platform === 'darwin') {
-                // macOS: シェルスクリプトでDMGマウント→アプリ上書き→再起動
+                // macOS: DMGマウント→アプリ上書き→再起動
                 const appBundlePath = path.resolve(
                   process.execPath,
                   '..',
@@ -516,12 +845,20 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
                   app.getPath('temp'),
                   'ai-browser-update.sh',
                 );
+                // セキュリティ: パス等は引数として渡し、スクリプト本体には
+                // 一切埋め込まない（シェルインジェクション防止）。
+                // 引数は spawn の argv 経由で渡るためシェル展開を受けない。
                 const script = `#!/bin/bash
+APP_PID="$1"
+DMG_PATH="$2"
+APP_BUNDLE="$3"
+SCRIPT_SELF="$4"
+
 # アプリ終了を待機
-while kill -0 ${pid} 2>/dev/null; do sleep 0.5; done
+while kill -0 "$APP_PID" 2>/dev/null; do sleep 0.5; done
 
 # DMGをマウント
-MOUNT_OUTPUT=$(hdiutil attach "${fullPath}" -nobrowse -noautoopen 2>&1)
+MOUNT_OUTPUT=$(hdiutil attach "$DMG_PATH" -nobrowse -noautoopen 2>&1)
 MOUNT_POINT=$(echo "$MOUNT_OUTPUT" | grep -oE '/Volumes/.*' | head -1)
 
 if [ -z "$MOUNT_POINT" ]; then
@@ -537,24 +874,34 @@ if [ -z "$SRC_APP" ]; then
 fi
 
 # 旧アプリを削除して新アプリをコピー
-rm -rf "${appBundlePath}"
-ditto "$SRC_APP" "${appBundlePath}"
+rm -rf "$APP_BUNDLE"
+ditto "$SRC_APP" "$APP_BUNDLE"
 
 # アンマウント＆クリーンアップ
 hdiutil detach "$MOUNT_POINT" -quiet
-rm -f "${fullPath}"
+rm -f "$DMG_PATH"
 
 # 再起動
-open "${appBundlePath}"
+open "$APP_BUNDLE"
 
 # スクリプト自体を削除
-rm -f "${scriptPath}"
+rm -f "$SCRIPT_SELF"
 `;
                 fs.writeFileSync(scriptPath, script, { mode: 0o755 });
-                spawn('bash', [scriptPath], {
-                  detached: true,
-                  stdio: 'ignore',
-                }).unref();
+                spawn(
+                  'bash',
+                  [
+                    scriptPath,
+                    String(pid),
+                    fullPath,
+                    appBundlePath,
+                    scriptPath,
+                  ],
+                  {
+                    detached: true,
+                    stdio: 'ignore',
+                  },
+                ).unref();
                 setTimeout(() => app.quit(), 500);
               } else {
                 // Linux: ダウンロードした AppImage に実行権限を付与してから
@@ -603,7 +950,7 @@ rm -f "${scriptPath}"
           activeDownloadRequest = req;
         };
 
-        doDownload(downloadUrl);
+        doDownload(installerUrl.toString());
       });
     },
   );
@@ -864,8 +1211,8 @@ function createMainWindow(): BrowserWindow {
     ...appState.bounds,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.mjs'),
-      sandbox: false,
+      preload: join(__dirname, '../preload/index.cjs'),
+      sandbox: true,
       zoomFactor: 1,
     },
   });
@@ -900,7 +1247,7 @@ function createMainWindow(): BrowserWindow {
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
+    openExternalSafe(details.url);
     return { action: 'deny' };
   });
 

@@ -21,9 +21,9 @@
     "postinstall": "node scripts/fix-pty-module.cjs",
     "postinstall-disabled": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "license-checker --production --json --out src/renderer/src/assets/license.json && npm run build && electron-builder --win",
-    "build:mac": "electron-vite build && APPLE_API_KEY_ID=\"$APPLE_API_KEY\" APPLE_API_KEY=\"$APPLE_API_KEY_PATH\" electron-builder --mac",
-    "build:linux": "license-checker --production --json --out src/renderer/src/assets/license.json && npm run build && electron-builder --linux",
+    "build:win": "license-checker --production --json --out src/renderer/src/assets/license.json && npm run build && node scripts/run-builder.cjs --win",
+    "build:mac": "electron-vite build && node scripts/run-builder.cjs --mac",
+    "build:linux": "license-checker --production --json --out src/renderer/src/assets/license.json && npm run build && node scripts/run-builder.cjs --linux",
     "build-appx": "electron-builder -w appx"
   },
   "dependencies": {

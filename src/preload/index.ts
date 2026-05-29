@@ -105,8 +105,8 @@ if (process.contextIsolated) {
         ),
       removeScriptErrorListener: () =>
         ipcRenderer.removeAllListeners('script-error'),
-      startUpdateDownload: (downloadUrl: string) =>
-        ipcRenderer.invoke('update:download', downloadUrl),
+      startUpdateDownload: (downloadUrl: string, checksumUrl: string | null) =>
+        ipcRenderer.invoke('update:download', downloadUrl, checksumUrl),
       cancelUpdateDownload: () => ipcRenderer.send('update:cancel-download'),
       onUpdateDownloadProgress: (
         callback: (progress: {

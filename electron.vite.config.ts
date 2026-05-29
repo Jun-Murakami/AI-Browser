@@ -54,7 +54,19 @@ export default defineConfig(({ command }) => {
       },
     },
     preload: {
-      plugins: [externalizeDepsPlugin()],
+      // sandbox: true で動かすため、preload は ESM ではなく CJS にし、
+      // 依存（@electron-toolkit/preload 等）はバンドルする。
+      // サンドボックス化された preload は ESM import / 任意モジュールの
+      // require ができないため、'electron' のみ external（実行時提供）とする。
+      build: {
+        rollupOptions: {
+          external: ['electron'],
+          output: {
+            format: 'cjs',
+            entryFileNames: 'index.cjs',
+          },
+        },
+      },
     },
     renderer: {
       resolve: {

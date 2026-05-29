@@ -1,6 +1,7 @@
 appId: com.aibrowser.app
 productName: AI-Browser
-# 全成果物のビルド後に SHA256SUMS と GPG 署名(.asc)を生成する
+# 各成果物ごとに <バイナリ名>.sha256 と GPG 署名(.sha256.asc)を生成する
+# （単一 SHA256SUMS にしないのは、別環境ビルドを同一リリースに上げる際の上書き防止）
 afterAllArtifactBuild: scripts/sign-artifacts.cjs
 directories:
   buildResources: build
@@ -16,6 +17,14 @@ asarUnpack:
 win:
   executableName: AI-Browser
   icon: build/icon.ico
+  # Azure Key Vault + AzureSignTool でコード署名（scripts/sign-win.cjs）
+  # 本体 exe と NSIS インストーラの両方がこのフックを通る。
+  # electron-builder 26 以降は sign / signingHashAlgorithms は
+  # signtoolOptions 配下に移動している。
+  signtoolOptions:
+    sign: scripts/sign-win.cjs
+    signingHashAlgorithms:
+      - sha256
 nsis:
   artifactName: ${productName}-${version}-setup_win_${arch}.${ext}
   shortcutName: ${productName}

@@ -69,17 +69,20 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
 
 ### Verifying Downloads (Linux)
 
-Linux releases are published with a SHA-256 checksum file (`SHA256SUMS`) and a detached GPG signature (`SHA256SUMS.asc`) on the [Releases](https://github.com/Jun-Murakami/AI-Browser/releases) page. The signing key's public part is included in this repository as [`ai-browser-public-key.asc`](ai-browser-public-key.asc).
+Each release binary is published with its own SHA-256 checksum file (`<filename>.sha256`) and a detached GPG signature (`<filename>.sha256.asc`) on the [Releases](https://github.com/Jun-Murakami/AI-Browser/releases) page. Per-binary checksum files avoid collisions when each platform is built separately and uploaded to the same release. The signing key's public part is included in this repository as [`ai-browser-public-key.asc`](ai-browser-public-key.asc).
 
 ```bash
 # Import the public key (first time only)
 gpg --import ai-browser-public-key.asc
 
-# Verify SHA256SUMS is genuinely signed by the developer (authenticity)
-gpg --verify SHA256SUMS.asc SHA256SUMS
+# Example for the AppImage (replace the filename with the one you downloaded)
+FILE="AI-Browser-1.7.0.AppImage"
 
-# Verify the downloaded files are intact (integrity)
-sha256sum -c SHA256SUMS
+# Verify the checksum file is genuinely signed by the developer (authenticity)
+gpg --verify "${FILE}.sha256.asc" "${FILE}.sha256"
+
+# Verify the downloaded binary is intact (integrity)
+sha256sum -c "${FILE}.sha256"
 ```
 
 Signing key fingerprint:
