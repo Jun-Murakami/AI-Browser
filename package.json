@@ -7,6 +7,7 @@
   "license": "MIT",
   "author": "Jun Murakami",
   "homepage": "https://github.com/Jun-Murakami/AI-Browser",
+  "desktopName": "ai-browser.desktop",
   "scripts": {
     "format": "biome format --write .",
     "lint": "biome check",

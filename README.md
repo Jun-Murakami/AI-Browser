@@ -76,7 +76,7 @@ Each release binary is published with its own SHA-256 checksum file (`<filename>
 gpg --import ai-browser-public-key.asc
 
 # Example for the AppImage (replace the filename with the one you downloaded)
-FILE="AI-Browser-1.7.0.AppImage"
+FILE="ai-browser-1.7.1_linux_amd64.AppImage"
 
 # Verify the checksum file is genuinely signed by the developer (authenticity)
 gpg --verify "${FILE}.sha256.asc" "${FILE}.sha256"
@@ -93,6 +93,19 @@ Jun Takahashi (Jun Murakami App Factory) <app@bucketrelay.com>
 ```
 
 > **Note for `.deb` users:** the `.deb` package does not support in-app auto-updates. Get newer versions from the [download page](https://jun-murakami.web.app/apps/ai-browser) or the Releases page. The portable `.AppImage` supports in-app updates.
+
+> **Note for `.AppImage` users:** AppImages require FUSE 2 (`libfuse.so.2`), which is not installed by default on recent distributions such as Ubuntu 22.04 and later. If the AppImage does not start, install it first:
+>
+> ```bash
+> # Ubuntu 22.04 / Debian 12
+> sudo apt install libfuse2
+> # Ubuntu 24.04 and later / Debian 13 and later
+> sudo apt install libfuse2t64
+> # Fedora
+> sudo dnf install fuse-libs
+> ```
+>
+> Alternatively, run it without FUSE: `./ai-browser-<version>_linux_amd64.AppImage --appimage-extract-and-run`
 
 ## Usage
 

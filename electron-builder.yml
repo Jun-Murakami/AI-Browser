@@ -62,6 +62,9 @@ linux:
     - deb
   maintainer: electronjs.org
   category: Utility
+  # package.json の desktopName（ai-browser.desktop）から .desktop のファイル名を決め、
+  # Electron の app_id / StartupWMClass と一致させる（ウィンドウとランチャーの紐付け）
+  syncDesktopName: true
 appImage:
   artifactName: ${name}-${version}_linux_amd64.${ext}
 deb:
