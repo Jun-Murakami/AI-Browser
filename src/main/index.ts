@@ -15,15 +15,18 @@ import { BROWSERS, URL_PATTERNS } from './constants/browsers';
 import { TERMINALS } from './constants/terminals';
 import { terminalManager } from './terminal/terminalManager';
 
-import { execFileSync, spawn } from 'node:child_process';
+import { execFile, execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as https from 'node:https';
 import * as path from 'node:path';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 
 import type { ClientRequest } from 'node:http';
 import type { AppState, Log, TabManager } from './types/interfaces';
+
+const execFileAsync = promisify(execFile);
 
 // アップデートダウンロード用
 let activeDownloadRequest: ClientRequest | null = null;
@@ -150,34 +153,43 @@ function findExpectedHash(sumsText: string, fileName: string): string | null {
  * Windows: ダウンロードした実行ファイル(NSISインストーラ)の Authenticode 署名を
  * 検証する。Status が 'Valid' のときのみ ok。
  * パスは引用符問題を避けるため環境変数経由で PowerShell に渡す。
+ * ダウンロード直後は Windows Defender 等のスキャンでファイルがロックされ
+ * IOException（共有違反）になることがあるため、その場合は間隔を置いて再試行する。
  */
-function verifyWindowsSignature(filePath: string): {
+async function verifyWindowsSignature(filePath: string): Promise<{
   ok: boolean;
   error?: string;
-} {
-  try {
-    const out = execFileSync(
-      'powershell',
-      [
-        '-NoProfile',
-        '-NonInteractive',
-        '-Command',
-        '(Get-AuthenticodeSignature -LiteralPath $env:AIB_VERIFY_PATH).Status',
-      ],
-      {
-        encoding: 'utf8',
-        env: { ...process.env, AIB_VERIFY_PATH: filePath },
-      },
-    ).trim();
-    if (out === 'Valid') {
-      return { ok: true };
+}> {
+  const maxAttempts = 6;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const { stdout } = await execFileAsync(
+        'powershell',
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-Command',
+          '(Get-AuthenticodeSignature -LiteralPath $env:AIB_VERIFY_PATH).Status',
+        ],
+        {
+          encoding: 'utf8',
+          env: { ...process.env, AIB_VERIFY_PATH: filePath },
+        },
+      );
+      const out = stdout.trim();
+      if (out === 'Valid') {
+        return { ok: true };
+      }
+      return { ok: false, error: `Authenticode status: ${out || 'unknown'}` };
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'signature check failed';
+      if (message.includes('IOException') && attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+        continue;
+      }
+      return { ok: false, error: message };
     }
-    return { ok: false, error: `Authenticode status: ${out || 'unknown'}` };
-  } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : 'signature check failed',
-    };
   }
 }
 
@@ -238,10 +250,10 @@ function verifyMacSignature(dmgPath: string): { ok: boolean; error?: string } {
  * Linux は OS 強制の署名関門が無いため、ここでは検証しない
  * （完全性は SHA256、真正性は配布物の GPG 署名で担保）。
  */
-function verifyDownloadedSignature(filePath: string): {
+async function verifyDownloadedSignature(filePath: string): Promise<{
   ok: boolean;
   error?: string;
-} {
+}> {
   if (process.platform === 'win32') {
     return verifyWindowsSignature(filePath);
   }
@@ -783,7 +795,9 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
 
             response.pipe(fileStream);
 
-            fileStream.on('finish', async () => {
+            // 'finish' 時点ではまだファイルハンドルが開いているため、
+            // ハンドルが閉じられる 'close' を待ってから検証・起動する
+            fileStream.on('close', async () => {
               activeDownloadRequest = null;
 
               // 3) ハッシュ照合（不一致ならファイルを削除して中止）
@@ -806,7 +820,7 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
               //    Windows: Authenticode / macOS: codesign + Gatekeeper。
               //    dev はローカル/未署名ビルドを許容するためスキップ（SHA256 は常に実施）。
               if (!is.dev) {
-                const sig = verifyDownloadedSignature(fullPath);
+                const sig = await verifyDownloadedSignature(fullPath);
                 if (!sig.ok) {
                   try {
                     fs.unlinkSync(fullPath);
