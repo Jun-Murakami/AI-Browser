@@ -1,8 +1,10 @@
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
-import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+// monaco-editor 0.56 以降は exports が "./*" → "./esm/vs/*.js" にマップされるため、
+// "esm/vs/" を含めないパスで import する
+import editorWorker from 'monaco-editor/editor/editor.worker?worker';
+import cssWorker from 'monaco-editor/language/css/css.worker?worker';
+import htmlWorker from 'monaco-editor/language/html/html.worker?worker';
+import jsonWorker from 'monaco-editor/language/json/json.worker?worker';
+import tsWorker from 'monaco-editor/language/typescript/ts.worker?worker';
 
 self.MonacoEnvironment = {
   getWorker(_, label) {

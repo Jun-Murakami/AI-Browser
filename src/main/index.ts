@@ -591,7 +591,11 @@ function registerIpcHandlers(mainWindow: BrowserWindow) {
         try {
           const escapedText = JSON.stringify(text).replace(/`/g, '\\`'); // バッククォートのエスケープを強化
 
-          const script = browser.script.replace('TEXT_TO_SEND', escapedText);
+          // 置換文字列だと "$&" 等が特殊パターンとして解釈されるため関数で渡す
+          const script = browser.script.replace(
+            'TEXT_TO_SEND',
+            () => escapedText,
+          );
           view.webContents.executeJavaScript(script).catch((error) => {
             console.error('Script execution failed:', error);
             mainWindow.webContents.send('script-error', {

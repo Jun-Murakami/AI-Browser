@@ -1,4 +1,4 @@
-import { app, BrowserWindow, clipboard, ipcMain } from 'electron';
+import { app, BrowserWindow, clipboard, ipcMain, nativeImage } from 'electron';
 import { spawn } from 'node-pty';
 
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -129,20 +129,42 @@ class TerminalManager {
     );
 
     // クリップボードから画像を読み取り、一時ファイルに保存して返す
-    // Electron ネイティブの clipboard.readImage() を使用し、
+    // Electron ネイティブの clipboard.read() を使用し、
     // レンダラーの navigator.clipboard.read() の不安定さを回避する
+    // （Electron 44 で同期版の clipboard.readImage() は削除された）
     ipcMain.handle('terminal:read-clipboard-image', async () => {
       try {
-        const image = clipboard.readImage();
-        if (image.isEmpty()) {
+        const items = await clipboard.read();
+        let imageItem: Electron.ClipboardItem | undefined;
+        let imageType: string | undefined;
+        for (const item of items) {
+          imageType = item.types.find((type) => type.startsWith('image/'));
+          if (imageType) {
+            imageItem = item;
+            break;
+          }
+        }
+        if (!imageItem || !imageType) {
           return { hasImage: false };
         }
+
+        const blob = (await imageItem.getType(imageType)) as Blob;
+        const buffer = Buffer.from(await blob.arrayBuffer());
+        // PNG 以外（JPEG 等）は nativeImage 経由で PNG に変換する
+        const png =
+          imageType === 'image/png'
+            ? buffer
+            : nativeImage.createFromBuffer(buffer).toPNG();
+        if (png.length === 0) {
+          return { hasImage: false };
+        }
+
         const dir = pathJoin(app.getPath('userData'), 'Clipboard');
         if (!existsSync(dir)) {
           mkdirSync(dir, { recursive: true });
         }
         const filePath = pathJoin(dir, `${Date.now()}.png`);
-        writeFileSync(filePath, image.toPNG());
+        writeFileSync(filePath, png);
         return { hasImage: true, filePath };
       } catch (error) {
         return {

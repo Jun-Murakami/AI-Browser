@@ -47,8 +47,8 @@ npm start
 - `src/preload/` - プリロードスクリプト（セキュアなブリッジ）
 
 ### 主要な技術スタック
-- Electron 41 + electron-vite 6（ビルドツール）
-- React 19 + TypeScript 6
+- Electron 44 + electron-vite 6 beta（ビルドツール）
+- React 19 + TypeScript 7（ネイティブ版 tsc）
 - Material-UI 9（UIコンポーネント）
 - Monaco Editor（コードエディタ機能）
 - Zustand（グローバル状態管理）
@@ -70,8 +70,9 @@ npm start
 - 段階的にストア化を進行中。現在はエディタ値とブラウザ読み込み状態のみ。タブ管理・ログ管理は従来のカスタムフック（`useTabManager`, `useLogManager`）で管理
 
 ### ネイティブモジュール（node-pty）
-- `node-pty@1.2.0-beta.12` はプリビルドバイナリを同梱しており、`electron-rebuild` は不要
-- `electron.vite.config.ts` で `rollupOptions.external: ['node-pty']` を指定し、バンドルに含めず実行時に `node_modules` から読み込む
+- `node-pty@1.2.0-beta.15` はプリビルドバイナリを同梱しており、`electron-rebuild` は不要（npm の `latest` タグの 1.1.0 は linux プリビルドが無いので移行しない）
+- `electron.vite.config.ts` で `rolldownOptions.external: ['node-pty']` を指定し、バンドルに含めず実行時に `node_modules` から読み込む
+- electron-vite 6 は main/preload の依存を既定で外部化する。sandbox 付き preload は `electron` 以外を require できないため、preload は `externalizeDeps: false` でバンドルする
 - `scripts/fix-pty-module.cjs` は postinstall でプリビルドの存在確認を行う
 
 ### React DevTools

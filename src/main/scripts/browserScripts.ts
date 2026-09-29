@@ -1,23 +1,59 @@
 export const BROWSER_SCRIPTS = {
   CHATGPT: `
-    var dataTransfer = new DataTransfer();
-    dataTransfer.setData('text', TEXT_TO_SEND);
-    var pasteEvent = new ClipboardEvent('paste', {
-      clipboardData: dataTransfer,
-      bubbles: true,
-      cancelable: true
-    });
-
-    var editorContent = document.querySelector('main div[id="prompt-textarea"]');
-    editorContent.focus();
-    editorContent.dispatchEvent(pasteEvent);
-
-    setTimeout(() => {
-      var buttons = document.querySelectorAll('main button[data-testid="send-button"]');
-      if (buttons.length > 0) {
-        buttons[buttons.length - 1].click();
+    (function () {
+      var text = TEXT_TO_SEND;
+      // ログイン時: form 内の ProseMirror（旧UIは #prompt-textarea）、未ログイン時: textarea[name="prompt"]
+      var editor =
+        document.querySelector('main form div.ProseMirror[contenteditable="true"]') ||
+        document.querySelector('main #prompt-textarea') ||
+        document.querySelector('main textarea[name="prompt"]');
+      if (!editor) {
+        console.log('ChatGPT: editor not found');
+        return;
       }
-    }, 700);
+
+      editor.focus();
+      if (editor.tagName === 'TEXTAREA') {
+        var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLTextAreaElement.prototype,
+          'value'
+        ).set;
+        nativeTextAreaValueSetter.call(editor, text);
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+      } else {
+        var dataTransfer = new DataTransfer();
+        dataTransfer.setData('text', text);
+        editor.dispatchEvent(new ClipboardEvent('paste', {
+          clipboardData: dataTransfer,
+          bubbles: true,
+          cancelable: true
+        }));
+      }
+
+      // 送信ボタンは入力後に出現する。生成中の停止ボタンは type="button" なので対象外
+      var scope = editor.closest('form') || document.querySelector('main') || document;
+      var selectors = [
+        'button[data-testid="send-button"]',
+        '#composer-submit-button',
+        'button[data-composer-submit]',
+        'button[type="submit"]'
+      ];
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries++;
+        var sendButton = null;
+        for (var i = 0; i < selectors.length && !sendButton; i++) {
+          sendButton = scope.querySelector(selectors[i]);
+        }
+        if (sendButton && !sendButton.disabled && sendButton.getAttribute('aria-disabled') !== 'true') {
+          clearInterval(timer);
+          sendButton.click();
+        } else if (tries >= 50) {
+          clearInterval(timer);
+          console.log('ChatGPT: send button not found');
+        }
+      }, 100);
+    })();
   `,
   GEMINI: `
     try {
@@ -317,49 +353,67 @@ export const BROWSER_SCRIPTS = {
     }, 100);
   `,
   NANI: `
-    var textareaTag = document.querySelector('textarea#basic-input-main') || document.querySelectorAll('textarea')[document.querySelectorAll('textarea').length - 1];
-    var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype,
-      "value"
-    ).set;
-    nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
-    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-    setTimeout(() => {
-      // 最後に見つかったtextareaの親要素の兄弟要素以下にあるすべてのボタンを取得
-      var textareaParent = textareaTag.parentElement;
-      var siblingButtons = [];
+    (function () {
+      // トップページ: #basic-input-main、翻訳結果ページ: #basic-input-form
+      var textareaTag =
+        document.querySelector('textarea[data-main-input="true"]') ||
+        document.querySelector('textarea[id^="basic-input"]');
+      if (!textareaTag) {
+        // aria-hidden の textarea は自動リサイズ用のダミーなので除外
+        var textareas = document.querySelectorAll('textarea:not([aria-hidden="true"])');
+        textareaTag = textareas[textareas.length - 1];
+      }
+      if (!textareaTag) {
+        console.log('Nani: textarea not found');
+        return;
+      }
 
-      // 指定された要素以下のすべてのボタンを再帰的に検索する関数
-      function findButtonsInElement(element) {
-        if (!element) return;
+      var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype,
+        "value"
+      ).set;
+      nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
+      textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // 現在の要素がボタンの場合、配列に追加
-        if (element.tagName === 'BUTTON') {
-          siblingButtons.push(element);
+      // textarea から祖先をたどり、最も近い送信ボタンを探す
+      function findLabeledButton() {
+        var el = textareaTag.parentElement;
+        for (var depth = 0; el && depth < 6; depth++, el = el.parentElement) {
+          var button = el.querySelector('button[aria-label="送信"], button[aria-label="Send"]');
+          if (button) return button;
         }
+        return null;
+      }
 
-        // 子要素を再帰的に検索
-        var children = element.children;
-        for (var i = 0; i < children.length; i++) {
-          findButtonsInElement(children[i]);
+      // ラベルで見つからない言語向けのフォールバック: 最も近い祖先内の最後の submit ボタン
+      function findLastSubmitButton() {
+        var el = textareaTag.parentElement;
+        for (var depth = 0; el && depth < 6; depth++, el = el.parentElement) {
+          var submits = Array.from(el.querySelectorAll('button')).filter(function (b) {
+            return b.type === 'submit';
+          });
+          if (submits.length > 0) return submits[submits.length - 1];
         }
+        return null;
       }
 
-      // textareaの親要素の兄弟要素を取得
-      var parentSiblings = textareaParent.parentElement.children;
-
-      // 各兄弟要素以下にあるすべてのボタンを検索
-      for (var i = 0; i < parentSiblings.length; i++) {
-        var sibling = parentSiblings[i];
-        findButtonsInElement(sibling);
-      }
-
-      // 見つかったボタンが存在する場合、最後のボタンをクリック
-      if (siblingButtons.length > 0) {
-        var lastButton = siblingButtons[siblingButtons.length - 1];
-        lastButton.click();
-      }
-    }, 700);
+      // 送信ボタンは入力が反映されるまで disabled なので、有効になるまで待つ
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries++;
+        var sendButton = findLabeledButton();
+        if (!sendButton && tries >= 30) {
+          sendButton = findLastSubmitButton();
+        }
+        if (sendButton && !sendButton.disabled) {
+          clearInterval(timer);
+          sendButton.click();
+        } else if (tries >= 50) {
+          clearInterval(timer);
+          console.log('Nani: send button not found');
+        }
+      }, 100);
+    })();
   `,
   SAKANA: `
     var textareaTag = document.querySelector('form textarea');

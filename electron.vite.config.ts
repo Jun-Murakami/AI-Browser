@@ -1,6 +1,6 @@
 import babelPlugin from '@rolldown/plugin-babel';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+import { defineConfig } from 'electron-vite';
 import type { Plugin } from 'vite';
 
 import { resolve } from 'node:path';
@@ -46,9 +46,9 @@ export default defineConfig(({ command }) => {
 
   return {
     main: {
-      plugins: [externalizeDepsPlugin()],
+      // 依存の外部化は electron-vite 6 の build.externalizeDeps（既定で有効）に任せる
       build: {
-        rollupOptions: {
+        rolldownOptions: {
           external: ['node-pty'],
         },
       },
@@ -58,8 +58,10 @@ export default defineConfig(({ command }) => {
       // 依存（@electron-toolkit/preload 等）はバンドルする。
       // サンドボックス化された preload は ESM import / 任意モジュールの
       // require ができないため、'electron' のみ external（実行時提供）とする。
+      // electron-vite 6 は既定で依存を外部化するので externalizeDeps を無効にする。
       build: {
-        rollupOptions: {
+        externalizeDeps: false,
+        rolldownOptions: {
           external: ['electron'],
           output: {
             format: 'cjs',
