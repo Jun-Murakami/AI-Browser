@@ -112,6 +112,50 @@ npm start
 - `src/renderer/src/stores/` - Zustand ストア
 - `src/preload/index.ts` - プリロードスクリプト
 
+## Linux ビルド（macOS からのクロスビルド）
+
+Apple Silicon の macOS から `npm run build:linux` で x64 の AppImage / deb を生成できる（Docker・WSL・実機 Linux は不要）。
+
+- `npmRebuild: false` かつ node-pty 同梱のプリビルドを使うためネイティブコンパイルが無く、成果物の互換性はビルドホストに依存しない（Electron 本体が glibc 2.25 以上、node-pty が glibc 2.28 以上を要求）
+- deb 用の fpm や AppImage のツールは electron-builder が自動でダウンロードする
+- `electron-builder.yml` の linux target は `arch: x64` に固定している。arch を省略するとホストの arch（arm64）でビルドされ、`_linux_amd64` という名前で arm64 バイナリが出力されてしまうので外さないこと
+- Windows ネイティブでは deb を作れない（fpm が動かない）。WSL2 でも可能だが、WSL 内の ext4 に clone して `npm ci` する必要がある
+- 成果物: `dist/ai-browser-<version>_linux_amd64.{AppImage,deb}` と、それぞれの `.sha256` / `.sha256.asc`、`latest-linux.yml`
+
+### チェックサムと GPG 署名
+
+`scripts/sign-artifacts.cjs`（electron-builder の `afterAllArtifactBuild`）が成果物ごとに `.sha256` と、その GPG デタッチ署名 `.sha256.asc` を生成する。
+
+- アプリ内アップデートの検証は `.sha256` のみを使う（無いと更新を中止する）。`.sha256.asc` は利用者が手動で真正性を確認するためのもの（README の「Verifying Downloads (Linux)」）
+- gpg が無い、または `.env` で `SKIP_GPG_SIGN=true` の場合は署名をスキップし、`.sha256` のみ生成する
+- 署名には**秘密鍵**が必要。リポジトリ直下の `ai-browser-public-key.asc` は検証用の公開鍵で、署名には使えない。秘密鍵・失効証明書・パスフレーズはリポジトリ外で管理し、絶対にコミットしない
+
+初回セットアップ（macOS）:
+
+```bash
+brew install gnupg pinentry-mac
+# ~/.gnupg/gpg-agent.conf に次の1行を書く（パスフレーズを macOS のダイアログで入力するため）
+#   pinentry-program /opt/homebrew/bin/pinentry-mac
+gpg --import <秘密鍵のエクスポートファイル>
+```
+
+- `.env` の `GPG_SIGNING_KEY` に署名鍵のメールアドレスかフィンガープリントを設定する（`.env` はコミットしない）
+
+ビルド手順:
+
+```bash
+# 1. パスフレーズをキャッシュする（ユーザー自身のターミナルで実行）
+echo test | gpg --clearsign --local-user <GPG_SIGNING_KEY の値> > /dev/null
+# 2. ビルド（license.json の再生成、型チェック、ビルド、パッケージング、署名）
+npm run build:linux
+# 3. 検証
+gpg --verify dist/<成果物>.sha256.asc dist/<成果物>.sha256
+(cd dist && shasum -a 256 -c <成果物>.sha256)
+```
+
+- 署名は `gpg --batch` で行うため、パスフレーズがキャッシュされていないと失敗し、`.sha256` のみになる（警告が出る）
+- Claude Code などのサンドボックス化されたシェルから起動した gpg-agent は pinentry のダイアログを表示できず、「操作がキャンセルされました」で失敗する。手順1はユーザー自身のターミナルで実行し、agent をそこで起動させること
+
 ## ライセンス管理
 
 Windowsビルド時は自動的にライセンスファイルが生成されます（`scripts/generate-licenses.js`）。新しい依存関係を追加した場合は、ビルドプロセスで自動的に更新されます。

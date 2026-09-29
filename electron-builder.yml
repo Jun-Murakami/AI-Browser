@@ -57,9 +57,13 @@ mac:
 dmg:
   artifactName: ${productName}-${version}_mac_${arch}.${ext}
 linux:
+  # arch を明示しないとビルドホストの arch になる（Apple Silicon の mac では arm64）。
+  # 成果物名は _linux_amd64 固定なので、どこでビルドしても x64 になるよう固定する。
   target:
-    - AppImage
-    - deb
+    - target: AppImage
+      arch: x64
+    - target: deb
+      arch: x64
   maintainer: electronjs.org
   category: Utility
   # package.json の desktopName（ai-browser.desktop）から .desktop のファイル名を決め、
