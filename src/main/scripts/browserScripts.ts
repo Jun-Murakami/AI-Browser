@@ -448,4 +448,41 @@ export const BROWSER_SCRIPTS = {
       }
     }, 700);
   `,
+  MUSE: `
+    (function () {
+      // コンポーザーは React 制御の textarea（data-hatch-composer-prehydration-input）
+      var textareaTag =
+        document.querySelector('[data-hatch-composer-chrome] textarea') ||
+        document.querySelector('textarea[data-hatch-composer-prehydration-input]');
+      if (!textareaTag) {
+        console.log('Muse: textarea not found');
+        return;
+      }
+
+      textareaTag.focus();
+      var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype,
+        "value"
+      ).set;
+      nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
+      textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
+
+      // 送信ボタンは入力後に出現する。data-pel-click は表示言語に依存しない
+      var scope = textareaTag.closest('[data-hatch-composer-chrome]') || document;
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries++;
+        var sendButton =
+          scope.querySelector('button[data-pel-click="chat_send_message"]') ||
+          scope.querySelector('button[aria-label="送信"], button[aria-label="Send"]');
+        if (sendButton && !sendButton.disabled) {
+          clearInterval(timer);
+          sendButton.click();
+        } else if (tries >= 50) {
+          clearInterval(timer);
+          console.log('Muse: send button not found');
+        }
+      }, 100);
+    })();
+  `,
 } as const;

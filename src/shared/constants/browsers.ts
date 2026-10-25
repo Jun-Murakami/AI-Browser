@@ -89,4 +89,12 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     urlPattern: 'genspark.ai',
     group: 'primary',
   },
+  {
+    id: 'MUSE',
+    label: 'Muse',
+    index: 10,
+    url: 'https://muse.ai/',
+    urlPattern: 'muse.ai',
+    group: 'primary',
+  },
 ];

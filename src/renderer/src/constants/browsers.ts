@@ -8,6 +8,7 @@ import {
   GensparkIcon,
   GrokIcon,
   KimiIcon,
+  MuseIcon,
   NaniIcon,
   PerplexityIcon,
   SakanaIcon,
@@ -29,6 +30,7 @@ const BROWSER_ICON_COMPONENTS: Record<string, ComponentType<SvgIconProps>> = {
   SAKANA: SakanaIcon,
   PERPLEXITY: PerplexityIcon,
   GENSPARK: GensparkIcon,
+  MUSE: MuseIcon,
 };
 
 // 共通定義にアイコンコンポーネントを追加（ラベルはそのまま使用）
