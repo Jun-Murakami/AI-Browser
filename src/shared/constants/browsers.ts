@@ -58,11 +58,11 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     group: 'primary',
   },
   {
-    id: 'SAKANA',
-    label: 'Sakana',
+    id: 'MUSE',
+    label: 'Muse',
     index: 6,
-    url: 'https://chat.sakana.ai/',
-    urlPattern: 'sakana.ai',
+    url: 'https://muse.ai/',
+    urlPattern: 'muse.ai',
     group: 'primary',
   },
   {
@@ -87,14 +87,6 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     index: 9,
     url: 'https://www.genspark.ai/',
     urlPattern: 'genspark.ai',
-    group: 'primary',
-  },
-  {
-    id: 'MUSE',
-    label: 'Muse',
-    index: 10,
-    url: 'https://muse.ai/',
-    urlPattern: 'muse.ai',
     group: 'primary',
   },
 ];

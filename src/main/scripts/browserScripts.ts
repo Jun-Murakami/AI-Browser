@@ -415,21 +415,6 @@ export const BROWSER_SCRIPTS = {
       }, 100);
     })();
   `,
-  SAKANA: `
-    var textareaTag = document.querySelector('form textarea');
-    var nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype,
-      "value"
-    ).set;
-    nativeTextAreaValueSetter.call(textareaTag, TEXT_TO_SEND);
-    textareaTag.dispatchEvent(new Event('input', { bubbles: true }));
-    setTimeout(() => {
-      var sendButton = document.querySelector('form button[type="submit"]');
-      if (sendButton) {
-        sendButton.click();
-      }
-    }, 700);
-  `,
   KIMI: `
     var textareaTag = document.querySelector('div.chat-input-editor');
     var dataTransfer = new DataTransfer();
