@@ -41,6 +41,26 @@ function reactDevtoolsHtmlPlugin(isDevServer: boolean): Plugin {
   };
 }
 
+// monaco-editor は DOMPurify を npm 依存ではなく自前のコピー
+// （esm/vs/base/browser/dompurify/dompurify.js）として同梱しており、
+// package.json の overrides だけでは実際にバンドルされるコードが更新されない。
+// そこで同梱コピーの中身を npm の dompurify（overrides で修正版に固定）の
+// 再エクスポートに置き換える。相対 import は resolveId を経由しないため load で差し替える。
+const MONACO_VENDORED_DOMPURIFY =
+  /monaco-editor[\\/]esm[\\/]vs[\\/]base[\\/]browser[\\/]dompurify[\\/]dompurify\.js$/;
+
+function monacoDompurifyPlugin(): Plugin {
+  return {
+    name: 'monaco-dompurify',
+    load(id) {
+      if (MONACO_VENDORED_DOMPURIFY.test(id)) {
+        return "export { default } from 'dompurify';";
+      }
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({ command }) => {
   const isDevServer = command === 'serve';
 
@@ -77,7 +97,14 @@ export default defineConfig(({ command }) => {
           '@': resolve('src/renderer/src'),
         },
       },
+      // 開発サーバーでは monaco-editor が事前バンドルされるため、そちらにも適用する
+      optimizeDeps: {
+        rolldownOptions: {
+          plugins: [monacoDompurifyPlugin()],
+        },
+      },
       plugins: [
+        monacoDompurifyPlugin(),
         react(),
         babelPlugin({
           presets: [reactCompilerPreset()],
