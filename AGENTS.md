@@ -75,7 +75,10 @@ scripts/                   リリース補助（release-manifest.mjs、sign-arti
    - WebView を作る・触るコマンドは async にする（同期コマンドはメインスレッドで動き、デッドロックすることがある）
    - ミューテックスを持ったまま WebView のメソッドを呼ばない（メインスレッドの `on_page_load` と取り合う）
    - Windows では全 WebView が同じ `additional_browser_args` を使う必要がある（WebView2 環境の共有）
-6. **Electron 版からの移行**: 初回起動時に Electron 版の userData から appState.json / logs.json を、
+6. **ウィンドウの位置・大きさ・最大化**: tauri-plugin-window-state（DialogSuite と同じ）が物理座標で保存・復元する
+   （拡大率の違うモニターをまたいでも戻る）。プラグインに保存が無い初回だけ appState.json の `bounds`（Electron 版から引き継いだ値）を使う。
+   UI の読み込み後に表示するため、`StateFlags::VISIBLE` は外している
+7. **Electron 版からの移行**: 初回起動時に Electron 版の userData から appState.json / logs.json を、
    Local Storage（LevelDB）から Nani! の翻訳履歴を引き継ぐ。リリースのファイル名は v1.7.2 のアップデータが拾える規則に揃えてある
 
 ### 状態管理（Zustand）
@@ -94,6 +97,9 @@ scripts/                   リリース補助（release-manifest.mjs、sign-arti
 - 開発ビルドのデータは `%APPDATA%\com.aibrowser.app`（WebView のデータは `%LOCALAPPDATA%\com.aibrowser.app`）。
   ここに appState.json が無いときは Electron 版の userData から読む
 - 子 WebView の開発者ツールは、各サイト上の右クリックメニューから開ける（開発ビルドのみ）
+- Claude Code デスクトップ版（Windows では MSIX パッケージ）のシェルから起動したプロセスは、AppData への書き込みが
+  `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\` に仮想化され、そのシェルから見える AppData も仮想化後の内容になる。
+  ユーザーの実データで動作を確かめるときは `explorer.exe <exe のパス>` で起動し、ファイルの確認も explorer 経由で起動したスクリプトで行う
 - Linux 版は未対応（`docs/tauri-migration-plan.md` の Phase 7）
 
 ## リリースとコード署名

@@ -22,6 +22,9 @@ tauri-plugin-log = "2"
 tauri-plugin-updater = "2"
 # 旧 Electron 版のアンインストールを尋ねるネイティブダイアログ（migrate.rs）
 tauri-plugin-dialog = "2"
+# ウィンドウの位置・大きさ・最大化の保存と復元（DialogSuite と同じ）。
+# 物理座標で保存するので、拡大率の違うモニターをまたいでも元の場所に戻る
+tauri-plugin-window-state = "2"
 tokio = { version = "1", features = ["sync", "macros"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

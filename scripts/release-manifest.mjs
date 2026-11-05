@@ -199,9 +199,21 @@ function publish(args) {
 
   // 1 ファイルずつ上げて作成順を固定する。API の並びが作成順でも名前順でも
   // インストーラが対応する .sha256 より先に来る（名前順なら "x.msi" < "x.msi.sha256"）
+  // uploads.github.com は大きいファイルで HTTP 500 を返すことがある（実際には上がっている場合もある）。
+  // --clobber で上書きするので、そのまま再試行してよい
   for (const f of files) {
     console.log(`  upload: ${path.basename(f)}`);
-    gh(['release', 'upload', tag, f, '-R', REPO, '--clobber']);
+    for (let attempt = 1; ; attempt++) {
+      try {
+        gh(['release', 'upload', tag, f, '-R', REPO, '--clobber']);
+        break;
+      } catch (e) {
+        if (attempt >= 4) throw e;
+        const waitSec = 5 * attempt;
+        console.log(`  失敗したので ${waitSec} 秒後に再試行します（${attempt + 1}/4 回目）`);
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, waitSec * 1000);
+      }
+    }
   }
   console.log(`\n下書きのリリースを確認して公開してください: https://github.com/${REPO}/releases`);
 }

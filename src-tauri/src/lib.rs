@@ -187,6 +187,9 @@ async fn set_browser_size(app: AppHandle, width: f64, height: f64) -> Result<(),
     if width <= 0.0 || height <= 0.0 {
         return Ok(());
     }
+    // ブラウザ側ペインの幅を覚えておき、次回起動時に UI の初期幅にする（Electron 版と同じ）。
+    // bridge.ts は init の完了後にしか送らないので、初期レイアウト前の仮の幅では上書きされない
+    app.state::<Shared>().state.lock().unwrap().browser_width = width;
     views::resize_visible(&app, width, height)
 }
 
@@ -303,41 +306,6 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
-/// 最大化・最小化していないときのウィンドウ位置と大きさを覚えておく。
-/// 最大化中は元の大きさが取れないため、直前に記録した値を保存に使う。
-fn track_bounds(app: &AppHandle) {
-    let Some(window) = app.get_window(MAIN_WINDOW) else {
-        return;
-    };
-    if !window.is_visible().unwrap_or(false) {
-        return;
-    }
-    let is_maximized = window.is_maximized().unwrap_or(false);
-    let is_minimized = window.is_minimized().unwrap_or(false);
-    let bounds = match (window.scale_factor(), window.outer_position(), window.inner_size()) {
-        (Ok(scale), Ok(position), Ok(size)) if !is_maximized && !is_minimized => {
-            let position = position.to_logical::<f64>(scale);
-            let size = size.to_logical::<f64>(scale);
-            Some(state::Bounds {
-                x: position.x,
-                y: position.y,
-                width: size.width,
-                height: size.height,
-            })
-        }
-        _ => None,
-    };
-
-    let shared = app.state::<Shared>();
-    let mut state = shared.state.lock().unwrap();
-    if !is_minimized {
-        state.is_maximized = is_maximized;
-    }
-    if let Some(bounds) = bounds {
-        state.bounds = bounds;
-    }
-}
-
 pub(crate) fn save_now(app: &AppHandle) {
     let shared = app.state::<Shared>();
     let state = shared.state.lock().unwrap().clone();
@@ -349,6 +317,8 @@ pub(crate) fn save_now(app: &AppHandle) {
 
 fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
     let snapshot = app.state::<Shared>().state.lock().unwrap().clone();
+    // ここで使う位置と大きさは、window-state プラグインに保存が無いとき（初回起動）の既定値。
+    // appState.json の bounds（Electron 版から引き継いだ値）を使い、以後はプラグインが復元する
     let bounds = snapshot.bounds;
 
     let builder = WindowBuilder::new(app, MAIN_WINDOW)
@@ -402,13 +372,10 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
     )?;
 
     let event_app = app.clone();
-    window.on_window_event(move |event| match event {
-        WindowEvent::Moved(_) | WindowEvent::Resized(_) => track_bounds(&event_app),
-        WindowEvent::CloseRequested { .. } => {
-            track_bounds(&event_app);
+    window.on_window_event(move |event| {
+        if let WindowEvent::CloseRequested { .. } = event {
             save_now(&event_app);
         }
-        _ => {}
     });
 
     Ok(())
@@ -421,6 +388,16 @@ pub fn run() {
         .manage(updater::UpdateState::default())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
+        // ウィンドウの位置・大きさ・最大化を物理座標で保存・復元する（ウィンドウ生成前に登録する）。
+        // VISIBLE は外す: UI の読み込みが終わるまでウィンドウを隠しておき、show_main_window で表示するため
+        .plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_state_flags(
+                    tauri_plugin_window_state::StateFlags::all()
+                        - tauri_plugin_window_state::StateFlags::VISIBLE,
+                )
+                .build(),
+        )
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(log::LevelFilter::Info)

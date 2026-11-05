@@ -91,6 +91,9 @@ Electron（BrowserWindow + WebContentsView × 10）と同じ形にする。
 - [x] テキスト送信（単体・一斉）とスクリプトエラーの通知（`eval_with_callback`）
 - [x] リロード（現在のタブ・全タブ）
 - [x] 状態の読み書き（appState.json / logs.json）、ウィンドウ位置・サイズ・最大化の復元、ダークモード。Tauri 側に無ければ Electron 版の userData から読む（Phase 5 の一部を先行実装、起動ログで確認）
+  - v2.0.1 の後: 拡大率の違うモニター（150% / 125% / 100%）の構成で、別モニターで最大化した状態が主モニターに戻る不具合があった。
+    論理座標で保存していたため。tauri-plugin-window-state（物理座標）に置き換え、125% のモニターでの通常表示と
+    100% のモニターでの最大化がどちらも元の場所に戻ることを確認（2026-11-06）
 - [x] 外部リンク。UI からの `window.open` とナビゲーションは外部ブラウザへ。AI サービスの `window.open` は OAuth のポップアップのため既定動作（許可）
 - [x] 非表示タブのタイマー抑制対策（Windows: `additional_browser_args` に Chromium フラグ。全 WebView で同じ値にする）
 - [x] 本番ビルドで Ctrl+R / F5 によるリロードを抑止
