@@ -2,19 +2,21 @@ import { createTheme } from '@mui/material/styles';
 import '@fontsource/m-plus-1p';
 import '@fontsource/lato';
 
+// 空白を含むフォント名は引用符で囲む。"M PLUS 1p" のように数字で始まる語を含む名前を
+// 囲まないと CSS として不正になり、WebKit（macOS）は font-family の宣言ごと捨てて明朝体になる
 const fontFamilySet = [
   'Lato',
-  'M PLUS 1p',
+  '"M PLUS 1p"',
   '-apple-system',
   'BlinkMacSystemFont',
-  'Segoe UI',
+  '"Segoe UI"',
   'Roboto',
-  'Helvetica Neue',
+  '"Helvetica Neue"',
   'Arial',
   'sans-serif',
-  'Apple Color Emoji',
-  'Segoe UI Emoji',
-  'Segoe UI Symbol',
+  '"Apple Color Emoji"',
+  '"Segoe UI Emoji"',
+  '"Segoe UI Symbol"',
 ].join(',');
 
 const breakpointsValues = {

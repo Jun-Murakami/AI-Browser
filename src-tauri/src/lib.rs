@@ -351,7 +351,7 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
     let snapshot = app.state::<Shared>().state.lock().unwrap().clone();
     let bounds = snapshot.bounds;
 
-    let window = WindowBuilder::new(app, MAIN_WINDOW)
+    let builder = WindowBuilder::new(app, MAIN_WINDOW)
         .title("AI-Browser")
         .inner_size(bounds.width, bounds.height)
         .min_inner_size(1000.0, 700.0)
@@ -359,8 +359,16 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
         .maximized(snapshot.is_maximized)
         .theme(Some(theme(snapshot.is_dark_mode)))
         // UI の読み込みが終わってから表示する（Electron 版の ready-to-show 相当）
-        .visible(false)
-        .build()?;
+        .visible(false);
+    // macOS では Tauri の既定（TitleBarStyle::Visible）が FullSizeContentView を有効にし、
+    // コンテンツ領域がタイトルバーの下まで広がる。UI の WebView は WKWebView が中身を
+    // タイトルバーの高さだけ自動で下げるが、子 WebView（svc-*）はタイトルバーの上端から
+    // 配置されるため、その分（macOS 27 では 32pt）上にずれる。
+    // Transparent は FullSizeContentView を使わないので、コンテンツ領域がタイトルバーの下から始まり、
+    // UI と子 WebView が同じ座標になる。
+    #[cfg(target_os = "macos")]
+    let builder = builder.title_bar_style(tauri::TitleBarStyle::Transparent);
+    let window = builder.build()?;
 
     let nav_app = app.clone();
     let popup_app = app.clone();
