@@ -76,6 +76,11 @@ class TerminalService {
         !e.altKey;
       if (!isPaste) return true; // 他のキーはそのまま
 
+      // 下の非同期処理で貼り付けるので、ブラウザ標準の貼り付けは止める。
+      // xterm はハンドラが false を返してもイベントを取り消さないため、止めないと
+      // xterm の paste イベント処理でも貼り付けられて二重になる
+      e.preventDefault();
+
       (async () => {
         try {
           // メインプロセスで clipboard.readImage() を実行

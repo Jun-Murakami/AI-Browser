@@ -45,8 +45,9 @@ export const BROWSER_DEFINITIONS: BrowserDefinition[] = [
     id: 'KIMI',
     label: 'Kimi',
     index: 4,
-    url: 'https://kimi.com/',
-    urlPattern: 'kimi.com',
+    // 2026/11 に kimi.com（中国向けのログイン画面）から kimi.ai に移った
+    url: 'https://www.kimi.ai/',
+    urlPattern: ['kimi.ai', 'kimi.com'],
     group: 'primary',
   },
   {

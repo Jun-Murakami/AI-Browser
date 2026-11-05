@@ -84,43 +84,63 @@ export const BROWSER_SCRIPTS = {
     }
   `,
   CLAUDE: `
-    var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
-    var textareaTag = textareaTags[textareaTags.length - 1];
-    var dataTransfer = new DataTransfer();
-    dataTransfer.setData('text', TEXT_TO_SEND);
-    var pasteEvent = new ClipboardEvent('paste', {
-      clipboardData: dataTransfer,
-      bubbles: true,
-      cancelable: true
-    });
-    textareaTag.focus();
-    textareaTag.dispatchEvent(pasteEvent);
-    setTimeout(() => {
-      // data-state="closed" だけを持つ <div> をまず厳密に抽出
-      var allClosedDivs = Array.from(document.querySelectorAll('div[data-state="closed"]')).filter(function (el) {
-        // この要素が持つ属性名の一覧を取得し、'data-state' のみを許容
-        var attrNames = el.getAttributeNames();
-        return attrNames.length === 1 && attrNames[0] === 'data-state' && el.getAttribute('data-state') === 'closed';
-      });
-
-      // 祖先に <main> を持つ要素のみを優先
-      var closedDivsInMain = allClosedDivs.filter(function (el) {
-        // closest('main') が見つかれば true（= <main> 配下）
-        return !!el.closest('main');
-      });
-
-      // <main> 配下の候補があればそれを、無ければ全件を採用
-      var closedDivs = closedDivsInMain.length > 0 ? closedDivsInMain : allClosedDivs;
-
-      if (closedDivs.length > 0) {
-        var sendButtons = closedDivs[closedDivs.length - 1].querySelectorAll('button');
-        var sendButton = sendButtons[sendButtons.length - 1];
-        if (sendButton) {
-          sendButton.click();
-        }
+    (function () {
+      var textareaTags = document.querySelectorAll('div[contenteditable="true"] p');
+      var textareaTag = textareaTags[textareaTags.length - 1];
+      if (!textareaTag) {
+        console.log('Claude: editor not found');
+        return;
       }
-      console.log('closedDivs', closedDivs);
-    }, 700);
+      var dataTransfer = new DataTransfer();
+      dataTransfer.setData('text', TEXT_TO_SEND);
+      var pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: dataTransfer,
+        bubbles: true,
+        cancelable: true
+      });
+      textareaTag.focus();
+      textareaTag.dispatchEvent(pasteEvent);
+
+      // 旧 UI: data-state="closed" だけを持つ <div>（Radix のツールチップ）内の最後のボタン
+      function findLegacySendButton() {
+        var allClosedDivs = Array.from(document.querySelectorAll('div[data-state="closed"]')).filter(function (el) {
+          var attrNames = el.getAttributeNames();
+          return attrNames.length === 1 && attrNames[0] === 'data-state';
+        });
+        // 祖先に <main> を持つ要素を優先
+        var closedDivsInMain = allClosedDivs.filter(function (el) {
+          return !!el.closest('main');
+        });
+        var closedDivs = closedDivsInMain.length > 0 ? closedDivsInMain : allClosedDivs;
+        if (closedDivs.length === 0) return null;
+        var buttons = closedDivs[closedDivs.length - 1].querySelectorAll('button');
+        return buttons[buttons.length - 1] || null;
+      }
+
+      // 新 UI（2026/11 時点）: ツールチップが Base UI になり、送信ボタンに data-testid が付いた
+      function findSendButton() {
+        return (
+          document.querySelector('button[data-testid="chat-input-send"]') ||
+          document.querySelector('button[aria-label="メッセージを送信"]') ||
+          document.querySelector('button[aria-label="Send message"]') ||
+          findLegacySendButton()
+        );
+      }
+
+      // 送信ボタンは貼り付けの反映後に有効になるため、有効になるまで待ってから押す
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries++;
+        var sendButton = findSendButton();
+        if (sendButton && !sendButton.disabled && sendButton.getAttribute('aria-disabled') !== 'true') {
+          clearInterval(timer);
+          sendButton.click();
+        } else if (tries >= 50) {
+          clearInterval(timer);
+          console.log('Claude: send button not found');
+        }
+      }, 100);
+    })();
   `,
   DEEPSEEK: `
     var textareaTags = document.querySelectorAll('textarea');
@@ -416,22 +436,36 @@ export const BROWSER_SCRIPTS = {
     })();
   `,
   KIMI: `
-    var textareaTag = document.querySelector('div.chat-input-editor');
-    var dataTransfer = new DataTransfer();
-    dataTransfer.setData('text', TEXT_TO_SEND);
-    var pasteEvent = new ClipboardEvent('paste', {
-      clipboardData: dataTransfer,
-      bubbles: true,
-      cancelable: true
-    });
-    textareaTag.focus();
-    textareaTag.dispatchEvent(pasteEvent);
-    setTimeout(() => {
-      var sendButton = document.querySelector('div.send-button-container');
-      if (sendButton) {
-        sendButton.click();
+    (function () {
+      var textareaTag = document.querySelector('div.chat-input-editor');
+      if (!textareaTag) {
+        console.log('Kimi: editor not found');
+        return;
       }
-    }, 700);
+      var dataTransfer = new DataTransfer();
+      dataTransfer.setData('text', TEXT_TO_SEND);
+      var pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: dataTransfer,
+        bubbles: true,
+        cancelable: true
+      });
+      textareaTag.focus();
+      textareaTag.dispatchEvent(pasteEvent);
+
+      // 送信ボタンは入力が反映されるまで disabled クラスが付いているため、外れるのを待って押す
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries++;
+        var sendButton = document.querySelector('div.send-button-container');
+        if (sendButton && !sendButton.classList.contains('disabled')) {
+          clearInterval(timer);
+          sendButton.click();
+        } else if (tries >= 50) {
+          clearInterval(timer);
+          console.log('Kimi: send button not enabled');
+        }
+      }, 100);
+    })();
   `,
   MUSE: `
     (function () {
