@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { BROWSERS } from '../constants/browsers';
 import { TERMINALS } from '../constants/terminals';
+import { appBridge } from '../services/bridge';
 import { terminalService } from '../services/terminalService';
 import { useBrowserLoadingStore } from '../stores/useBrowserLoadingStore';
 
@@ -73,16 +74,16 @@ export function useTabManager(): UseTabManagerReturn {
         setBrowserLoading(browser.id, status.isLoading);
       }
     };
-    window.electron.onUpdateLoadingStatus(handleLoadingStatus);
+    appBridge.onUpdateLoadingStatus(handleLoadingStatus);
     return () => {
-      window.electron.removeUpdateLoadingStatusListener();
+      appBridge.removeUpdateLoadingStatusListener();
     };
   }, [setBrowserLoading]);
 
   // 初期化
   useEffect(() => {
     // 初期設定を取得
-    window.electron.getInitialSettings().then((settings) => {
+    appBridge.getInitialSettings().then((settings) => {
       // ブラウザの有効状態を設定
       const initialEnabledTabs = { ...settings.enabledBrowsers };
 
@@ -165,12 +166,12 @@ export function useTabManager(): UseTabManagerReturn {
 
       if (tab.type === 'terminal') {
         // ターミナルが選択された場合、ブラウザビューを非表示
-        window.electron.sendBrowserTabIndexToMain(-1);
+        appBridge.sendBrowserTabIndexToMain(-1);
       } else {
         // ブラウザタブが選択された場合、BROWSERS配列での元のインデックスを送信
         const browserIndex = BROWSERS.findIndex((b) => b.id === tabId);
         if (browserIndex !== -1) {
-          window.electron.sendBrowserTabIndexToMain(browserIndex);
+          appBridge.sendBrowserTabIndexToMain(browserIndex);
         }
       }
     },
@@ -188,7 +189,7 @@ export function useTabManager(): UseTabManagerReturn {
         terminalService.pasteToTerminal(tabId, message);
       } else {
         // ブラウザにメッセージを送信
-        window.electron.sendTextToMain(message, false);
+        appBridge.sendTextToMain(message, false);
       }
     },
     [tabsWithEnabled],
@@ -197,7 +198,7 @@ export function useTabManager(): UseTabManagerReturn {
   // 全てのブラウザタブにメッセージを送信（ターミナルは除外）
   const sendMessageToAll = useCallback((message: string) => {
     // ブラウザタブにのみ送信（ターミナルは除外）
-    window.electron.sendTextToMain(message, true);
+    appBridge.sendTextToMain(message, true);
   }, []);
 
   // タブの順序を変更
@@ -237,7 +238,7 @@ export function useTabManager(): UseTabManagerReturn {
         {} as Record<string, number>,
       );
 
-      window.electron.saveTabOrders(tabOrders);
+      appBridge.saveTabOrders(tabOrders);
 
       return newTabs;
     });
@@ -265,13 +266,13 @@ export function useTabManager(): UseTabManagerReturn {
         const enabledTabsArray = BROWSERS.map(
           (browser) => newEnabledTabs[browser.id] !== false,
         );
-        window.electron.sendEnabledBrowsersToMain(enabledTabsArray);
+        appBridge.sendEnabledBrowsersToMain(enabledTabsArray);
       } else if (tab.type === 'terminal') {
         // TERMINALS配列の順序でboolean配列を作成
         const enabledTerminalsArray = TERMINALS.map(
           (terminal) => newEnabledTabs[terminal.id] !== false,
         );
-        window.electron.sendEnabledTerminalsToMain(enabledTerminalsArray);
+        appBridge.sendEnabledTerminalsToMain(enabledTerminalsArray);
       }
     },
     [tabsWithEnabled, enabledTabs],
@@ -285,7 +286,7 @@ export function useTabManager(): UseTabManagerReturn {
         [tabId]: !sendTargets[tabId],
       };
       setSendTargets(newTargets);
-      window.electron.saveSendTargets(newTargets);
+      appBridge.saveSendTargets(newTargets);
     },
     [sendTargets],
   );

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from '@tanstack/react-hotkeys';
 import * as monaco from 'monaco-editor';
 
+import { appBridge, terminalBridge } from '../services/bridge';
+
 import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
 
 interface UseHotkeyActionsProps {
@@ -113,7 +115,7 @@ export function useHotkeyActions({
           enter: '\r',
           backspace: '\x7f',
         };
-        window.api.sendTerminalInput(
+        terminalBridge.sendTerminalInput(
           activeTab.id,
           TERMINAL_SEQUENCES[direction],
         );
@@ -126,7 +128,7 @@ export function useHotkeyActions({
           enter: 'Return',
           backspace: 'Backspace',
         };
-        window.electron.sendKeyToView(VIEW_KEYCODES[direction]);
+        appBridge.sendKeyToView(VIEW_KEYCODES[direction]);
       }
       // ハイライトフラッシュ
       if (arrowKeyTimerRef.current) clearTimeout(arrowKeyTimerRef.current);
@@ -145,12 +147,12 @@ export function useHotkeyActions({
       if (!activeTab) return;
       if (isTerminalActive) {
         const charCode = key.toUpperCase().charCodeAt(0) - 64;
-        window.api.sendTerminalInput(
+        terminalBridge.sendTerminalInput(
           activeTab.id,
           String.fromCharCode(charCode),
         );
       } else {
-        window.electron.sendKeyToView(key, ['control']);
+        appBridge.sendKeyToView(key, ['control']);
       }
     },
     [isTerminalActive, activeTab],
@@ -194,8 +196,8 @@ export function useHotkeyActions({
     };
 
     // イベントオブジェクトの metaKey/ctrlKey で Mod の物理状態を確認する。
-    // メインプロセスの before-input-event で preventDefault された後に
-    // Mod keyup がレンダラーに届かないケースへのフォールバック。
+    // Mod を押したまま AI サービスの WebView にフォーカスが移ると、
+    // Mod の keyup が UI に届かないケースへのフォールバック。
     // keydown / keyup / mousedown いずれのイベントでも確認できる。
     const checkModPhysical = (e: KeyboardEvent | MouseEvent) => {
       if (!isCtrlHeldRef.current) return;
@@ -316,18 +318,11 @@ export function useHotkeyActions({
     window.addEventListener('mousedown', handleMouseDownCapture, true);
     window.addEventListener('blur', handleBlur);
 
-    // メインプロセスの before-input-event 経由で Mod keyUp を受け取る。
-    // before-input-event の keyUp が発火するプラットフォームへの追加フォールバック。
-    window.electron.onModKeyUp(() => {
-      clearModState();
-    });
-
     return () => {
       window.removeEventListener('keydown', handleKeyDownCapture, true);
       window.removeEventListener('keyup', handleKeyUpCapture, true);
       window.removeEventListener('mousedown', handleMouseDownCapture, true);
       window.removeEventListener('blur', handleBlur);
-      window.electron.removeModKeyUpListener();
       if (ctrlTimerRef.current) {
         clearTimeout(ctrlTimerRef.current);
       }

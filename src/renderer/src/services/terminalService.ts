@@ -3,15 +3,12 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Terminal } from '@xterm/xterm';
 
 import { TERMINAL_THEMES } from '../constants/terminalThemes';
+import { appBridge, terminalBridge } from './bridge';
 
 interface TerminalInstance {
   terminal: Terminal;
   fitAddon: FitAddon;
-  outputHandler: (
-    event: Electron.IpcRendererEvent,
-    id: string,
-    data: string,
-  ) => void;
+  outputHandler: (id: string, data: string) => void;
   isSessionCreated: boolean;
   // 高頻度の出力を集約するためのバッファとフラグ
   writeBuffer: string;
@@ -24,7 +21,7 @@ class TerminalService {
   private _platform = '';
   private _clipboardHandlerAttached = new Set<string>();
 
-  /** メインプロセスから取得した process.platform をセットする */
+  /** 初期設定の osInfo（process.platform と同じ表記）をセットする */
   setPlatform(platform: string): void {
     this._platform = platform;
     // 既に作成済みのインスタンスにもクリップボード画像ハンドラーを適用
@@ -40,7 +37,7 @@ class TerminalService {
    * Windows 用: クリップボード画像ペーストのキーハンドラーを登録する。
    * 同一ターミナルに対して二重登録しないよう Set で管理。
    *
-   * Electron ネイティブの clipboard.readImage()（メインプロセス経由）を使用し、
+   * 画像は Rust 側（src-tauri/src/terminal.rs、arboard）で読み、
    * レンダラーの navigator.clipboard.read() の不安定さを回避する。
    */
   private _attachClipboardImageHandler(
@@ -84,7 +81,7 @@ class TerminalService {
       (async () => {
         try {
           // メインプロセスで clipboard.readImage() を実行
-          const result = await window.api.readClipboardImage();
+          const result = await terminalBridge.readClipboardImage();
           if (result.hasImage && result.filePath) {
             this.pasteToTerminal(terminalId, result.filePath, {
               autoSubmit: false,
@@ -147,7 +144,7 @@ class TerminalService {
       // アドオンを追加
       const fitAddon = new FitAddon();
       const webLinksAddon = new WebLinksAddon((_event, uri) => {
-        window.electron.openExternalLink(uri);
+        appBridge.openExternalLink(uri);
       });
 
       terminal.loadAddon(fitAddon);
@@ -182,15 +179,11 @@ class TerminalService {
 
       // 入力ハンドラー
       terminal.onData((data) => {
-        window.api.sendTerminalInput(terminalId, data);
+        terminalBridge.sendTerminalInput(terminalId, data);
       });
 
       // 出力ハンドラー（集約あり）
-      const outputHandler = (
-        _event: Electron.IpcRendererEvent,
-        id: string,
-        data: string,
-      ) => {
+      const outputHandler = (id: string, data: string) => {
         if (id === terminalId) {
           writeBufferLocal += data;
           scheduleFlush();
@@ -210,13 +203,13 @@ class TerminalService {
       this.instances.set(terminalId, instance);
 
       // IPCリスナーを登録
-      window.api.onTerminalOutput(outputHandler);
+      terminalBridge.onTerminalOutput(outputHandler);
     }
 
     // セッションを作成（一度だけ）
     if (!instance.isSessionCreated) {
       instance.isSessionCreated = true; // 即座にフラグを立てて重複を防ぐ
-      window.api.createTerminalSession(terminalId).catch((_error) => {
+      terminalBridge.createTerminalSession(terminalId).catch((_error) => {
         // セッション作成に失敗した場合はフラグを戻す
         instance.isSessionCreated = false;
       });
@@ -271,7 +264,11 @@ class TerminalService {
       instance.fitAddon.fit();
       const dimensions = instance.fitAddon.proposeDimensions();
       if (dimensions?.cols && dimensions?.rows) {
-        window.api.resizeTerminal(terminalId, dimensions.cols, dimensions.rows);
+        terminalBridge.resizeTerminal(
+          terminalId,
+          dimensions.cols,
+          dimensions.rows,
+        );
         return dimensions;
       }
     } catch (_error) {
@@ -283,9 +280,9 @@ class TerminalService {
 
   cleanup(): void {
     this.instances.forEach((instance, terminalId) => {
-      window.api.removeTerminalOutputListener(instance.outputHandler);
+      terminalBridge.removeTerminalOutputListener(instance.outputHandler);
       if (instance.isSessionCreated) {
-        window.api.destroyTerminalSession(terminalId);
+        terminalBridge.destroyTerminalSession(terminalId);
       }
       instance.terminal.dispose();
     });
@@ -305,7 +302,7 @@ class TerminalService {
     instance.terminal.reset();
 
     try {
-      await window.api.reloadTerminalSession(terminalId);
+      await terminalBridge.reloadTerminalSession(terminalId);
       instance.isSessionCreated = true;
       // 新しい PTY を現在の xterm サイズに合わせる
       this.resize(terminalId);
@@ -324,9 +321,9 @@ class TerminalService {
   cleanupInstance(terminalId: string): void {
     const instance = this.instances.get(terminalId);
     if (instance) {
-      window.api.removeTerminalOutputListener(instance.outputHandler);
+      terminalBridge.removeTerminalOutputListener(instance.outputHandler);
       if (instance.isSessionCreated) {
-        window.api.destroyTerminalSession(terminalId);
+        terminalBridge.destroyTerminalSession(terminalId);
       }
       instance.terminal.dispose();
       this.instances.delete(terminalId);
@@ -376,7 +373,7 @@ class TerminalService {
     const sendEnter = () => {
       const seq =
         submitKey === 'lf' ? '\n' : submitKey === 'crlf' ? '\r\n' : '\r';
-      window.api.sendTerminalInput(terminalId, seq);
+      terminalBridge.sendTerminalInput(terminalId, seq);
     };
 
     // テキストが空の場合はEnterのみ送信（ターミナルでの確認応答用）
@@ -407,7 +404,7 @@ class TerminalService {
     const payload = `${BRACKETED_PASTE_START}${text}${BRACKETED_PASTE_END}`;
 
     // 直接 PTY に送る（IPC 経由）
-    window.api.sendTerminalInput(terminalId, payload);
+    terminalBridge.sendTerminalInput(terminalId, payload);
     // 通常の Enter を別送信して確定（bracketed paste の外側）
     if (autoSubmit) setTimeout(sendEnter, delayMs);
   }

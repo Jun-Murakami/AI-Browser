@@ -14,7 +14,7 @@ export function TerminalView({
   isVisible = false,
 }: TerminalViewProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
-  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // リサイズハンドラー
   const handleResize = useCallback(() => {

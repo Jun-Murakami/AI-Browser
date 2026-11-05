@@ -13,8 +13,9 @@
 1. **同じリポジトリ・同じリリース置き場を使う。** 既存版は `Jun-Murakami/AI-Browser` の `releases/latest` しか見ないため。
 2. **Electron 版は v1.7.2 で打ち止めにする（2026-11-05 決定）。** 以降の修正は Tauri 版にだけ入れ、`main` からのマージは行わない。
    Electron 版のコードは Phase 8 で撤去するまで残しているだけ。v1.7.2 の利用者は、Tauri 版を公開するまで Claude への送信などが直らない。
-3. **レンダラーの変更は最小限。** `window.electron` / `window.api` と同じ形の互換レイヤー（`src/renderer/src/tauri/`）を Tauri 実行時だけ差し込み、コンポーネントはそのまま使う。
-4. **送信スクリプトは TS のまま共有する。** `src/main/scripts/browserScripts.ts` をレンダラーから読み込み、組み立てた文字列を Rust に渡して `eval` する。
+3. **レンダラーの変更は最小限。** 移行中は `window.electron` / `window.api` と同じ形の互換レイヤーを差し込み、コンポーネントはそのまま使った。
+   Phase 8 で `src/renderer/src/services/bridge.ts`（`appBridge` / `terminalBridge`）を直接 import する形に整理した（メソッド名は Electron 版のまま）。
+4. **送信スクリプトは TS のまま。** `src/shared/scripts/browserScripts.ts` をレンダラーで組み立て、文字列を Rust に渡して `eval` する。
 5. 開発中のビルドは GitHub の **prerelease** として出す（`releases/latest` に載らないので既存ユーザーに届かない）。
 
 ## 構成
@@ -30,12 +31,15 @@ src-tauri/
     state.rs          appState.json / logs.json の読み書きと検証・マイグレーション
     views.rs          AI サービスの子 WebView（生成・切替・リサイズ・送信）
     terminal.rs       portable-pty によるターミナル（Phase 3）
+    keys.rs           表示中のタブへのキー送出（Phase 4）
     migrate.rs        Electron 版データの引き継ぎ（Phase 5）
-src/renderer/src/tauri/
-  install.ts          Tauri 実行時だけ互換レイヤーを window に設定
-  electronCompat.ts   window.electron / window.api の Tauri 実装
-vite.tauri.config.ts  Tauri 用のレンダラービルド設定（出力: out/tauri-renderer）
+    updater.rs        アプリ内アップデート（Phase 6）
+src/renderer/src/services/bridge.ts   Rust とのやり取り（Phase 8 で互換レイヤーから整理）
+src/shared/                           ブラウザ・ターミナルの定義と送信スクリプト
+vite.config.ts                        レンダラーのビルド設定（出力: out/renderer）
 ```
+
+（移行中は `src/renderer/src/tauri/electronCompat.ts` と `vite.tauri.config.ts` だった。以下の各フェーズの記述は当時のファイル名のまま残している）
 
 ### ウィンドウと WebView の配置
 
@@ -169,9 +173,16 @@ Electron 版を打ち止めにしたので、`main` との共存を気にせず�
 ただし、リリース成果物の名前を Electron 版のアップデータに合わせる決まり（`docs/tauri-release.md`）は、移行が済むまで残す。
 
 
-- [ ] `src/main`、`src/preload`、electron-builder・electron-vite 関連を削除
-- [ ] 互換レイヤーを外し、レンダラーから直接 Tauri API を呼ぶ形に整理（任意）
-- [ ] AGENTS.md / README を更新
+- [x] `src/main`、`src/preload`、`electron.vite.config.ts`、`electron-builder.yml`、`dev-app-update.yml`、`build/`、
+  Electron 専用のスクリプト（`run-builder.cjs` / `sign-win.cjs` / `fix-pty-module.cjs`）、`.vscode/launch.json` を削除。
+  Electron 関連の npm パッケージ（electron、electron-vite、electron-builder、@electron-toolkit/*、electron-context-menu、node-pty）を削除
+- [x] 互換レイヤーを `services/bridge.ts` に整理し、`window.electron` / `window.api` をやめて import する形にした。
+  Electron 専用だった `onModKeyUp` と、更新時のインストーラ / `.sha256` の URL の受け渡しを削除
+- [x] 送信スクリプトを `src/shared/scripts/` へ、元アイコンを `app-icon.png`（`tauri icon` の既定の入力）へ移動
+- [x] Vite の設定を `vite.config.ts`（開発サーバーは 1420、出力は `out/renderer`）に、tsconfig を @electron-toolkit に依存しない形に
+- [x] OSS としてビルドしやすいよう、アップデータ用ファイルの生成はリリーススクリプトの `--config` で有効にし、
+  Azure の設定が無い環境では署名を飛ばす（`npm run build` で署名なしのインストーラを作れる）
+- [x] AGENTS.md / README / `.cursor/rules` を Tauri 版の内容に更新
 
 ## 既知のリスクと決めごと
 

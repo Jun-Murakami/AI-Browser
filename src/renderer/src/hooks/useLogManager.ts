@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { appBridge } from '../services/bridge';
+
 interface Log {
   id: number;
   text: string;
@@ -64,7 +66,7 @@ export function useLogManager(): UseLogManagerReturn {
       if (selectedLog?.id === logId) {
         setSelectedLog(null);
       }
-      window.electron.sendLogsToMain(newLogs);
+      appBridge.sendLogsToMain(newLogs);
       toast('Log deleted.');
     },
     [logs, selectedLog],

@@ -9,11 +9,12 @@
 #   - NSIS インストーラ: *-setup.exe
 # Tauri はカスタム署名コマンドの実行後に再検証しない（終了コードのみ見る）ため、この方式が成立する。
 #
-# 認証情報は Electron 版（scripts/sign-win.cjs）と同じ .env の変数を使う。
+# 認証情報は Electron 版（v1.7.2）と同じ .env の変数を使う。
 #   AZURE_KEY_VAULT_URL / AZURE_KEY_VAULT_CERTIFICATE           : Key Vault の URL と証明書名
 #   AZURE_KEY_VAULT_TENANT_ID / _CLIENT_ID / _CLIENT_SECRET     : サービスプリンシパル
 #   AZURE_SIGN_TIMESTAMP_URL                                     : 省略時 http://timestamp.digicert.com
 #   SKIP_WIN_SIGN=true                                           : 署名をスキップ（ローカル確認用）
+# Key Vault の設定が無ければ署名せずに通す（npm run build でコントリビューターがビルドできるように）。
 # シークレットをコマンドライン引数に載せないよう、サービスプリンシパルは AZURE_CLIENT_ID などの
 # 環境変数に移して -kvm（DefaultAzureCredential）で認証させる。az login のセッションでも動く。
 
@@ -61,10 +62,12 @@ if ($env:SKIP_WIN_SIGN -eq 'true') {
     exit 0
 }
 
+# Key Vault の設定が無い環境（コントリビューターの手元など）では署名せずにビルドを通す。
+# 配布用の build_windows_release.ps1 は事前に設定を確認するので、リリースが無署名になることはない
 foreach ($required in @('AZURE_KEY_VAULT_URL', 'AZURE_KEY_VAULT_CERTIFICATE')) {
     if (-not (Test-Path -LiteralPath "env:$required")) {
-        Write-Error "sign-azure: $required が設定されていません（.env を確認するか SKIP_WIN_SIGN=true でスキップ）"
-        exit 1
+        Write-Warning "sign-azure: $required が無いため署名しません -> $FilePath"
+        exit 0
     }
 }
 

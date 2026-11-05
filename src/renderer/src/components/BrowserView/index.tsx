@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 
 import { BROWSERS } from '../../constants/browsers';
+import { appBridge } from '../../services/bridge';
 import { ContentArea } from './ContentArea';
 import { TabBar } from './TabBar';
 import { UrlBar } from './UrlBar';
@@ -69,12 +70,12 @@ export const BrowserView = forwardRef<HTMLDivElement, BrowserViewProps>(
 
     // ブラウザのURL状態を監視
     useEffect(() => {
-      window.electron.onUpdateUrls((newUrls) => {
+      appBridge.onUpdateUrls((newUrls) => {
         setBrowserUrls(newUrls);
       });
 
       return () => {
-        window.electron.removeUpdateUrlsListener();
+        appBridge.removeUpdateUrlsListener();
       };
     }, []);
 

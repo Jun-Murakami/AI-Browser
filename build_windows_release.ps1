@@ -98,7 +98,9 @@ function New-BuildConfigOverride {
     $signArgs = @($sc.args | ForEach-Object { if ($_ -like '*sign-azure.ps1') { $wrapperPath } else { $_ } })
     $signCommand = [ordered]@{ cmd = (Resolve-PwshPath); args = $signArgs }
   }
-  $override = @{ bundle = @{ windows = @{ signCommand = $signCommand } } }
+  # アップデータ用の .sig はリリース時だけ作る（署名鍵の無い環境でも tauri build が通るよう、
+  # tauri.conf.json では有効にしていない）
+  $override = @{ bundle = @{ createUpdaterArtifacts = $true; windows = @{ signCommand = $signCommand } } }
   $path = Join-Path ([System.IO.Path]::GetTempPath()) "ai-browser-build-$([guid]::NewGuid()).json"
   [System.IO.File]::WriteAllText($path, ($override | ConvertTo-Json -Depth 10), [System.Text.UTF8Encoding]::new($false))
   return $path
@@ -157,6 +159,9 @@ if ($SkipCodeSign) {
 }
 
 Write-Host "[2/6] Build (Windows, MSI$(if (-not $SkipCodeSign) { ', code-signed' }))" -ForegroundColor Cyan
+# アプリ内のライセンス表示（src/renderer/src/assets/license.json）を更新
+npm run licenses
+if ($LASTEXITCODE -ne 0) { throw "npm run licenses に失敗しました (exit $LASTEXITCODE)" }
 $configOverridePath = New-BuildConfigOverride
 try {
   Invoke-FilteredTauriBuild -ConfigOverridePath $configOverridePath

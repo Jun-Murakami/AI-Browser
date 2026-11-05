@@ -1,6 +1,4 @@
-// Tauri 版のレンダラービルド設定。
-// electron.vite.config.ts の renderer 設定と同じプラグイン構成にしている。
-// 移行期間中は main ブランチからのマージで衝突しないよう、あちらは変更せず別ファイルにする。
+// レンダラー（src/renderer）のビルド設定。tauri dev / tauri build から呼ばれる（src-tauri/tauri.conf.json の build）。
 import babelPlugin from '@rolldown/plugin-babel';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
@@ -51,8 +49,11 @@ function cspHtmlPlugin(isDevServer: boolean): Plugin {
   };
 }
 
-// monaco-editor が同梱している DOMPurify のコピーを npm の dompurify に差し替える
-// （理由は electron.vite.config.ts の同名プラグインを参照）
+// monaco-editor は DOMPurify を npm 依存ではなく自前のコピー
+// （esm/vs/base/browser/dompurify/dompurify.js）として同梱しており、
+// package.json の overrides だけでは実際にバンドルされるコードが更新されない。
+// そこで同梱コピーの中身を npm の dompurify（overrides で修正版に固定）の
+// 再エクスポートに置き換える。相対 import は resolveId を経由しないため load で差し替える。
 const MONACO_VENDORED_DOMPURIFY =
   /monaco-editor[\\/]esm[\\/]vs[\\/]base[\\/]browser[\\/]dompurify[\\/]dompurify\.js$/;
 
@@ -95,12 +96,13 @@ export default defineConfig(({ command }) => {
       cspHtmlPlugin(isDevServer),
     ],
     server: {
-      // electron-vite の開発サーバー（5173）と同時に起動できるよう別ポートにする
-      port: 5174,
+      // tauri.conf.json の build.devUrl と合わせる
+      port: 1420,
       strictPort: true,
     },
     build: {
-      outDir: resolve('out/tauri-renderer'),
+      // dist/ は Electron 版のビルド成果物が残っていることがあるので使わない
+      outDir: resolve('out/renderer'),
       emptyOutDir: true,
       // WebView2 / WKWebView / WebKitGTK の対応範囲
       target: ['es2022', 'chrome120', 'safari16'],

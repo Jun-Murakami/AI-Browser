@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/system';
 
+import { appBridge } from '../../services/bridge';
 import { terminalService } from '../../services/terminalService';
 
 interface UrlBarProps {
@@ -30,7 +31,7 @@ export function UrlBar({
         void terminalService.reloadInstance(activeTabId);
       }
     } else {
-      window.electron.reloadCurrentView();
+      appBridge.reloadCurrentView();
     }
   };
 
@@ -38,7 +39,7 @@ export function UrlBar({
     if (isTerminalActive) {
       terminalService.reloadAllInstances();
     } else {
-      window.electron.reloadAllViews();
+      appBridge.reloadAllViews();
     }
   };
 

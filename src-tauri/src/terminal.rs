@@ -1,4 +1,4 @@
-//! ターミナル（Electron 版の src/main/terminal/terminalManager.ts に相当）。
+//! ターミナル（Electron 版 v1.7.2 の src/main/terminal/terminalManager.ts に相当）。
 //!
 //! セッションごとに 3 本のスレッドを使う。
 //! - 読み取り: PTY の出力を UTF-8 として読み、チャンネルへ流す

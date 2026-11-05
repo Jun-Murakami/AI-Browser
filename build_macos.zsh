@@ -66,8 +66,12 @@ echo "[1/5] Rust targets (aarch64 / x86_64)"
 rustup target add aarch64-apple-darwin x86_64-apple-darwin >/dev/null
 
 echo "[2/5] Build (universal, signed & notarized by tauri)"
+# アプリ内のライセンス表示（src/renderer/src/assets/license.json）を更新
+npm run licenses
 # --ci: 対話入力をしない（パスワード無しの鍵で TAURI_SIGNING_PRIVATE_KEY_PASSWORD が無くても止まらない）
-npm run tauri build -- --target universal-apple-darwin --bundles app,dmg --ci
+# createUpdaterArtifacts: アップデータ用の .sig はリリース時だけ作る（tauri.conf.json では無効）
+npm run tauri build -- --target universal-apple-darwin --bundles app,dmg --ci \
+  --config '{"bundle":{"createUpdaterArtifacts":true}}'
 
 BUNDLE_DIR="src-tauri/target/universal-apple-darwin/release/bundle"
 TGZ="$BUNDLE_DIR/macos/AI-Browser.app.tar.gz"

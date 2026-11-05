@@ -41,7 +41,7 @@ DialogSuite（`D:\Synching\code\Tauri\DialogSuite`）と同じ仕組みで、配
 - **リリース先とファイル名は Electron 版と同じ規則にする。** Electron 版のアプリ内アップデータは
   `releases/latest` を見て、Windows は名前に `setup_win` を含むもの、macOS は `mac` を含むものを選び、
   同名の `.sha256` で照合したうえでコード署名も確認してからインストールする
-  （`src/renderer/src/components/UpdateDialog.tsx`、`src/main/index.ts` の `update:download`）
+  （v1.7.2 の `src/renderer/src/components/UpdateDialog.tsx` と `src/main/index.ts` の `update:download`）
 - macOS のアップデータ用アーカイブ（`.app.tar.gz`）の名前には `mac` を入れない（Electron 版が拾わないように）
 - `.sig` はアップロードしない（中身は `latest.json` に入っている）
 - 下書き・プレリリースは `releases/latest` に出ないので、公開するまで既存ユーザーには届かない

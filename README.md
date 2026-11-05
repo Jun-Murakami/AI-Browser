@@ -1,6 +1,6 @@
 # AI-Browser
 
-A powerful desktop application built with Electron that provides a unified interface for interacting with multiple AI chat services. Designed for users who work with multiple AI models simultaneously, featuring a sophisticated Monaco Editor integration for enhanced text editing capabilities.
+A powerful desktop application built with Tauri that provides a unified interface for interacting with multiple AI chat services. Designed for users who work with multiple AI models simultaneously, featuring a sophisticated Monaco Editor integration for enhanced text editing capabilities.
 
 ![aib](https://github.com/user-attachments/assets/dd609be0-7aa4-4976-b174-8b4e0cbbe761)
 
@@ -64,19 +64,25 @@ https://github.com/Jun-Murakami/AI-Browser/assets/126404131/c39f63ef-11d4-4745-b
 ## Installation
 
 1. Download the latest release from the [Releases](https://github.com/Jun-Murakami/AI-Browser/releases) page
+   - Windows: `AI-Browser-<version>-setup_win_x64.msi`
+   - macOS (Apple Silicon / Intel): `AI-Browser-<version>_mac_universal.dmg`
 2. Install the application following the standard installation process for your operating system
 3. Launch the application
 
-### Verifying Downloads (Linux)
+The app updates itself from the Releases page. Versions up to v1.7.2 were built with Electron; v1.7.2 users are offered the update to the Tauri version, and your settings, prompt history and Nani! history are carried over. On Windows, the app offers to uninstall the old Electron version on first launch.
 
-Each release binary is published with its own SHA-256 checksum file (`<filename>.sha256`) and a detached GPG signature (`<filename>.sha256.asc`) on the [Releases](https://github.com/Jun-Murakami/AI-Browser/releases) page. Per-binary checksum files avoid collisions when each platform is built separately and uploaded to the same release. The signing key's public part is included in this repository as [`ai-browser-public-key.asc`](ai-browser-public-key.asc).
+> **Linux:** builds of the Tauri version are not available yet. v1.7.2 (`.AppImage` / `.deb`) remains available on the Releases page.
+
+### Verifying Downloads
+
+Each release binary is published with its own SHA-256 checksum file (`<filename>.sha256`), and with a detached GPG signature (`<filename>.sha256.asc`) when it was built on a machine with the signing key. Windows installers are also Authenticode-signed, and the macOS app is signed and notarized. The signing key's public part is included in this repository as [`ai-browser-public-key.asc`](ai-browser-public-key.asc).
 
 ```bash
 # Import the public key (first time only)
 gpg --import ai-browser-public-key.asc
 
-# Example for the AppImage (replace the filename with the one you downloaded)
-FILE="ai-browser-1.7.1_linux_amd64.AppImage"
+# Example (replace the filename with the one you downloaded)
+FILE="AI-Browser-2.0.0_mac_universal.dmg"
 
 # Verify the checksum file is genuinely signed by the developer (authenticity)
 gpg --verify "${FILE}.sha256.asc" "${FILE}.sha256"
@@ -92,9 +98,7 @@ ABDB E9E8 3A2E 98A3 2988  69EB E8C7 A338 F858 A18F
 Jun Takahashi (Jun Murakami App Factory) <app@bucketrelay.com>
 ```
 
-> **Note for `.deb` users:** the `.deb` package does not support in-app auto-updates. Get newer versions from the [download page](https://jun-murakami.web.app/apps/ai-browser) or the Releases page. The portable `.AppImage` supports in-app updates.
-
-> **Note for `.AppImage` users:** AppImages require FUSE 2 (`libfuse.so.2`), which is not installed by default on recent distributions such as Ubuntu 22.04 and later. If the AppImage does not start, install it first:
+> **Note for v1.7.2 `.AppImage` users (Linux):** AppImages require FUSE 2 (`libfuse.so.2`), which is not installed by default on recent distributions such as Ubuntu 22.04 and later. If the AppImage does not start, install it first:
 >
 > ```bash
 > # Ubuntu 22.04 / Debian 12
@@ -144,6 +148,8 @@ Jun Takahashi (Jun Murakami App Factory) <app@bucketrelay.com>
 
 ## Development
 
+Requirements: Node.js 22+, Rust (stable), and the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for your platform (WebView2 is preinstalled on Windows 10/11; Xcode Command Line Tools on macOS).
+
 ```bash
 # Clone the repository
 git clone https://github.com/Jun-Murakami/AI-Browser.git
@@ -154,9 +160,11 @@ npm install
 # Run in development mode
 npm run dev
 
-# Build for production
+# Build an (unsigned) installer
 npm run build
 ```
+
+Release builds are signed and published with `build_macos.zsh` and `build_windows_release.ps1` (see [docs/tauri-release.md](docs/tauri-release.md), in Japanese).
 
 ## Contributing
 

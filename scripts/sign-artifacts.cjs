@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * electron-builder afterAllArtifactBuild フック
+ * 配布物のチェックサムと GPG 署名を作る。
+ * scripts/release-manifest.mjs（build_macos.zsh / build_windows_release.ps1 から呼ばれる）が使う。
+ * Electron 版では electron-builder の afterAllArtifactBuild フックだったため、同じ引数の形を保っている。
  *
  * Linux には OS 強制の署名関門が無いため、配布物の「完全性（改ざん検知）」と
  * 「真正性（誰が作ったか）」を配布側で担保する。
@@ -23,7 +25,7 @@
  *   GPG_SIGNING_KEY : 署名に使う鍵ID/フィンガープリント/メール（省略時は既定鍵）
  *   SKIP_GPG_SIGN   : 'true' で署名をスキップ（チェックサムのみ生成）
  *
- * 戻り値で追加成果物のパスを返すと electron-builder の publish 対象に含まれる。
+ * 戻り値は追加で作ったファイル（.sha256 / .sha256.asc）のパス。
  */
 
 const { createHash } = require('node:crypto');
@@ -32,8 +34,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { loadDotEnv } = require(path.join(__dirname, 'load-env.cjs'));
 
-// electron-builder プロセスから require されるため .env が未ロードの可能性がある。
-// GPG_SIGNING_KEY / SKIP_GPG_SIGN を拾うためここで .env を読み込む。
+// GPG_SIGNING_KEY / SKIP_GPG_SIGN を拾うため、ここで .env を読み込む。
 loadDotEnv();
 
 // 署名・チェックサム対象とする配布物本体の拡張子（.yml/.blockmap などは除外）

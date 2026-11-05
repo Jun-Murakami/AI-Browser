@@ -10,17 +10,14 @@ import {
   Typography,
 } from '@mui/material';
 
+import { appBridge } from '../services/bridge';
+
 import type { ReleaseAsset } from '../hooks/useCheckForUpdates';
+import type { DownloadProgress } from '../services/bridge';
 
 const ReactMarkdown = lazy(() => import('react-markdown'));
 
 type DownloadState = 'idle' | 'downloading' | 'installing' | 'error';
-
-interface DownloadProgress {
-  receivedBytes: number;
-  totalBytes: number;
-  percent: number;
-}
 
 interface UpdateDialogProps {
   open: boolean;
@@ -80,14 +77,11 @@ export const UpdateDialog = ({
   // Linux の deb/rpm 等（AppImage 以外）はアプリ内更新ができないため、
   // ダウンロードは行わずダウンロードページへ誘導する
   const isLinuxNonAppImage = osInfo === 'linux' && !isAppImage;
+  // このプラットフォーム向けの成果物がリリースにあるときだけ更新ボタンを出す。
+  // 実際のダウンロードは latest.json を読むアップデータが行い、署名で検証する
   const asset = isLinuxNonAppImage
     ? null
     : findAssetForPlatform(releaseAssets, osInfo);
-  // 整合性検証用のチェックサムアセット（成果物ごとの <バイナリ名>.sha256）。
-  // 存在しない場合は更新を中止させる。
-  const checksumAsset = asset
-    ? (releaseAssets.find((a) => a.name === `${asset.name}.sha256`) ?? null)
-    : null;
   const externalPageUrl = isLinuxNonAppImage
     ? LINUX_DOWNLOAD_PAGE_URL
     : releasePageUrl;
@@ -102,10 +96,10 @@ export const UpdateDialog = ({
     const handleProgress = (p: DownloadProgress) => {
       setProgress(p);
     };
-    window.electron.onUpdateDownloadProgress(handleProgress);
+    appBridge.onUpdateDownloadProgress(handleProgress);
 
     return () => {
-      window.electron.removeUpdateDownloadProgressListener();
+      appBridge.removeUpdateDownloadProgressListener();
     };
   }, [open]);
 
@@ -123,10 +117,7 @@ export const UpdateDialog = ({
     setProgress({ receivedBytes: 0, totalBytes: 0, percent: 0 });
     setErrorMessage('');
 
-    const result = await window.electron.startUpdateDownload(
-      asset.browserDownloadUrl,
-      checksumAsset?.browserDownloadUrl ?? null,
-    );
+    const result = await appBridge.startUpdateDownload();
 
     if (result.success) {
       setDownloadState('installing');
@@ -136,14 +127,14 @@ export const UpdateDialog = ({
       setDownloadState('error');
       setErrorMessage(result.error ?? 'Unknown error');
     }
-  }, [asset, checksumAsset]);
+  }, [asset]);
 
   const handleCancel = useCallback(() => {
-    window.electron.cancelUpdateDownload();
+    appBridge.cancelUpdateDownload();
   }, []);
 
   const handleOpenReleasePage = useCallback(() => {
-    window.electron.openExternalLink(externalPageUrl);
+    appBridge.openExternalLink(externalPageUrl);
   }, [externalPageUrl]);
 
   if (!open) return null;

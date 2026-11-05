@@ -2,6 +2,7 @@ import { useEffect, useImperativeHandle, useRef } from 'react';
 import * as monaco from 'monaco-editor';
 
 import { useWatchBoxHeight } from '../hooks/useWatchBoxHeight';
+import { terminalBridge } from '../services/bridge';
 
 export interface LanguageInfo {
   id: string;
@@ -220,7 +221,7 @@ export const MonacoEditor = ({
 
       (async () => {
         try {
-          const result = await window.api.readClipboardImage();
+          const result = await terminalBridge.readClipboardImage();
           if (result.hasImage && result.filePath) {
             const sel = editor.getSelection();
             if (sel)

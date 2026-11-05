@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Allotment, type AllotmentHandle } from 'allotment';
+
+import { appBridge } from '../services/bridge';
 import 'allotment/dist/style.css';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/system';
@@ -98,7 +100,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
   const { ref: browserRef } = useResizeObserver<HTMLDivElement>({
     onResize: ({ width, height }) => {
-      window.electron.sendBrowserSizeToMain({ width, height });
+      appBridge.sendBrowserSizeToMain({ width, height });
       editorsRef.current?.layoutAll();
     },
   });
@@ -157,7 +159,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleEditorTabChange = useCallback(
     (_: React.SyntheticEvent, index: number) => {
       setEditorIndex(index);
-      window.electron.sendEditorModeToMain(index);
+      appBridge.sendEditorModeToMain(index);
     },
     [],
   );
@@ -173,11 +175,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     window.addEventListener('beforeunload', cleanup);
 
     // スクリプトエラーを監視
-    window.electron.onScriptError((error) => {
+    appBridge.onScriptError((error) => {
       toast.error(`${error.browser}: ${error.error}`);
     });
 
-    window.electron
+    appBridge
       .getInitialSettings()
       .then(async (settings) => {
         setCurrentVersion(settings.currentVersion);
@@ -239,7 +241,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     // クリーンアップ
     return () => {
       window.removeEventListener('beforeunload', cleanup);
-      window.electron.removeScriptErrorListener();
+      appBridge.removeScriptErrorListener();
     };
   }, [checkForUpdates, setDarkMode, setLogs]);
 
@@ -272,7 +274,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
 
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
-      window.electron.sendLogsToMain(newLogs);
+      appBridge.sendLogsToMain(newLogs);
     }
     handleClearButtonClick(false);
   };
@@ -286,7 +288,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     }
     const newLogs = addLog(combinedEditorValue);
     if (newLogs) {
-      window.electron.sendLogsToMain(newLogs);
+      appBridge.sendLogsToMain(newLogs);
       toast('Log saved.');
     }
   };
@@ -373,7 +375,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // フォントサイズ変更の処理
   const handleFontSizeChange = (size: number) => {
     setFontSize(size);
-    window.electron.sendFontSizeToMain(size);
+    appBridge.sendFontSizeToMain(size);
     editorsRef.current?.syncSettings({ darkMode, language, fontSize: size });
   };
 
@@ -381,7 +383,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const handleDarkModeToggle = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
-    window.electron.sendIsDarkModeToMain(newDarkMode);
+    appBridge.sendIsDarkModeToMain(newDarkMode);
     editorsRef.current?.syncSettings({
       darkMode: newDarkMode,
       language,
@@ -393,7 +395,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   // 言語変更の処理
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
-    window.electron.sendLanguageToMain(newLanguage);
+    appBridge.sendLanguageToMain(newLanguage);
     editorsRef.current?.syncSettings({
       darkMode,
       language: newLanguage,
@@ -410,7 +412,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     (bank: 'A' | 'B' | 'C' | 'D' | 'E') => {
       setBoilerplateBank(bank);
       boilerplateBankRef.current = bank;
-      window.electron.saveBoilerplateBankToMain(bank);
+      appBridge.saveBoilerplateBankToMain(bank);
     },
     [],
   );
@@ -435,7 +437,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
     setBoilerplates((prev) => {
       const next = { ...prev, [key]: text };
       boilerplatesRef.current = next;
-      window.electron.saveBoilerplatesToMain(next);
+      appBridge.saveBoilerplatesToMain(next);
       return next;
     });
   }, []);

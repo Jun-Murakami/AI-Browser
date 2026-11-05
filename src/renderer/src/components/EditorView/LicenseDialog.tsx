@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 
 import licenseData from '../../assets/license.json';
+import { appBridge } from '../../services/bridge';
 
 interface LicenseDialogProps {
   currentVersion: string | null;
@@ -175,9 +176,7 @@ export const LicenseDialog = ({
                         rel="noopener noreferrer"
                         onClick={(e) => {
                           e.preventDefault();
-                          window.electron.openExternalLink(
-                            info.repository as string,
-                          );
+                          appBridge.openExternalLink(info.repository as string);
                         }}
                       >
                         {info.repository}

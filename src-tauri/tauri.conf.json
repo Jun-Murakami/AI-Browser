@@ -4,10 +4,10 @@
   "version": "../package.json",
   "identifier": "com.aibrowser.app",
   "build": {
-    "beforeDevCommand": "npm run dev:tauri-renderer",
-    "devUrl": "http://localhost:5174",
-    "beforeBuildCommand": "npm run build:tauri-renderer",
-    "frontendDist": "../out/tauri-renderer"
+    "beforeDevCommand": "npm run dev:renderer",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build:renderer",
+    "frontendDist": "../out/renderer"
   },
   "app": {
     "windows": [],
@@ -29,7 +29,6 @@
   "bundle": {
     "active": true,
     "targets": ["msi", "app", "dmg", "appimage", "deb"],
-    "createUpdaterArtifacts": true,
     "publisher": "Jun Murakami",
     "homepage": "https://github.com/Jun-Murakami/AI-Browser",
     "category": "Utility",
