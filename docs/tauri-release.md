@@ -5,7 +5,9 @@ DialogSuite（`D:\Synching\code\Tauri\DialogSuite`）と同じ仕組みで、配
 - 自動更新: tauri-plugin-updater。`latest.json` を GitHub Releases の最新リリースに添付し、
   アプリは `https://github.com/Jun-Murakami/AI-Browser/releases/latest/download/latest.json` を読む
 - アップデータ署名: minisign。秘密鍵は `.tauri/myapp.key`（git 管理外）、公開鍵は `src-tauri/tauri.conf.json` の `plugins.updater.pubkey`
-- Windows のコード署名: Azure Key Vault + AzureSignTool。`bundle.windows.signCommand` から `src-tauri/sign-azure.ps1` が呼ばれ、本体 exe と MSI だけを署名する
+- Windows のコード署名: Azure Key Vault + AzureSignTool。`build_windows_release.ps1` が `--config` で `bundle.windows.signCommand` を
+  絶対パスで付け、そこから `src-tauri/sign-azure.ps1` が呼ばれて本体 exe と MSI だけを署名する。
+  `tauri.conf.json` には署名コマンドを書いていないので、素の `npm run build` は署名なしで通る
 - macOS: Developer ID で署名し、`tauri build` が .app を公証、スクリプトが DMG を公証・staple する
 
 ## 事前準備

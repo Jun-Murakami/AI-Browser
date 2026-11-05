@@ -45,14 +45,12 @@ function Import-DotEnv {
 
 # =========================
 # Authenticode コード署名（Azure Key Vault + AzureSignTool）
-# tauri.conf.json の bundle.windows.signCommand により tauri build が exe → MSI の順に署名し、
+# bundle.windows.signCommand により tauri build が exe → MSI の順に署名し、
 # その後にアップデータ用の .sig を生成する（ビルド後に手動署名すると .sig が不一致になり自動更新が壊れる）。
 # 署名対象は src-tauri/sign-azure.ps1 が「配布物（本体 exe / MSI）だけ」に絞る（許可リスト方式）。
-# ビルド時だけ変える設定（署名コマンドの絶対パス化・-SkipCodeSign での無効化）は一時 JSON にして
-# `tauri build --config` で重ねる。tauri.conf.json 自体は書き換えない
-# （書き換えると改行や整形が変わり、同期先の mac も含めて作業ツリーが汚れる）。
+# 署名コマンドとアップデータ用ファイルの生成は一時 JSON にして `tauri build --config` で重ねる。
+# tauri.conf.json 自体は書き換えない（書き換えると改行や整形が変わり、同期先の mac も含めて作業ツリーが汚れる）。
 # =========================
-$tauriConfPath = Join-Path $PSScriptRoot 'src-tauri\tauri.conf.json'
 
 function Assert-CodeSignPrereqs {
   if (-not (Get-Command $AzureSignToolPath -ErrorAction SilentlyContinue)) {
@@ -85,18 +83,19 @@ function Resolve-PwshPath {
 }
 
 # ビルド時だけ tauri.conf.json に重ねる設定を一時ファイルに書き出し、そのパスを返す。
-# --config は JSON Merge Patch として重なるので、signCommand に null を渡すと署名設定が外れる。
+# 署名コマンドは tauri.conf.json には書かず、ここで絶対パスで足す
+# （相対パスだと tauri build の作業ディレクトリによって見つからない。DialogSuite も同じ理由で絶対パス化している）。
+# そのため、署名鍵や Azure の無い環境でも素の `tauri build` は署名なしで通る。
 function New-BuildConfigOverride {
   if ($SkipCodeSign) {
     $signCommand = $null
-    Write-Host "  -SkipCodeSign: signCommand を外してビルドします。" -ForegroundColor Yellow
+    Write-Host "  -SkipCodeSign: 署名コマンドを付けずにビルドします。" -ForegroundColor Yellow
   } else {
-    $conf = Get-Content -LiteralPath $tauriConfPath -Raw | ConvertFrom-Json
-    # cmd と署名ラッパーを絶対パス化（PATH・作業ディレクトリ非依存で確実に解決させる）
-    $sc = $conf.bundle.windows.signCommand
     $wrapperPath = Join-Path $PSScriptRoot 'src-tauri\sign-azure.ps1'
-    $signArgs = @($sc.args | ForEach-Object { if ($_ -like '*sign-azure.ps1') { $wrapperPath } else { $_ } })
-    $signCommand = [ordered]@{ cmd = (Resolve-PwshPath); args = $signArgs }
+    $signCommand = [ordered]@{
+      cmd = (Resolve-PwshPath)
+      args = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $wrapperPath, '%1')
+    }
   }
   # アップデータ用の .sig はリリース時だけ作る（署名鍵の無い環境でも tauri build が通るよう、
   # tauri.conf.json では有効にしていない）

@@ -181,7 +181,8 @@ Electron 版を打ち止めにしたので、`main` との共存を気にせず�
 - [x] 送信スクリプトを `src/shared/scripts/` へ、元アイコンを `app-icon.png`（`tauri icon` の既定の入力）へ移動
 - [x] Vite の設定を `vite.config.ts`（開発サーバーは 1420、出力は `out/renderer`）に、tsconfig を @electron-toolkit に依存しない形に
 - [x] OSS としてビルドしやすいよう、アップデータ用ファイルの生成はリリーススクリプトの `--config` で有効にし、
-  Azure の設定が無い環境では署名を飛ばす（`npm run build` で署名なしのインストーラを作れる）
+  Windows の署名コマンドも `tauri.conf.json` から外してリリーススクリプトが絶対パスで付ける（`npm run build` で署名なしのインストーラを作れる）。
+  当初は `tauri.conf.json` に相対パス（`src-tauri/sign-azure.ps1`）で書いていたが、素の `tauri build` では見つからず失敗していた
 - [x] AGENTS.md / README / `.cursor/rules` を Tauri 版の内容に更新
 
 ## 既知のリスクと決めごと

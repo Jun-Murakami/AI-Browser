@@ -47,17 +47,6 @@
     "windows": {
       "wix": {
         "language": ["en-US"]
-      },
-      "signCommand": {
-        "cmd": "pwsh",
-        "args": [
-          "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
-          "-File",
-          "src-tauri/sign-azure.ps1",
-          "%1"
-        ]
       }
     }
   }

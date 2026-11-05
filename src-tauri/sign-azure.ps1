@@ -1,4 +1,5 @@
 # Tauri の bundle.windows.signCommand から 1 ファイルずつ呼ばれる署名ラッパー
+# （signCommand は build_windows_release.ps1 が --config で絶対パスで付ける）
 # （DialogSuite の sign-azure.ps1 と同じ方式）。
 #
 # Tauri はバンドル過程で多数の PE（本体 exe、WiX 自身の DLL、一時ファイル等）に対して署名コマンドを呼ぶ。
@@ -14,7 +15,7 @@
 #   AZURE_KEY_VAULT_TENANT_ID / _CLIENT_ID / _CLIENT_SECRET     : サービスプリンシパル
 #   AZURE_SIGN_TIMESTAMP_URL                                     : 省略時 http://timestamp.digicert.com
 #   SKIP_WIN_SIGN=true                                           : 署名をスキップ（ローカル確認用）
-# Key Vault の設定が無ければ署名せずに通す（npm run build でコントリビューターがビルドできるように）。
+# Key Vault の設定が無ければ署名せずに通す。
 # シークレットをコマンドライン引数に載せないよう、サービスプリンシパルは AZURE_CLIENT_ID などの
 # 環境変数に移して -kvm（DefaultAzureCredential）で認証させる。az login のセッションでも動く。
 
