@@ -2,6 +2,7 @@
   "extends": "./node_modules/@electron-toolkit/tsconfig/tsconfig.node.json",
   "include": [
     "electron.vite.config.*",
+    "vite.tauri.config.*",
     "src/main/**/*",
     "src/preload/**/*",
     "src/shared/**/*"

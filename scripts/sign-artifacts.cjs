@@ -37,7 +37,8 @@ const { loadDotEnv } = require(path.join(__dirname, 'load-env.cjs'));
 loadDotEnv();
 
 // 署名・チェックサム対象とする配布物本体の拡張子（.yml/.blockmap などは除外）
-const DISTRIBUTABLE = /\.(AppImage|deb|rpm|snap|exe|dmg|zip|pkg)$/i;
+// msi は Tauri 版のリリーススクリプト（scripts/release-manifest.mjs）からも使うため含める
+const DISTRIBUTABLE = /\.(AppImage|deb|rpm|snap|exe|msi|dmg|zip|pkg)$/i;
 
 /** @param {{ artifactPaths: string[] }} buildResult */
 module.exports = async function afterAllArtifactBuild(buildResult) {

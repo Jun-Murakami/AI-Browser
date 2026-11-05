@@ -1,0 +1,65 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AI-Browser",
+  "version": "../package.json",
+  "identifier": "com.aibrowser.app",
+  "build": {
+    "beforeDevCommand": "npm run dev:tauri-renderer",
+    "devUrl": "http://localhost:5174",
+    "beforeBuildCommand": "npm run build:tauri-renderer",
+    "frontendDist": "../out/tauri-renderer"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5ODY1ODg1MEZGNDlDNEQKUldSTm5QUVBoVmlHeWQvOXczL1RoMmd2YTlCNnpscFBhMWpvTFBrS0VHamxOaVhrTXVYelBnbnYK",
+      "endpoints": [
+        "https://github.com/Jun-Murakami/AI-Browser/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "app", "dmg", "appimage", "deb"],
+    "createUpdaterArtifacts": true,
+    "publisher": "Jun Murakami",
+    "homepage": "https://github.com/Jun-Murakami/AI-Browser",
+    "category": "Utility",
+    "shortDescription": "AI Browser",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "minimumSystemVersion": "11.0"
+    },
+    "windows": {
+      "wix": {
+        "language": ["en-US"]
+      },
+      "signCommand": {
+        "cmd": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "src-tauri/sign-azure.ps1",
+          "%1"
+        ]
+      }
+    }
+  }
+}

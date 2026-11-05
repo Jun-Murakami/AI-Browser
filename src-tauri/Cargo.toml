@@ -1,0 +1,48 @@
+[package]
+name = "ai-browser"
+version = "0.0.0"
+description = "AI Browser"
+authors = ["Jun Murakami"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.85"
+
+[lib]
+name = "ai_browser_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# マルチ WebView（Window::add_child）は unstable フィーチャーで提供される
+tauri = { version = "2.12", features = ["unstable"] }
+tauri-plugin-opener = "2"
+tauri-plugin-log = "2"
+tauri-plugin-updater = "2"
+# 旧 Electron 版のアンインストールを尋ねるネイティブダイアログ（migrate.rs）
+tauri-plugin-dialog = "2"
+tokio = { version = "1", features = ["sync", "macros"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+url = "2"
+log = "0.4"
+# ターミナル（node-pty の代わり）
+portable-pty = "0.9"
+# クリップボード画像をターミナルに貼り付けるため
+arboard = "3"
+png = "0.18"
+# Electron 版の Local Storage（LevelDB）から Nani! の履歴を読むため
+rusty-leveldb = "4"
+
+# WebView2 の DevTools Protocol でキー入力を送るため（Tauri 本体と同じ系統に揃える）
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39"
+windows-core = "0.62"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

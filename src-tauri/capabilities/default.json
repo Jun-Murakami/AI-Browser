@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "React UI 用の WebView（ui）だけに IPC を許可する。AI サービスの WebView には付与しない",
+  "webviews": ["ui"],
+  "permissions": ["core:default"]
+}

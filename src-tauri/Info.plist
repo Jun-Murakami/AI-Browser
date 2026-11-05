@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!-- tauri build が生成する Info.plist にマージされる。文言は Electron 版（electron-builder.yml の extendInfo）と同じ -->
+<dict>
+  <key>NSCameraUsageDescription</key>
+  <string>Application requests access to the device's camera.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Application requests access to the device's microphone.</string>
+  <key>NSDocumentsFolderUsageDescription</key>
+  <string>Application requests access to the user's Documents folder.</string>
+  <key>NSDownloadsFolderUsageDescription</key>
+  <string>Application requests access to the user's Downloads folder.</string>
+</dict>
+</plist>

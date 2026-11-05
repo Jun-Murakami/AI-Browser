@@ -1,3 +1,6 @@
+// Tauri 用の互換レイヤー。App より先に評価させるため先頭に置く
+import './tauri/install';
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
