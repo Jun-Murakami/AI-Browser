@@ -35,9 +35,9 @@ if [ ! -f "$KEY_PATH" ]; then
   exit 1
 fi
 export TAURI_SIGNING_PRIVATE_KEY="$KEY_PATH"
-if [ "${2-}" != "" ]; then
-  export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$2"
-fi
+# この鍵はパスワード無し。ほかのプロジェクト用に ~/.zshrc などで TAURI_SIGNING_PRIVATE_KEY_PASSWORD が
+# 設定されていると、それで復号しようとして失敗するので、第2引数が無ければ空で上書きする
+export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="${2-}"
 
 # ========= コード署名・公証 =========
 # .env は Electron 版と同じ名前を使っているので、tauri build が読む名前に揃える。

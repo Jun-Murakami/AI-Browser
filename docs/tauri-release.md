@@ -14,7 +14,8 @@ DialogSuite（`D:\Synching\code\Tauri\DialogSuite`）と同じ仕組みで、配
 
 - `.tauri/myapp.key` … **紛失すると既存ユーザーに更新を届けられなくなる**のでバックアップしておく。
   パスワードを付けた鍵にする場合は、作り直して公開鍵を `tauri.conf.json` に入れ直し（最初のリリース前に限る）、
-  ビルド時に `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` を設定する
+  ビルド時にパスワードを渡す（`zsh build_macos.zsh <鍵のパス> <パスワード>`、`build_windows_release.ps1 -KeyPassword <パスワード>`）。
+  シェルに設定済みの `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`（ほかのプロジェクト用など）は、両スクリプトとも無視する
 - `.env`（Electron 版と同じ変数）
   - Windows: `AZURE_KEY_VAULT_URL` / `AZURE_KEY_VAULT_CERTIFICATE` / `AZURE_KEY_VAULT_TENANT_ID` / `AZURE_KEY_VAULT_CLIENT_ID` / `AZURE_KEY_VAULT_CLIENT_SECRET`
   - macOS: `DEVELOPER_ID_APP` / `APPLE_API_KEY_ID` / `APPLE_API_KEY_PATH` / `APPLE_API_ISSUER`

@@ -9,6 +9,8 @@
 [CmdletBinding()]
 param(
   [string]$KeyPath = "$PSScriptRoot\.tauri\myapp.key",
+  # アップデータ署名鍵のパスワード（既定の鍵はパスワード無しなので通常は不要）
+  [string]$KeyPassword = "",
   # リリースノートの本文（省略時は対話入力）
   [string]$ReleaseNotes = "",
   # リリースノートを外部ファイルから読み込む場合のパス（-ReleaseNotes より優先）
@@ -146,7 +148,13 @@ if (-not (Test-Path -LiteralPath $KeyPath)) {
   throw "アップデータ署名鍵が見つかりません: $KeyPath（npx tauri signer generate -w .tauri/myapp.key で作成）"
 }
 $env:TAURI_SIGNING_PRIVATE_KEY = $KeyPath
-# パスワード付きの鍵の場合は外部から $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD を設定してください
+# この鍵はパスワード無し。ほかのプロジェクト用に TAURI_SIGNING_PRIVATE_KEY_PASSWORD が設定されていると
+# それで復号しようとして失敗するので、-KeyPassword が無ければ消す（--ci により空パスワードで復号される）
+if ($KeyPassword) {
+  $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = $KeyPassword
+} else {
+  Remove-Item -LiteralPath env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD -ErrorAction SilentlyContinue
+}
 
 if ($SkipCodeSign) {
   Write-Host "[1b/6] -SkipCodeSign: Authenticode 署名をスキップします" -ForegroundColor Yellow
