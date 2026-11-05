@@ -1,6 +1,6 @@
 [package]
 name = "ai-browser"
-version = "2.0.0"
+version = "2.0.1"
 description = "AI Browser"
 authors = ["Jun Murakami"]
 license = "MIT"
