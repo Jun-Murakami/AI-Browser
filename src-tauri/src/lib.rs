@@ -365,10 +365,15 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
             }
         });
 
+    // auto_resize は「作成時の WebView の大きさ ÷ ウィンドウの大きさ」の比率を保って追従する。
+    // ウィンドウは window-state プラグインが bounds とは別の大きさに復元していることがあるので、
+    // 実際の大きさを渡して比率を 1 にする（bounds を渡すと右と下がはみ出す）
+    let scale = window.scale_factor()?;
+    let inner = window.inner_size()?.to_logical::<f64>(scale);
     window.add_child(
         views::with_browser_args(ui),
         LogicalPosition::new(0.0, 0.0),
-        LogicalSize::new(bounds.width, bounds.height),
+        LogicalSize::new(inner.width, inner.height),
     )?;
 
     let event_app = app.clone();
